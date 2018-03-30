@@ -2,9 +2,9 @@
 
 *Animal Club* is still in development. I'm working hard on a first release!!
 
-*Animal Club* (AC) is a general purpose genetic expression library written in Haskell. Each *Animal* is made of *DNA* and a *Genotype* written in a special purpose composable Monad. 
+*Animal Club* (AC) is a general purpose genetic expression library written in Haskell. Each *Animal* is made of *DNA* and several *Genotypes* written in a special purpose composable Monad. 
 
-*DNA* is a *Gene* array which are pairs of *alleles*. When breeding two *DNAs*, one allele from each parent is randomly chosen and put together to be the new *Gene* in the child's *DNA*.
+*DNA* is a *Gene* array--an array of *alleles* pairs. When breeding two *DNAs*, one allele from each parent is randomly chosen and put together to be the new *Gene* in the child's *DNA*.
 
 *Genotype* is a computation on an indexed subset of *DNA*. AC includes several basic computations for either strategically or randomly creating computations.
 
