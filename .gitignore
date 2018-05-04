@@ -1,0 +1,14 @@
+.stack-work/
+animalclub.cabal
+.DS_Store
+*~
+
+## program output
+*.obj
+
+## profiling stuff
+*.ps
+*.aux
+*.prof
+*.prof.html
+*.hp

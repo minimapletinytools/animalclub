@@ -1,0 +1,141 @@
+name:                animalclub
+version:             0.1.0.0
+github:              "pdlla/animalclub"
+license:             BSD3
+author:              "Peter Lu"
+maintainer:          "chippermonky@gmail.com"
+copyright:           "2018 Peter Lu"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on Github at <https://github.com/pdlla/animalclub#readme>
+
+
+ghc-options:
+- -Wall
+- -Wcompat
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wredundant-constraints
+#- -Werror
+
+default-extensions:
+- InstanceSigs
+- LambdaCase
+- OverloadedStrings
+- GADTs
+- DeriveFunctor
+- DeriveFoldable
+- DeriveTraversable
+- FlexibleInstances
+
+dependencies:
+- base >= 4.7 && < 5
+- vector
+- random
+- mtl
+- MonadRandom
+- QuickCheck
+- array
+- text
+- linear
+- lens
+- adjunctions
+- containers
+- clock
+- deepseq
+
+library:
+  source-dirs: src
+  exposed-modules:
+    # Genetics
+    - AnimalClub.Genetics
+    - AnimalClub.Genetics.Gene
+    - AnimalClub.Genetics.Genotype
+    - AnimalClub.Genetics.FastGeneBuilder
+    # Skellygen
+    - AnimalClub.Skellygen
+    - AnimalClub.Skellygen.AnimalScript
+    - AnimalClub.Skellygen.AnimalProperty
+    - AnimalClub.Skellygen.Skellygen
+    - AnimalClub.Skellygen.Hierarchical
+    # TODO don't expose this module
+    - AnimalClub.Skellygen.Quaternion
+    - AnimalClub.Skellygen.Mesh
+    # Animal
+    - AnimalClub.Animal.Animal
+
+  dependencies:
+
+
+executables:
+  genetics:
+    main:                genetics.hs
+    source-dirs:         examples
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - animalclub
+
+  animals:
+    main:                animals.hs
+    source-dirs:         examples
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - animalclub
+
+#+RTS -sstderr -RTS
+  wormbreeder:
+    main:                wormbreeder.hs
+    source-dirs:         examples
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - animalclub
+
+  performance_test:
+    main:                performance_test.hs
+    source-dirs:         examples
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - animalclub
+
+tests:
+  genetics-test:
+    main:                tests_genetics.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - animalclub
+
+  skellygen-test:
+    main:                tests_skellygen.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - animalclub

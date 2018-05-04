@@ -1,0 +1,88 @@
+
+module AnimalClub.Skellygen.Quaternion
+    ( identity
+    , inverse
+    , fromTo
+    , fromEulerXYZ
+        --lookAt, -- BUGS
+    , lookAtDefaultUp -- BUGS
+    ) where
+
+import Linear.Conjugate
+import Linear.Epsilon
+import Linear.Metric
+import Linear.Quaternion
+import Linear.V3
+--import Control.Lens
+--import Linear.Matrix as M
+
+-- |
+inverse :: (Conjugate a, RealFloat a) => Quaternion a -> Quaternion a
+inverse = conjugate
+
+--invert (Quaternion w (V3 x y z)) = Quaternion wpart v3part where
+--	wpart = invns * w'
+--	v3part = invns *^ (V3 x' y' z')
+--	invns = 1.0 / (v `dot` v)
+--	v@(V4 w' x' y' z') = V4 w (-x) (-y) (-z)
+identity :: (Num a) => Quaternion a
+identity = Quaternion 1 (V3 0 0 0)
+
+_orthogonal :: (Num a, Ord a) => V3 a -> V3 a
+_orthogonal v@(V3 x y z) = cross v other
+  where
+    other =
+        if abs x < abs y
+            then if abs x < abs z
+                     then V3 1 0 0
+                     else V3 0 0 1
+            else if abs y < abs z
+                     then V3 0 1 0
+                     else V3 0 0 1
+
+--_radiansBetween :: (Metric f) => f a -> f a -> a
+--_radiansBetween a b = undefined -- acos $ (a `dot` b) / (norm a * norm b)
+
+-- | assumes neutral look is toward (V3 1 0 0) with up towards (V3 0 1 0) as neutral position
+-- TODO finish
+lookAt ::
+       (RealFloat a, Epsilon a)
+    => V3 a -- ^ up vector
+    -> V3 a -- ^ fallback up vector
+    -> V3 a -- ^ direction to look at
+    -> Quaternion a -- ^ output
+lookAt _ _ d = q2 * q
+        --zup = V3 0 1 0
+        --up = if nearZero (d-u) then fu else u
+        --q2 = axisAngle d (_radiansBetween d up)
+  where
+    q2 = identity -- TODO finish this function is a pain...
+    q = fromTo (V3 1 0 0) d
+
+lookAtDefaultUp ::
+       (RealFloat a, Epsilon a)
+    => V3 a -- ^ direction to look at
+    -> Quaternion a -- ^ output
+lookAtDefaultUp = lookAt (V3 0 1 0) (V3 1 0 0)
+
+-- | from -> to -> rotation
+fromTo :: (RealFloat a, Epsilon a) => V3 a -> V3 a -> Quaternion a
+fromTo fromv tov =
+    if nearZero (u + v)
+        then fallback
+        else if nearZero (u - v)
+                 then identity
+                 else output
+  where
+    u = normalize fromv
+    v = normalize tov
+    half = normalize (u + v)
+    fallback = Quaternion 0 (normalize $ _orthogonal u)
+    output = Quaternion (dot u half) (cross u half)
+
+-- TODO change to fromEuler :: XYZ -> V3 a -> Quternion a
+-- | x y z rotation order
+fromEulerXYZ :: (RealFloat a, Epsilon a) => V3 a -> Quaternion a
+fromEulerXYZ (V3 x y z) =
+    (axisAngle (V3 0 0 1) z) * (axisAngle (V3 0 1 0) y) *
+    (axisAngle (V3 1 0 0) x)
