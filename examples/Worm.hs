@@ -29,7 +29,7 @@ wormNode 0 = AnimalNode (Bone (textFromInt 0)) (Rel $ V3 0.5 0 0) (Rel 1) False 
 wormNode n = AnimalNode (Bone (textFromInt n)) (Rel $ V3 0.5 0 0) (Rel 1) False [wormNode (n-1)]
 worm segs = AnimalNode (Bone (textFromInt (segs-1))) (Rel 0) (Abs 0.1) True [wormNode (segs-2)]
 
-wormGenome' :: (RandomGen g) => Int -> Int -> FastGeneBuilder g NamedFloats ()
+wormGenome' :: (RandomGen g) => Int -> Int -> FastGeneBuilder g AnimalFloats ()
 wormGenome' segs dnaPerSeg = do forM_ [0..(segs-1)] wormSeg where
     dnaPerSegOver2 = dnaPerSeg `div` 2
     wormSeg i = do
@@ -42,8 +42,8 @@ wormGenome' segs dnaPerSeg = do forM_ [0..(segs-1)] wormSeg where
         tellBoneFunc (Bone' (textFromInt i)) Orientation orients
         gbPop
 
-wormGenome :: Int -> Int -> Genome StdGen NamedFloats
-wormGenome segs dnaPerSeg = Genome (segs*dnaPerSeg) (wormGenome' segs dnaPerSeg) (mkStdGen 0)
+wormGenome :: Int -> Int -> Genome StdGen AnimalFloats
+wormGenome segs dnaPerSeg = Debug.trace "poop" $ Genome (segs*dnaPerSeg) (wormGenome' segs dnaPerSeg) (mkStdGen 0)
 
 testWorm :: Int -> AnimalPropertyMap -> Float
 testWorm segs props = score where
@@ -61,7 +61,7 @@ testWorm segs props = score where
 -- TODO generalize this function and promote it to Genetics or to Animal
 breedAndSelectWormPool :: (RandomGen g) =>
     (AnimalPropertyMap -> Float) -- ^ test function
-    -> Genome StdGen NamedFloats -- ^ worm genome
+    -> Genome StdGen AnimalFloats -- ^ worm genome
     -> Float -- ^ mutation chance
     -> g -- ^ random generator
     -> (Int, Int) -- ^ size, winner
@@ -74,7 +74,6 @@ breedAndSelectWormPool testfn genome mChance g (size, winners) dnas = Debug.trac
     dads = randomRs (0,inputs-1) g''
     parents = take size $ zip moms dads
     (outg, worms) = mapAccumL (\acc_g x -> (snd (next acc_g), breedAndMutate mChance acc_g (dnas !! fst x ) (dnas !! snd x))) g parents
-    -- TODO genome is getting reevaluated here every time this function is called for some resaon D:
     wormProps dna' = generateAnimalProperties $ evalGenome genome dna'
     r = take winners $ sortBy (comparing (\x -> testfn (wormProps x))) worms
     r' = head r

@@ -10,7 +10,6 @@ module AnimalClub.Skellygen.AnimalProperty (
     AnimalPropertyMap,
     orientation, distance, skinParams,
     lookupBone',
-    generateAnimalProperties,
     generateAnimalProperties_
 ) where
 
@@ -73,14 +72,13 @@ assertLength n xs = assert (length xs == n)
 -- what we want is to be able to specify several bones +
 
 -- | adds properties to a map,
-generateAnimalProperties_ ::
+generateAnimalPropertiesInternal_ ::
     AnimalPropertyMap -- ^ accumulating map of properties.
-    -> [(T.Text,[Float])] -- ^ list of properties
+    -> [(SkellyFunc, [Float])] -- ^ list of properties
     -> AnimalPropertyMap -- ^ output accumulated map of properties. EnumBone' property will override AllBone' property
-generateAnimalProperties_ _props xs = foldl addProp (foldl addProp  (Map.empty) allProps) otherProps where
-    xs_parsed = map (over _1 (read . T.unpack )) xs
-    allProps = List.filter ((\case {AllBones' _ -> True; _ -> False}) . sfBone' . fst) xs_parsed
-    otherProps = List.filter ((\case {AllBones' _ -> False; _ -> True}) . sfBone' . fst) xs_parsed
+generateAnimalPropertiesInternal_ _props xs = foldl addProp (foldl addProp  (Map.empty) allProps) otherProps where
+    allProps = List.filter ((\case {AllBones' _ -> True; _ -> False}) . sfBone' . fst) xs
+    otherProps = List.filter ((\case {AllBones' _ -> False; _ -> True}) . sfBone' . fst) xs
     addProp :: Map.Map BoneName' AnimalProperty -> (SkellyFunc,[Float]) -> Map.Map BoneName' AnimalProperty
     addProp accProp (SkellyFunc boneName method, vals) = Map.insert boneName newProp accProp where
             -- if EnumBone', use AllBone' as default
@@ -97,10 +95,10 @@ generateAnimalProperties_ _props xs = foldl addProp (foldl addProp  (Map.empty) 
                     over skinParams (+(vals !! 0)) oldProp
                 Color -> oldProp
 
-generateAnimalProperties ::
-    [(T.Text,[Float])] -- ^ list of properties
+generateAnimalProperties_ ::
+    [(SkellyFunc, [Float])] -- ^ list of properties
     -> AnimalPropertyMap -- ^ output accumulated map of properties. EnumBone' property will override AllBone' property
-generateAnimalProperties = generateAnimalProperties_ Map.empty
+generateAnimalProperties_ = generateAnimalPropertiesInternal_ Map.empty
 
 -- | property access helpers
 lookupBone' :: BoneName' -> AnimalPropertyMap -> AnimalProperty
