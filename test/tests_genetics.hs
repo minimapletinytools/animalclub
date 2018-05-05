@@ -71,14 +71,14 @@ prop_convergence seed = pass where
     g1 = mkStdGen seed
     (target :: Float, g2) = randomR (0,100) g1
     maxGenerations = 200
-    dnaLength_ = 150
-    thresh = 0.2
+    dnaLength_ = 100
+    thresh = 0.25
     original = makeRandDNA g1 dnaLength_
     testgene :: Genotype StdGen Float ()
     testgene = gbTypical (-20,120) >>= tell
     test dna = evalGeneBuilder testgene (dna, []) (mkStdGen 0)
     unfoldWormF (dnas, g) = if testResult < thresh then Nothing else Just $ (next_dnas, acc) where
-        acc@(next_dnas, _) = breedAndSelectPool (test) 0.003 g (10,2) dnas
+        acc@(next_dnas, _) = breedAndSelectPool (test) 0.003 g (15,2) dnas
         testResult = test $ head next_dnas
     generations = length $ take maxGenerations $ unfoldr unfoldWormF ([original], g2)
     --pass = trace ("took " ++ show generations ++ " to pass " ++ (show seed) ++ "\n") $ generations < maxGenerations
