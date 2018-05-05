@@ -1,4 +1,4 @@
-module AnimalClub.Skellygen.Hierarchical (
+module AnimalClub.Skellygen.Math.Hierarchical (
     Hierarchical(..),
     (>*>),
     AbsOrRel(..),

@@ -27,10 +27,11 @@ import qualified Debug.Trace as Debug
 
 import AnimalClub.Skellygen.AnimalNode
 import AnimalClub.Skellygen.AnimalProperty
-import qualified AnimalClub.Skellygen.TRS as TRS
-import qualified AnimalClub.Skellygen.Quaternion as QH
+import AnimalClub.Skellygen.Math.Hierarchical
+import qualified AnimalClub.Skellygen.Math.TRS as TRS
+import qualified AnimalClub.Skellygen.Math.Quaternion as QH
 import qualified AnimalClub.Skellygen.Skellygen as SN
-import AnimalClub.Skellygen.Hierarchical
+
 
 import Linear.V3
 import Linear.Vector
@@ -208,15 +209,13 @@ toSkellygen' props cn =  outsn where
     cn_rel_trs = _trs' cn
     skellyChildren = map (toSkellygen' props) (_children' cn)
     outsn = SN.SkellyNode {
-        SN._debugName = show (_name' cn),
-        SN._isRoot = _isRoot' cn,
-        SN._children = skellyChildren,
-        SN._trs = cn_rel_trs,
+        SN._snDebugName = show (_name' cn),
+        SN._snIsRoot = _isRoot' cn,
+        SN._snChildren = skellyChildren,
+        SN._snTrs = cn_rel_trs,
         --SN._trs = Debug.trace ("rel: " ++ show cn_rel_trs) cn_rel_trs,
         --SN._trs = Debug.trace ("abs: " ++ show (_trsAbs' cn)) cn_rel_trs,
-        SN._attachRot = _orientation prop,
-        SN._attachDistance = _distance prop,
-        SN._thickness = _skinParams prop * _thickness' cn
+        SN._snThickness = _skinParams prop * _thickness' cn
     }
 
 -- | convert Animal Node to Skellygen

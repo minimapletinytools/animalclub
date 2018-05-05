@@ -20,8 +20,7 @@ import qualified Data.Text as T
 import Data.Monoid (Monoid)
 import Data.List (foldl', mapAccumL)
 import AnimalClub.Genetics
-import AnimalClub.Skellygen.AnimalNode
-import AnimalClub.Skellygen.AnimalProperty
+import AnimalClub.Skellygen
 import System.Random
 import Control.Lens
 import Control.Monad

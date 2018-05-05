@@ -7,9 +7,9 @@ worm, wormGenome, testWorm, breedAndSelectWormPool
 
 import AnimalClub.Animal.Animal
 import AnimalClub.Genetics
-import AnimalClub.Skellygen.AnimalScript
-import AnimalClub.Skellygen.Hierarchical
-import qualified AnimalClub.Skellygen.Quaternion as QH
+import AnimalClub.Skellygen
+import AnimalClub.Skellygen.Math.Hierarchical
+import qualified AnimalClub.Skellygen.Math.Quaternion as QH
 
 import           Linear.V3
 import qualified Linear.Metric as Metric
@@ -49,7 +49,8 @@ testWorm :: Int -> AnimalPropertyMap -> Float
 testWorm segs props = score where
     desiredThick i =  (fromIntegral i / fromIntegral segs) * 3 + 0.5
     --desiredThick i =  (sin ((fromIntegral i / fromIntegral wormSegs) * pi * 2)*0.5 + 1)
-    desiredOrient _ = QH.fromEulerXYZ (V3 (pi/20) (pi/3) 0.0)
+    --desiredOrient _ = QH.fromEulerXYZ (V3 (pi/20) (pi/3) 0.0)
+    desiredOrient _ = QH.fromEulerXYZ (V3 0 (pi/6) 0.0)
     name i = Bone' (textFromInt i)
     prop i = Map.findWithDefault (error $ "could not find " ++ show (name i)) (name i) props
     thick i = _skinParams $ prop i

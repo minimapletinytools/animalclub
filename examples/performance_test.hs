@@ -7,9 +7,8 @@ import Worm
 
 import AnimalClub.Animal.Animal
 import AnimalClub.Genetics
-import AnimalClub.Skellygen.AnimalScript
-import AnimalClub.Skellygen.Skellygen
-import AnimalClub.Skellygen.Mesh
+import AnimalClub.Skellygen
+import AnimalClub.Skellygen.Math.Mesh
 
 import Text.Printf (printf)
 import           Data.List                       (unfoldr)

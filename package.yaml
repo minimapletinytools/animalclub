@@ -64,13 +64,9 @@ library:
     - AnimalClub.Genetics.Genotype
     # Skellygen
     - AnimalClub.Skellygen
-    - AnimalClub.Skellygen.AnimalScript
-    - AnimalClub.Skellygen.AnimalProperty
-    - AnimalClub.Skellygen.Skellygen
-    - AnimalClub.Skellygen.Hierarchical
-    # TODO don't expose this module
-    - AnimalClub.Skellygen.Quaternion
-    - AnimalClub.Skellygen.Mesh
+    - AnimalClub.Skellygen.Math.Hierarchical
+    - AnimalClub.Skellygen.Math.Mesh
+    - AnimalClub.Skellygen.Math.Quaternion
     # Animal
     - AnimalClub.Animal.Animal
 

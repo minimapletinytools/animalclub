@@ -24,9 +24,9 @@ import qualified Data.List as List
 import Linear.V3
 
 import AnimalClub.Skellygen.AnimalNode
-import qualified AnimalClub.Skellygen.TRS as TRS
-import qualified AnimalClub.Skellygen.Quaternion as QH
-import AnimalClub.Skellygen.Hierarchical
+import AnimalClub.Skellygen.Math.Hierarchical
+import qualified AnimalClub.Skellygen.Math.TRS as TRS
+import qualified AnimalClub.Skellygen.Math.Quaternion as QH
 
 
 import qualified Debug.Trace as Debug

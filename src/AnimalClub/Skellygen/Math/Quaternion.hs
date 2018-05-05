@@ -1,5 +1,15 @@
+{-|
+Module      : Quaternion
+Description : helper methods building on top of Linear.Quaternion
+Copyright   : (c) Peter Lu, 2018
+License     : GPL-3
+Maintainer  : chippermonky@email.com
+Stability   : experimental
 
-module AnimalClub.Skellygen.Quaternion
+-}
+
+
+module AnimalClub.Skellygen.Math.Quaternion
     ( identity
     , inverse
     , fromTo

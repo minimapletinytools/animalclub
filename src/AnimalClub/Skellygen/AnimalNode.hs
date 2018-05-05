@@ -30,8 +30,8 @@ import qualified Data.Text as T
 
 --import qualified Debug.Trace as Debug
 
-import qualified AnimalClub.Skellygen.TRS as TRS
-import AnimalClub.Skellygen.Hierarchical
+import qualified AnimalClub.Skellygen.Math.TRS as TRS
+import AnimalClub.Skellygen.Math.Hierarchical
 
 import Linear.V3
 --import Linear.Quaternion as Q

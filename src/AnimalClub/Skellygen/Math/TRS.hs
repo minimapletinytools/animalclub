@@ -1,9 +1,18 @@
+{-|
+Module      : TRS
+Description : types represented affine transformations in R3
+Copyright   : (c) Peter Lu, 2018
+License     : GPL-3
+Maintainer  : chippermonky@email.com
+Stability   : experimental
+
+-}
 
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
 
 
-module AnimalClub.Skellygen.TRS
+module AnimalClub.Skellygen.Math.TRS
   ( Translation
   , Rotation
   , Scale
@@ -21,8 +30,8 @@ module AnimalClub.Skellygen.TRS
   , invTRS
   ) where
 
-import AnimalClub.Skellygen.Hierarchical
-import qualified AnimalClub.Skellygen.Quaternion as QH
+import AnimalClub.Skellygen.Math.Hierarchical
+import qualified AnimalClub.Skellygen.Math.Quaternion as QH
 
 import Control.Lens
 import Control.DeepSeq

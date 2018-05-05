@@ -5,9 +5,8 @@ import Worm
 
 import AnimalClub.Animal.Animal
 import AnimalClub.Genetics
-import AnimalClub.Skellygen.AnimalScript
-import AnimalClub.Skellygen.Skellygen
-import AnimalClub.Skellygen.Mesh
+import AnimalClub.Skellygen
+import AnimalClub.Skellygen.Math.Mesh
 
 import Text.Printf (printf)
 import           Data.List                       (unfoldr)
@@ -20,11 +19,11 @@ import qualified Debug.Trace as Debug
 main :: IO ()
 main = do
     segs <- return 20
-    dnaPerSeg <- return 100
-    mutationChance <- return 0.003
+    dnaPerSeg <- return 160
+    mutationChance <- return 0.002
     litterSize <- return 10
     selectionSize <- return 3
-    generations <- return 100
+    generations <- return 500
     printf "Breeding worms. segs: %i, dna per seg: %i, mutation: %f \n" segs dnaPerSeg mutationChance :: IO ()
     printf "litter: %i, selection: %i, generations: %i \n" litterSize selectionSize generations :: IO ()
     gen1 <- getStdGen

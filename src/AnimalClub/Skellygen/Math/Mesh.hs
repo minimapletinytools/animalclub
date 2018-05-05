@@ -1,14 +1,14 @@
 {-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
 
 
-module AnimalClub.Skellygen.Mesh (
+module AnimalClub.Skellygen.Math.Mesh (
     Mesh(..),
     emptyMesh,
     meshToObj,
     transformMesh
 ) where
 
-import qualified AnimalClub.Skellygen.TRS as TRS
+import qualified AnimalClub.Skellygen.Math.TRS as TRS
 
 import Control.DeepSeq
 import GHC.Generics (Generic)

@@ -1,10 +1,10 @@
 {-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 {-# OPTIONS_GHC -fno-warn-unused-top-binds #-}
 
-import AnimalClub.Skellygen.AnimalScript
-import AnimalClub.Skellygen.Hierarchical
-import AnimalClub.Skellygen.Skellygen
-import AnimalClub.Skellygen.Mesh
+
+import AnimalClub.Skellygen
+import AnimalClub.Skellygen.Math.Hierarchical
+import AnimalClub.Skellygen.Math.Mesh
 import           Linear.V3
 
 

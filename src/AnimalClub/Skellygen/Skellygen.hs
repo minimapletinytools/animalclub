@@ -17,22 +17,22 @@ import qualified Linear.Quaternion as Q
 import Linear.V3
 import Linear.Vector
 
-import AnimalClub.Skellygen.Hierarchical
-import AnimalClub.Skellygen.Mesh
-import qualified AnimalClub.Skellygen.Quaternion as QH
-import qualified AnimalClub.Skellygen.TRS as TRS
+import AnimalClub.Skellygen.Math.Hierarchical
+import AnimalClub.Skellygen.Math.Mesh
+import qualified AnimalClub.Skellygen.Math.Quaternion as QH
+import qualified AnimalClub.Skellygen.Math.TRS as TRS
 
 import qualified Debug.Trace as Debug
 
+-- |
+-- prefixed names due to unfortunate naminig conflict with AnimalNode
 data SkellyNode = SkellyNode
     {
-    _debugName :: String
-    , _isRoot :: Bool
-    , _children :: [SkellyNode]
-    , _trs :: TRS.TRS Float -- ^ in parent space
-    , _attachRot :: TRS.Rotation Float -- ^ rotation to be applied to _trs in parent space
-    , _attachDistance :: Float -- ^ distance to extend _trs in direction of this node from parent node
-    , _thickness :: Float -- ^ base physical size of joint.
+    _snDebugName :: String
+    , _snIsRoot :: Bool
+    , _snChildren :: [SkellyNode]
+    , _snTrs :: TRS.TRS Float -- ^ in parent space
+    , _snThickness :: Float -- ^ base physical size of joint.
     } deriving (Show, Generic, NFData)
 
 --dummyParent :: SkellyNode
@@ -52,7 +52,7 @@ _normalize v = (1 / norm v) *^ v
 
 -- TODO it's better to write this function where it takes a
 -- thickness square at the origin facing neutral and apply
--- _trs skn to it
+-- the transformation to it
 generateSingleMeshLocal ::
        TRS.TRS Float -- ^ input node transform
     -> Float -- ^ input thickness
@@ -92,16 +92,16 @@ _generateMesh ::
     -> Float -- ^ parent thickness
     -> SkellyNode -- ^ node to generate
     -> Mesh -- ^ output mesh
-_generateMesh p_trs p_thick skn = selfMesh `mappend` mconcat cmeshes
+_generateMesh p_snTrs p_thick skn = selfMesh `mappend` mconcat cmeshes
   where
-    thick = _thickness skn
-    reltrs = _trs skn
-    --selfMesh = Debug.trace ("skn: " ++ (show (_debugName skn)) ++ " p: " ++ show (TRS._trans p_trs) ++ " c: " ++ show (TRS._trans reltrs)) $
-    --selfMesh = Debug.trace ("sknabs: " ++ show abstrs ++ " p: " ++ show (TRS._rot p_trs) ++ " c: " ++ show (TRS._rot reltrs)) $
+    thick = _snThickness skn
+    reltrs = _snTrs skn
+    --selfMesh = Debug.trace ("skn: " ++ (show (_snDebugName skn)) ++ " p: " ++ show (TRS._trans p_snTrs) ++ " c: " ++ show (TRS._trans reltrs)) $
+    --selfMesh = Debug.trace ("sknabs: " ++ show abstrs ++ " p: " ++ show (TRS._rot p_snTrs) ++ " c: " ++ show (TRS._rot reltrs)) $
     selfMesh =
-        if _isRoot skn then emptyMesh else transformMesh p_trs $ generateSingleMeshLocal reltrs thick p_thick
-    abstrs = p_trs >*> reltrs
-    cmeshes = map (_generateMesh abstrs thick) (_children skn)
+        if _snIsRoot skn then emptyMesh else transformMesh p_snTrs $ generateSingleMeshLocal reltrs thick p_thick
+    abstrs = p_snTrs >*> reltrs
+    cmeshes = map (_generateMesh abstrs thick) (_snChildren skn)
 
 generateMesh ::
        SkellyNode -- ^ input top level parent node
