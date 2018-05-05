@@ -37,6 +37,7 @@ default-extensions:
 - DeriveFoldable
 - DeriveTraversable
 - FlexibleInstances
+- ScopedTypeVariables
 
 dependencies:
 - base >= 4.7 && < 5

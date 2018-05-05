@@ -69,6 +69,9 @@ import Control.Exception.Base (assert)
 -- i.e. tell/push/pop are the only things that change state, all operations in between
 -- can be parallelized. c.f. haxl
 
+-- | StateT monad state type
+-- note (dna, []) is a valid State
+-- and assumes the Gene covers all of dna
 type GenotypeState = (DNA, [Gene])
 
 

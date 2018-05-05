@@ -6,6 +6,8 @@ import AnimalClub.Genetics
 import Test.QuickCheck
 import qualified Data.Vector.Unboxed         as V
 import           Data.Word
+import Data.List
+import Control.Monad.Writer (tell)
 import           System.Random
 
 import Debug.Trace
@@ -60,9 +62,27 @@ prop_gbRandomRanges dna' ranges' = pass where
     o = mconcat . map snd $ evalGeneBuilder (gbRandomRanges ranges >>= mapM (tellGene "")) (dna, []) dummyGen
     pass = all (\((mn,mx),x) -> (x >= mn) && (x <= mx)) $ zip ranges o
 
---prop_convergence :: Int -> Bool
---prop_convergence seed = where
---    dna =
+instance Monoid Float where
+    mempty = 0
+    mappend = (+)
+
+prop_convergence :: Int -> Bool
+prop_convergence seed = pass where
+    g1 = mkStdGen seed
+    (target :: Float, g2) = randomR (0,100) g1
+    maxGenerations = 200
+    dnaLength_ = 150
+    thresh = 0.2
+    original = makeRandDNA g1 dnaLength_
+    testgene :: Genotype StdGen Float ()
+    testgene = gbTypical (-20,120) >>= tell
+    test dna = evalGeneBuilder testgene (dna, []) (mkStdGen 0)
+    unfoldWormF (dnas, g) = if testResult < thresh then Nothing else Just $ (next_dnas, acc) where
+        acc@(next_dnas, _) = breedAndSelectPool (test) 0.003 g (10,2) dnas
+        testResult = test $ head next_dnas
+    generations = length $ take maxGenerations $ unfoldr unfoldWormF ([original], g2)
+    --pass = trace ("took " ++ show generations ++ " to pass " ++ (show seed) ++ "\n") $ generations < maxGenerations
+    pass = generations < maxGenerations
 
 
 

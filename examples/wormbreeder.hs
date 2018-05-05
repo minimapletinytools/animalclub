@@ -21,8 +21,8 @@ main = do
     segs <- return 20
     dnaPerSeg <- return 120
     mutationChance <- return 0.003
-    litterSize <- return 12
-    selectionSize <- return 3
+    litterSize <- return 100
+    selectionSize <- return 5
     generations <- return 600
     printf "Breeding worms. segs: %i, dna per seg: %i, mutation: %f \n" segs dnaPerSeg mutationChance :: IO ()
     printf "litter: %i, selection: %i, generations: %i \n" litterSize selectionSize generations :: IO ()

@@ -17,15 +17,16 @@ module AnimalClub.Genetics.DNA (
     dnaLength,
     breed,
     mutate,
-    breedAndMutate
+    breedAndMutate,
+    breedAndSelectPool
 ) where
 
 import           Data.Bits
 import qualified Data.Vector.Unboxed         as V
+import Data.List (mapAccumL, sortBy)
+import           Data.Ord                        (comparing)
 import           Data.Word
 import           System.Random
-
-import qualified Data.Array.Unboxed           as A
 
 import Control.Exception.Base (assert)
 
@@ -93,6 +94,25 @@ breedAndMutate chance g a b = dna where
     (g',g'') = split g
     dna' = breed g' a b
     dna = mutate chance g'' dna'
+
+breedAndSelectPool :: (RandomGen g) =>
+    (DNA -> Float) -- ^ test function
+    -> Float -- ^ mutation chance
+    -> g -- ^ random generator
+    -> (Int, Int) -- ^ size, winner
+    -> [DNA] -- ^ parent pool
+    -> ([DNA], g) -- ^ best children and new generator
+breedAndSelectPool testfn mChance g (size, winners) dnas = (r, outg) where
+    inputs = length dnas
+    (g', g'') = split g
+    moms = randomRs (0,inputs-1) g'
+    dads = randomRs (0,inputs-1) g''
+    parents = take size $ zip moms dads
+    (outg, worms) = mapAccumL (\acc_g x -> (snd (next acc_g), breedAndMutate mChance acc_g (dnas !! fst x ) (dnas !! snd x))) g parents
+    r = take winners $ sortBy (comparing testfn) worms
+    r' = head r
+
+
 
 {-
 mutateBit :: (RandomGen g) => g -> Word8 -> Word8
