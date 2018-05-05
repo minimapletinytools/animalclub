@@ -6,7 +6,7 @@ License     : GPL-3
 Maintainer  : chippermonky@email.com
 Stability   : experimental
 
-Monad for building genes using Genotype.
+Monad for building genes using Gene.
 -}
 
 --{-# LANGUAGE KindSignatures            #-} -- needed to explictly declare (n::Nat)
@@ -34,7 +34,7 @@ module AnimalClub.Genetics.GenomeBuilder (
     tellGenes,
     prefixGenes,
     -- * Gene building monad operations
-    -- | push and pop operate on the Genotype stack, while all other operations operate on the Genotype defined by the stack
+    -- | push and pop operate on the Gene stack, while all other operations operate on the Gene defined by the stack
     gbPush,
     gbPop,
     gbSum,
@@ -44,8 +44,8 @@ module AnimalClub.Genetics.GenomeBuilder (
     gbRandomRanges
 ) where
 
+import AnimalClub.Genetics.DNA
 import AnimalClub.Genetics.Gene
-import AnimalClub.Genetics.Genotype
 
 import Data.Text (Text, append)
 import qualified Data.Vector.Unboxed as V
@@ -60,7 +60,7 @@ import Control.Exception.Base (assert)
 --import Debug.Trace
 
 -- $monaddoclink
--- The 'FastGenebuilder' monad contains a state object holding the underlying DNA and a Genotype stack representing the current scope of operations.
+-- The 'FastGenebuilder' monad contains a state object holding the underlying DNA and a Gene stack representing the current scope of operations.
 -- The monad also contains a Writer monad used to outputted computed values from the state object allowing the user to organize the output in any way they please.
 -- All operations in this module treat the state DNA to be @read-only@ though there is no reason why it can't be modified
 
@@ -68,7 +68,7 @@ import Control.Exception.Base (assert)
 -- i.e. tell/push/pop are the only things that change state, all operations in between
 -- can be parallelized. c.f. haxl
 
-type GeneBuilderState = (DNA, [Genotype])
+type GeneBuilderState = (DNA, [Gene])
 
 
 -- | Writer monoid for either value or names
@@ -105,19 +105,19 @@ evalGeneBuilderT m s g = (flip evalRandT) g . execWriterT $ evalStateT m s
 evalGeneBuilder :: (RandomGen g, Monoid w) => GenomeBuilder g w a -> GeneBuilderState -> g -> w
 evalGeneBuilder m s g = runIdentity $ evalGeneBuilderT m s g
 
--- | internal helper function for folding Genotype hierarchies in the builder
-absoluteGenotype :: GeneBuilderState -> Genotype
-absoluteGenotype (dna, gtl) = foldr combineGenotype (Genotype 0 (4 * V.length dna)) gtl
+-- | internal helper function for folding Gene hierarchies in the builder
+absoluteGene :: GeneBuilderState -> Gene
+absoluteGene (dna, gtl) = foldr combineGene (Gene 0 (4 * V.length dna)) gtl
 
 
 
 -- | Push a genotype onto the hierarchy
-gbPush :: (Monoid w, Monad m) => Genotype -> GenomeBuilderT g w m ()
+gbPush :: (Monoid w, Monad m) => Gene -> GenomeBuilderT g w m ()
 gbPush gt = do
     (dna, gtl) <- get
     case gtl of
         (x:_) -> if geneLength gt >= geneLength x
-            then error "Prepending Genotype with length greater than length of last Genotype on stack"
+            then error "Prepending Gene with length greater than length of last Gene on stack"
             else return ()
         _ -> return ()
     put (dna, gt:gtl)
@@ -136,7 +136,7 @@ gbPop = do
 -- | Computation that adds all genes of current genotype
 gbSum :: (Monoid w, Monad m) => GenomeBuilderT g w m Int
 gbSum = state gbSum' where
-    gbSum' s = (tryGeneSum (fst s) (absoluteGenotype s), s)
+    gbSum' s = (tryGeneSum (fst s) (absoluteGene s), s)
 
 
 -- | Same as gbSum but normalized to [0,1]
@@ -144,9 +144,9 @@ gbNormalizedSum :: (Monoid w, Monad m) => GenomeBuilderT g w m Float
 gbNormalizedSum = do
     state gbSum' where
     gbSum' (dna, gtl) = (answer, (dna, gtl)) where
-        foldedGenotype = (absoluteGenotype (dna, gtl))
-        sum_ = tryGeneSum dna foldedGenotype
-        length_ = geneLength foldedGenotype
+        foldedGene = (absoluteGene (dna, gtl))
+        sum_ = tryGeneSum dna foldedGene
+        length_ = geneLength foldedGene
         answer = if length_ == 0 then 0 else 0.5 * fromIntegral sum_ / fromIntegral length_
 
 -- | Computation returns True if gbNormalizedSum > thresh, False otherwise
@@ -161,12 +161,12 @@ gbTypical :: (Monoid w, Monad m) => (Float, Float) -> GenomeBuilderT g w m Float
 gbTypical (min_, max_) = do
     (dna, gtl) <- get
     let
-        l = geneCount (absoluteGenotype (dna, gtl))
+        l = geneCount (absoluteGene (dna, gtl))
         ml = l `quot` 4
-    gbPush (Genotype 0 ml)
+    gbPush (Gene 0 ml)
     mult <- gbNormalizedSum
     gbPop
-    gbPush (Genotype ml (l-ml))
+    gbPush (Gene ml (l-ml))
     add <- gbNormalizedSum
     gbPop
     return $ min_ + mult * add * (max_ - min_)
@@ -178,7 +178,7 @@ gbRandomRanges ranges = do
     (dna, gtl) <- get
     let
         rl = length ranges
-        gl = geneCount (absoluteGenotype (dna, gtl))
+        gl = geneCount (absoluteGene (dna, gtl))
         l = gl `quot` rl
     return $ assert (l > 0) ()
     forM [0..(rl-1)] $ \i -> do
@@ -186,7 +186,7 @@ gbRandomRanges ranges = do
             (min_, max_) = ranges !! i
             short = gbNormalizedSum >>= \x -> return $ min_ + (max_-min_) * x
             long = gbTypical (min_, max_)
-        gbPush (Genotype (i*l) l)
+        gbPush (Gene (i*l) l)
         rn <- getRandom
         output <- if (l < 20 || rn) then short else long
         gbPop
@@ -207,6 +207,6 @@ GbRandomParams = GbRandomParams {
 }
 
 --g is of class RandomGen
---type RandomGenotypeSubBuilder = State (g, )
---gbRandom :: (RandomGen g, Monoid w, Monad m) => Genotype -> GbRandomParams -> GenomeBuilderT m Float
+--type RandomGeneSubBuilder = State (g, )
+--gbRandom :: (RandomGen g, Monoid w, Monad m) => Gene -> GbRandomParams -> GenomeBuilderT m Float
 -}

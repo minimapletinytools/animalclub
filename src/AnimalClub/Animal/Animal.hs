@@ -50,37 +50,37 @@ generateAnimalProperties afs = generateAnimalProperties_ parsedafs where
         Right x -> (x,v):xs
 
 -- TODO move to genetics
-data AutoGenotypeMethod =
+data AutoGeneMethod =
     Normal (Float, Float) Int
 
 
 -- | returns number of floats this genotype creates
-autoGenotypeCount :: AutoGenotypeMethod -> Int
-autoGenotypeCount (Normal _ x) = x
+autoGeneCount :: AutoGeneMethod -> Int
+autoGeneCount (Normal _ x) = x
 
 -- | returns relative amount of DNA this genotype should take up
 -- note, this is NOT the same as how many float values need to be produced
-autoGenotypeSize :: AutoGenotypeMethod -> Int
-autoGenotypeSize (Normal _ x) = x
+autoGeneSize :: AutoGeneMethod -> Int
+autoGeneSize (Normal _ x) = x
 
 -- | automatically create genome from given properties
 -- this version does no overlap. All properties are independent
 -- UNSTESTED
 makeGenomeFromPropertiesSimple ::
     Int -- ^ DNA length (vector length / 4)
-    -> [(T.Text, AutoGenotypeMethod)] -- ^ other properties
-    -> [(SkellyFunc, AutoGenotypeMethod)] -- ^ skellygen properties
+    -> [(T.Text, AutoGeneMethod)] -- ^ other properties
+    -> [(SkellyFunc, AutoGeneMethod)] -- ^ skellygen properties
     -> Genome StdGen AnimalFloats -- ^ output genome
 makeGenomeFromPropertiesSimple dnasz ops sfps = Genome dnasz geneBuilder (mkStdGen 0) where
     aps = map (over _1 Left) ops ++ map (over _1 Right) sfps
-    (total, withTotals) = mapAccumL (\acc (x,ag) -> (acc+autoGenotypeSize ag,(x, ag, acc))) 0 aps
+    (total, withTotals) = mapAccumL (\acc (x,ag) -> (acc+autoGeneSize ag,(x, ag, acc))) 0 aps
     geneBuilder = forM_ withTotals $ \(x, ag, start) -> do
         let
-            gtsize = (dnasz) * (autoGenotypeSize ag) `div` total
-        gbPush (Genotype start (start+gtsize))
+            gtsize = (dnasz) * (autoGeneSize ag) `div` total
+        gbPush (Gene start (start+gtsize))
         case ag of
             Normal range cnt -> forM_ [0..(cnt-1)] $ \n -> do
-                gbPush (Genotype (n * gtsize) (gtsize `div` cnt))
+                gbPush (Gene (n * gtsize) (gtsize `div` cnt))
                 val <- gbTypical range
                 tell [(x, [val])]
                 gbPop

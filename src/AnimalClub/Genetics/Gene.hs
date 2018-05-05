@@ -1,135 +1,88 @@
 {-|
 Module      : Gene
-Description : Functions and types pertaining to DNA and Genes
+Description : Functions and types pertaining to Genes
 Copyright   : (c) Peter Lu, 2018
 License     : GPL-3
 Maintainer  : chippermonky@email.com
 Stability   : experimental
 
-data types pertaining to DNA and Genes.
+Functions and types pertaining to Genes
 -}
+
+--{-# LANGUAGE AllowAmbiguousTypes       #-} -- defers type check until function is actually used, I don't really understand this
+--{-# LANGUAGE DataKinds                 #-} -- so I can do data ___ (n::Nat)
+--{-# LANGUAGE ExistentialQuantification #-}
+--{-# LANGUAGE ExplicitNamespaces        #-}
+--{-# LANGUAGE FlexibleContexts          #-}
+--{-# LANGUAGE FlexibleInstances         #-} -- needed for instance declaration, not sure why I need this
+--{-# LANGUAGE GADTs                     #-} -- so I can do fancy type constraints?
+--{-# LANGUAGE KindSignatures            #-} -- so i can do (n::Nat)
+--{-# LANGUAGE MultiParamTypeClasses     #-} -- so I can do a multiparameter type class
+--{-# LANGUAGE TypeOperators             #-}
+--{-# LANGUAGE RankNTypes                 #-}
+--{-# LANGUAGE InstanceSigs                 #-} -- idk
+--{-# LANGUAGE FunctionalDependencies                 #-} -- needed so we can do (KnownNat n) => ... in class Gene
+--{-# LANGUAGE ScopedTypeVariables                 #-} -- needed to access n of type sig in geneLength
 
 module AnimalClub.Genetics.Gene (
-    -- * Types
-    DNA,
-    -- * Functions
-    makeRandDNA,
-    dnaLength,
-    breed,
-    mutate,
-    breedAndMutate
+    Gene(..),
+    combineGene,
+    tryGeneSum,
+    geneLength,
+    geneSum
 ) where
 
+import           AnimalClub.Genetics.DNA
+
+import qualified Data.Vector.Unboxed as V
 import           Data.Bits
-import qualified Data.Vector.Unboxed         as V
-import           Data.Word
-import           System.Random
+import Data.List (foldl')
 
-import qualified Data.Array.Unboxed           as A
+-- | sum all bits of the genotype given its host DNA
+-- throws an error if genotype is not a valid index subset of the dna
+tryGeneSum ::  DNA -> Gene -> Int
+tryGeneSum dna gt =
+    if geneLength gt > dnaLength dna
+        then error $ "genotype longer than dna " ++ (show $ geneLength gt) ++ " " ++ (show $ 4 * V.length dna)
+        else geneSum dna gt
 
-import Control.Exception.Base (assert)
+-- | represents a genotype as a start index and length
+data Gene = Gene {
+    startGene :: Int,
+    geneCount :: Int
+} deriving (Show)
 
+-- | combine 2 Genes
+-- where gt2 is sub index set of gt1
+combineGene :: Gene -- ^ child
+    -> Gene -- ^ parent
+    -> Gene -- ^ combined
+combineGene gt2 gt1 =
+    if startGene gt2 + geneCount gt2 > geneCount gt1
+        then error $ "inconsistency " ++ (show $ gt1) ++ " " ++ (show $ gt2)
+        else Gene (startGene gt1 + startGene gt2) (geneCount gt2)
 
--- we don't use repa because repa uses Vector.Unboxed as its underlying type which is not tightly packed
+-- dna start count -> sum
+fastGeneSumInternal :: DNA -> Int -> Int -> Int
+fastGeneSumInternal dna start cnt = snd $ fastGeneSumInternal' dna start (cnt, 0)
 
--- TODO replace with UArray Word32 Bool D: it's tightly packed like you want... fml
---type DNA = A.UArray Bool
+-- dna start (count, accum) -> (remaining count, sub sum)
+fastGeneSumInternal' :: DNA -> Int -> (Int, Int) -> (Int, Int)
+fastGeneSumInternal' _ _ (0, a) = (0, a)
+fastGeneSumInternal' dna i (cnt, a) =
+    let
+        startIndex = i `quot` 4
+        startBitDiv2 = (i `mod` 4)
+        totalBits = min cnt (4 - startBitDiv2)
+        word = shiftR (dna V.! startIndex) (2 * startBitDiv2)
+        subSum = fromInteger . toInteger $ foldl' (\acc x -> acc + 0x01 .&. shiftR word x) 0x00 [0..(totalBits*2-1)]
+    in
+        fastGeneSumInternal' dna (i + totalBits) (cnt - totalBits, a + subSum)
 
--- | Allele4 is 4 single gene pairs (allele represented as a Word8
--- not really necessary type synonym tbh
-type Allele4 = Word8
+-- | length of genotype
+geneLength :: Gene -> Int
+geneLength = geneCount
 
--- | DNA host genetic information for all gene transformations in this module
--- DNA is an array of 'Allele4'
--- TODO switch to Repa if you really want parallelizable tightly packed bit arrays
--- TODO consider newtyping this
-type DNA = V.Vector Allele4
-
--- | number of single gene pairs in DNA
--- TODO rename to geneCount
-dnaLength :: DNA -> Int
-dnaLength dna = 4 * V.length dna
-
--- | create DNA of all 0s with given dnaLength
--- length must be multiple of 4
-makeZeroDNA :: Int -> DNA
-makeZeroDNA c = assert (c `mod` 4 == 0) $ V.generate c (const 0)
-
--- | create random DNA with given dnaLength
--- length must be multiple of 4
-makeRandDNA :: (RandomGen g) => g -> Int -> DNA
-makeRandDNA g c = assert (c `mod` 4 == 0) $ V.unfoldrN (c `div` 4) (Just . random) g
-
-breed :: (RandomGen g) => g -> DNA -> DNA -> DNA
-breed g a b = V.map choose (V.zip3 a b rands) where
-    rands = V.fromList . take (V.length a) . randoms $ g
-    choose :: (Allele4, Allele4, Word8) -> Allele4
-    choose (geneA, geneB, r) = mated where
-        ar = r .&. 0xAA
-        car = complement r .&. 0xAA
-        br = r .&. 0x55
-        cbr = complement r .&. 0x55
-        ac = (ar .&. geneA) .|. (car .&. unsafeShiftL geneA 1)
-        bc = (br .&. geneB) .|. (cbr .&. unsafeShiftR geneB 1)
-        mated = ac .|. bc
-
-mutateBit :: (RandomGen g) => g -> Word8 -> Word8
-mutateBit g x = unsafeShiftL 0x01 (fst $ randomR (0,7) g) `xor` x
-
--- |
--- chance is chance of one bit mutating per byte
-mutate :: (RandomGen g) => Float -> g -> DNA -> DNA
-mutate chance g dna = V.zipWith zipFunc rands dna where
-    -- TODO running random twice here is very inefficient
-    -- you really want to mapAccumL a single generator over the dna
-    -- and only evaluate a second time when there is a mutation
-    rands = V.fromList . take (V.length dna) . randoms $ g
-    zipFunc gx x = r where
-        (c, gx') = randomR (0,1.0) (mkStdGen gx)
-        r = if c < chance then mutateBit gx' x else x
-
-breedAndMutate :: (RandomGen g) => Float -> g -> DNA -> DNA -> DNA
-breedAndMutate chance g a b = dna where
-    (g',g'') = split g
-    dna' = breed g' a b
-    dna = mutate chance g'' dna'
-
-{-
-mutateBit :: (RandomGen g) => g -> Word8 -> Word8
-mutateBit g x = unsafeShiftL 0x01 (randomR (0,7) g) `xor` x
-
--- doesn't work because vector not traversable
--- |
--- chance is chance of one bit mutating per byte
-mutate :: (RandomGen g) => Float -> g -> DNA -> DNA
-mutate chance g dna = final where
-    mutateFunc acc x = (acc', r) where
-        (c, acc') = randomR (0,1.0) acc
-        r = if c < chance then mutateBit acc' x else x
-    (_, final) = mapAccumL mutateFunc g dna
--}
-
--- | breed 2 DNA together, randomly taking 1 allele from each parent for each gene
--- single genes come in bit pairs. Breeding a single gene randomly takes one bit from each parent gene
-{-breed :: (RandomGen gen) => gen -> DNA -> DNA -> DNA
-breed g a b = V.map choose (V.zip3 a b (V.generate (V.length a) id)) where
-    rands = randoms g
-    choose (geneA, geneB, n) = mated where
-        choiceL :: Word8
-        choiceL = foldl (\acc x -> shiftL acc 2 .|. if x then 0x01 else 0x02) 0x00 $ take 4 . drop (n*8) $ rands
-        choiceR :: Word8
-        choiceR = foldl (\acc x -> shiftL acc 2 .|. if x then 0x01 else 0x02) 0x00 $ take 4 . drop (n*8+4) $ rands
-        --shiftBitAtIndex: left or right, word to shift, index to shift
-        --e.g. shiftBitAtIndex True (01010101) 2 = (00001000)
-        shiftBitAtIndex::Bool -> Word8 -> Int -> Word8
-        shiftBitAtIndex l x i = if doShift then shifted else bits where
-            shiftDir = if l then shiftL else shiftR
-            doShift = (shiftL (if l then 0x02 else 0x01) i) .&. x == (0x00::Word8) --shift if we do not find a 1 in left position
-            bits::Word8
-            bits = x .&. (shiftL 0x03 i) --grab the desired bits in the desired spot
-            shifted = shiftDir bits 1 --shift the bytes
-        chosenL = foldl (\acc x -> acc .|. shiftBitAtIndex True (geneA .&. choiceL) x) 0x00 [2*x | x <-[0..3]]
-        chosenR = foldl (\acc x -> acc .|. shiftBitAtIndex False (geneB .&. choiceR) x) 0x00 [2*x | x <-[0..3]]
-        mated::Word8
-        --mated = trace (show chosenR ++ " " ++ show chosenL) $ chosenL .|. chosenR
-        mated = chosenL .|. chosenR-}
+-- | sum of all bit pairs in this genotype
+geneSum :: DNA -> Gene -> Int
+geneSum dna gt = fastGeneSumInternal dna (startGene gt) (geneCount gt)

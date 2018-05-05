@@ -1,6 +1,6 @@
 {-|
 Module      : Genetics
-Description : 
+Description :
 Copyright   : (c) Peter Lu, 2018
 License     : GPL-3
 Maintainer  : chippermonky@email.com
@@ -10,11 +10,11 @@ Includes all modules exposed by genetics
 -}
 
 module AnimalClub.Genetics (
+    module AnimalClub.Genetics.DNA,
     module AnimalClub.Genetics.Gene,
-    module AnimalClub.Genetics.Genotype,
     module AnimalClub.Genetics.GenomeBuilder
-) where 
+) where
 
+import AnimalClub.Genetics.DNA
 import AnimalClub.Genetics.Gene
-import AnimalClub.Genetics.Genotype
 import AnimalClub.Genetics.GenomeBuilder

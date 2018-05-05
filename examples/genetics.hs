@@ -1,8 +1,5 @@
 
-import           AnimalClub.Genetics.GenomeBuilder
-import           AnimalClub.Genetics.Gene
-import           AnimalClub.Genetics.Genotype()
-
+import           AnimalClub.Genetics
 
 import           Control.Monad
 import qualified Data.Vector.Unboxed                 as V
@@ -43,4 +40,4 @@ main = do
 
 --gbExample = do
     --make a genotype based on a percentage of current
-    --makeGenotype 0.25 >>= gbPush
+    --makeGene 0.25 >>= gbPush

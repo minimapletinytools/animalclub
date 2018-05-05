@@ -33,11 +33,11 @@ wormGenome' :: (RandomGen g) => Int -> Int -> GenomeBuilder g AnimalFloats ()
 wormGenome' segs dnaPerSeg = do forM_ [0..(segs-1)] wormSeg where
     dnaPerSegOver2 = dnaPerSeg `div` 2
     wormSeg i = do
-        gbPush $ Genotype (dnaPerSeg*i) dnaPerSegOver2
+        gbPush $ Gene (dnaPerSeg*i) dnaPerSegOver2
         x <- gbNormalizedSum
         tellBoneFunc (Bone' (textFromInt i)) Thickness [x*8-3] --[x*0.5+0.75]
         gbPop
-        gbPush $ Genotype (dnaPerSeg*i + dnaPerSegOver2) dnaPerSegOver2 -- overlaps with thickness why not :D
+        gbPush $ Gene (dnaPerSeg*i + dnaPerSegOver2) dnaPerSegOver2 -- overlaps with thickness why not :D
         orients <- gbRandomRanges (replicate 3 (-1.5,1.5))
         tellBoneFunc (Bone' (textFromInt i)) Orientation orients
         gbPop

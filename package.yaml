@@ -59,8 +59,8 @@ library:
   exposed-modules:
     # Genetics
     - AnimalClub.Genetics
+    - AnimalClub.Genetics.DNA
     - AnimalClub.Genetics.Gene
-    - AnimalClub.Genetics.Genotype
     - AnimalClub.Genetics.GenomeBuilder
     # Skellygen
     - AnimalClub.Skellygen
