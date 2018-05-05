@@ -11,7 +11,6 @@ data types pertaining to DNA and Genes.
 
 module AnimalClub.Genetics.Gene (
     -- * Types
-    Gene4,
     DNA,
     -- * Functions
     makeRandDNA,
@@ -36,13 +35,15 @@ import Control.Exception.Base (assert)
 -- TODO replace with UArray Word32 Bool D: it's tightly packed like you want... fml
 --type DNA = A.UArray Bool
 
--- | Gene4 is 4 single gene pairs (allele represented as a Word8
-type Gene4 = Word8
+-- | Allele4 is 4 single gene pairs (allele represented as a Word8
+-- not really necessary type synonym tbh
+type Allele4 = Word8
 
 -- | DNA host genetic information for all gene transformations in this module
--- DNA is an array of 'Gene4'
+-- DNA is an array of 'Allele4'
 -- TODO switch to Repa if you really want parallelizable tightly packed bit arrays
-type DNA = V.Vector Gene4
+-- TODO consider newtyping this
+type DNA = V.Vector Allele4
 
 -- | number of single gene pairs in DNA
 -- TODO rename to geneCount
@@ -62,7 +63,7 @@ makeRandDNA g c = assert (c `mod` 4 == 0) $ V.unfoldrN (c `div` 4) (Just . rando
 breed :: (RandomGen g) => g -> DNA -> DNA -> DNA
 breed g a b = V.map choose (V.zip3 a b rands) where
     rands = V.fromList . take (V.length a) . randoms $ g
-    choose :: (Gene4, Gene4, Word8) -> Gene4
+    choose :: (Allele4, Allele4, Word8) -> Allele4
     choose (geneA, geneB, r) = mated where
         ar = r .&. 0xAA
         car = complement r .&. 0xAA
