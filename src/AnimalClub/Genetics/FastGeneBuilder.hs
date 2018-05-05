@@ -1,6 +1,6 @@
 {-|
 Module      : FastGeneBuilder
-Description : Monad for building genes 
+Description : Monad for building genes
 Copyright   : (c) Peter Lu, 2018
 License     : GPL-3
 Maintainer  : chippermonky@email.com
@@ -10,7 +10,7 @@ Monad for building genes using FastGenotype.
 -}
 
 --{-# LANGUAGE KindSignatures            #-} -- needed to explictly declare (n::Nat)
---{-# LANGUAGE ExistentialQuantification #-} -- forall 
+--{-# LANGUAGE ExistentialQuantification #-} -- forall
 --{-# LANGUAGE ExplicitNamespaces        #-} -- so I can import type (<=)
 --{-# LANGUAGE TypeOperators             #-} -- so I can do (m <= n) on types
 --{-# LANGUAGE DataKinds                 #-} -- so I can do data ___ (n::Nat)
@@ -26,7 +26,7 @@ module AnimalClub.Genetics.FastGeneBuilder (
     FastGeneBuilderT,
     FastGeneBuilder,
     -- ** Monad evalution functions
-    evalGeneBuilderT, 
+    evalGeneBuilderT,
     evalGeneBuilder,
     -- * Writer monad operations using NamedFloats
     NamedFloats,
@@ -40,27 +40,26 @@ module AnimalClub.Genetics.FastGeneBuilder (
     gbSum,
     gbNormalizedSum,
     gbNormalizedThresh,
-    gbTypical, 
+    gbTypical,
     gbRandomRanges
-) where 
+) where
 
 import AnimalClub.Genetics.Gene
 import AnimalClub.Genetics.Genotype
 
-import Data.Text (Text(..), append)
-import Data.Either (Either(..))
-import qualified Data.Vector.Unboxed as V 
+import Data.Text (Text, append)
+import qualified Data.Vector.Unboxed as V
 import Control.Monad.Writer.Lazy (WriterT, tell, pass, execWriterT)
 import Control.Monad.State.Lazy (StateT, evalStateT, put, get, state)
 import Control.Monad.Identity (Identity, runIdentity)
 import Control.Monad.Random (RandT, evalRandT, getRandom)
 import Control.Monad (forM)
-import System.Random (RandomGen, Random)
+import System.Random (RandomGen)
 import Control.Exception.Base (assert)
 
 --import Debug.Trace
 
--- $monaddoclink 
+-- $monaddoclink
 -- The 'FastGenebuilder' monad contains a state object holding the underlying DNA and a Genotype stack representing the current scope of operations.
 -- The monad also contains a Writer monad used to outputted computed values from the state object allowing the user to organize the output in any way they please.
 -- All operations in this module treat the state DNA to be @read-only@ though there is no reason why it can't be modified
@@ -68,7 +67,7 @@ import Control.Exception.Base (assert)
 -- TODO write ParStateT Monad that takes advantage of applicative do to parallelize state transformations
 -- i.e. tell/push/pop are the only things that change state, all operations in between
 -- can be parallelized. c.f. haxl
- 
+
 type GeneBuilderState = (DNA, [FastGenotype])
 
 
@@ -84,17 +83,17 @@ type FastGeneBuilderT g w m = StateT GeneBuilderState (WriterT w (RandT g m))
 type FastGeneBuilder g w = FastGeneBuilderT g w Identity
 
 -- | Write a single gene values in the builder
-tellGene :: (RandomGen g, Monad m) => Text -> Float -> FastGeneBuilderT g NamedFloats m ()
+tellGene :: (Monad m) => Text -> Float -> FastGeneBuilderT g NamedFloats m ()
 tellGene s v = tellGenes s [v]
 
 -- | Write several gene values in the builder
-tellGenes :: (RandomGen g, Monad m) => Text -> [Float] -> FastGeneBuilderT g NamedFloats m ()
+tellGenes :: (Monad m) => Text -> [Float] -> FastGeneBuilderT g NamedFloats m ()
 tellGenes s v = tell $ [(s, v)]
 
--- | prefix all output 
+-- | prefix all output
 -- good for duplicating output for L/R or something like that
-prefixGenes :: (RandomGen g, Monad m) => Text -> FastGeneBuilderT g [(Text,b)] m a -> FastGeneBuilderT g [(Text,b)] m a
-prefixGenes s m = do 
+prefixGenes :: (Monad m) => Text -> FastGeneBuilderT g [(Text,b)] m a -> FastGeneBuilderT g [(Text,b)] m a
+prefixGenes s m = do
     a <- m
     pass . return $ (a, map (\(x,v) -> (append x s, v)))
 
@@ -113,80 +112,80 @@ absoluteGenotype (dna, gtl) = foldr combineFastGenotype (FastGenotype 0 (4 * V.l
 
 
 -- | Push a genotype onto the hierarchy
-gbPush :: (RandomGen g, Monoid w, Monad m) => FastGenotype -> FastGeneBuilderT g w m ()
+gbPush :: (Monoid w, Monad m) => FastGenotype -> FastGeneBuilderT g w m ()
 gbPush gt = do
     (dna, gtl) <- get
-    case gtl of 
-        (x:xs) -> if geneLength gt >= geneLength x 
-            then error "Prepending Genotype with length greater than length of last Genotype on stack" 
+    case gtl of
+        (x:_) -> if geneLength gt >= geneLength x
+            then error "Prepending Genotype with length greater than length of last Genotype on stack"
             else return ()
         _ -> return ()
     put (dna, gt:gtl)
     return ()
 
 -- | Pop a genotype from the hierarchy
-gbPop :: (RandomGen g, Monoid w, Monad m) => FastGeneBuilderT g w m ()
+gbPop :: (Monoid w, Monad m) => FastGeneBuilderT g w m ()
 gbPop = do
     (dna, gtl) <- get
-    case gtl of 
-        (x:xs) -> put (dna, xs)
+    case gtl of
+        (_:xs) -> put (dna, xs)
         _ -> error "Popping an empty genotype stack."
     return ()
 
 
 -- | Computation that adds all genes of current genotype
-gbSum :: (RandomGen g, Monoid w, Monad m) => FastGeneBuilderT g w m Int
+gbSum :: (Monoid w, Monad m) => FastGeneBuilderT g w m Int
 gbSum = state gbSum' where
     gbSum' s = (tryGeneSum (fst s) (absoluteGenotype s), s)
 
 
 -- | Same as gbSum but normalized to [0,1]
-gbNormalizedSum :: (RandomGen g, Monoid w, Monad m) => FastGeneBuilderT g w m Float
+gbNormalizedSum :: (Monoid w, Monad m) => FastGeneBuilderT g w m Float
 gbNormalizedSum = do
     state gbSum' where
     gbSum' (dna, gtl) = (answer, (dna, gtl)) where
         foldedGenotype = (absoluteGenotype (dna, gtl))
-        sum = tryGeneSum dna foldedGenotype
-        length = geneLength foldedGenotype
-        answer = if length == 0 then 0 else 0.5 * fromIntegral sum / fromIntegral length
+        sum_ = tryGeneSum dna foldedGenotype
+        length_ = geneLength foldedGenotype
+        answer = if length_ == 0 then 0 else 0.5 * fromIntegral sum_ / fromIntegral length_
 
 -- | Computation returns True if gbNormalizedSum > thresh, False otherwise
-gbNormalizedThresh :: (RandomGen g, Monoid w, Monad m) => Float -> FastGeneBuilderT g w m Bool
+gbNormalizedThresh :: (Monoid w, Monad m) => Float -> FastGeneBuilderT g w m Bool
 gbNormalizedThresh thresh = do
     s <- gbNormalizedSum
     return $ s > thresh
 
 -- | Computation that sums a gene in two parts, treating the first part as a multiplier of the second part
--- first 1/4 is multiplicative, last 3/4 is additive. 
-gbTypical :: (RandomGen g, Monoid w, Monad m) => (Float, Float) -> FastGeneBuilderT g w m Float
-gbTypical (min, max) = do
+-- first 1/4 is multiplicative, last 3/4 is additive.
+gbTypical :: (Monoid w, Monad m) => (Float, Float) -> FastGeneBuilderT g w m Float
+gbTypical (min_, max_) = do
     (dna, gtl) <- get
-    let 
+    let
         l = geneCount (absoluteGenotype (dna, gtl))
         ml = l `quot` 4
     gbPush (FastGenotype 0 ml)
-    mult <- gbNormalizedSum 
+    mult <- gbNormalizedSum
     gbPop
     gbPush (FastGenotype ml (l-ml))
     add <- gbNormalizedSum
     gbPop
-    return $ min + mult * add * (max - min)
+    return $ min_ + mult * add * (max_ - min_)
 
 
 -- | Computation that randomly creates several genes fitting the input range
 gbRandomRanges :: (RandomGen g, Monoid w, Monad m) => [(Float, Float)] -> FastGeneBuilderT g w m [Float]
 gbRandomRanges ranges = do
     (dna, gtl) <- get
-    let 
+    let
         rl = length ranges
         gl = geneCount (absoluteGenotype (dna, gtl))
         l = gl `quot` rl
     return $ assert (l > 0) ()
     forM [0..(rl-1)] $ \i -> do
-        let 
-            (min, max) = ranges !! i
-            short = gbNormalizedSum >>= \x -> return $ min + (max-min) * x
-            long = gbTypical (min, max)
+        let
+            (min_, max_) = ranges !! i
+            short = gbNormalizedSum >>= \x -> return $ min_ + (max_-min_) * x
+            long = gbTypical (min_, max_)
         gbPush (FastGenotype (i*l) l)
         rn <- getRandom
         output <- if (l < 20 || rn) then short else long
@@ -203,7 +202,7 @@ gbRandomRanges ranges = do
 -- TODO random stuff
 GbRandomParams = GbRandomParams {
     maxDepth :: Int,
-    maxNumChildren :: Int 
+    maxNumChildren :: Int
     --random type weight parameter
 }
 
