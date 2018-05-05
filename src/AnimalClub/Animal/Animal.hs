@@ -77,10 +77,10 @@ makeGenomeFromPropertiesSimple dnasz ops sfps = Genome dnasz geneBuilder (mkStdG
     geneBuilder = forM_ withTotals $ \(x, ag, start) -> do
         let
             gtsize = (dnasz) * (autoGenotypeSize ag) `div` total
-        gbPush (FastGenotype start (start+gtsize))
+        gbPush (Genotype start (start+gtsize))
         case ag of
             Normal range cnt -> forM_ [0..(cnt-1)] $ \n -> do
-                gbPush (FastGenotype (n * gtsize) (gtsize `div` cnt))
+                gbPush (Genotype (n * gtsize) (gtsize `div` cnt))
                 val <- gbTypical range
                 tell [(x, [val])]
                 gbPop

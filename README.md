@@ -6,7 +6,7 @@ The _Animal Club_  _Genetics_ module is a general purpose genetic expression lib
 
 _Genotype_ is a computation on an indexed subset of _DNA_. _AC_ includes several basic computations for either strategically or randomly creating these computations.
 
-The _FastGeneBuilder_ (to be renamed _GeneBuilder_) monad is a Writer / State monad for creating _Genotypes_. The State portion contains hierarchical info about what part of the DNA to operate on. The writer portion is where the user writes out computed values with string labels to be read by another program. A typical usage might look something like this:
+The _GeneBuilder_ monad is a Writer / State monad for creating _Genotypes_. The State portion contains hierarchical info about what part of the DNA to operate on. The writer portion is where the user writes out computed values with string labels to be read by another program. A typical usage might look something like this:
 
 ```haskell
 import           AnimalClub.Genetics

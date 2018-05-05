@@ -6,7 +6,7 @@ License     : GPL-3
 Maintainer  : chippermonky@email.com
 Stability   : experimental
 
-Monad for building genes using FastGenotype.
+Monad for building genes using Genotype.
 -}
 
 --{-# LANGUAGE KindSignatures            #-} -- needed to explictly declare (n::Nat)
@@ -68,7 +68,7 @@ import Control.Exception.Base (assert)
 -- i.e. tell/push/pop are the only things that change state, all operations in between
 -- can be parallelized. c.f. haxl
 
-type GeneBuilderState = (DNA, [FastGenotype])
+type GeneBuilderState = (DNA, [Genotype])
 
 
 -- | Writer monoid for either value or names
@@ -106,13 +106,13 @@ evalGeneBuilder :: (RandomGen g, Monoid w) => FastGeneBuilder g w a -> GeneBuild
 evalGeneBuilder m s g = runIdentity $ evalGeneBuilderT m s g
 
 -- | internal helper function for folding Genotype hierarchies in the builder
-absoluteGenotype :: GeneBuilderState -> FastGenotype
-absoluteGenotype (dna, gtl) = foldr combineFastGenotype (FastGenotype 0 (4 * V.length dna)) gtl
+absoluteGenotype :: GeneBuilderState -> Genotype
+absoluteGenotype (dna, gtl) = foldr combineGenotype (Genotype 0 (4 * V.length dna)) gtl
 
 
 
 -- | Push a genotype onto the hierarchy
-gbPush :: (Monoid w, Monad m) => FastGenotype -> FastGeneBuilderT g w m ()
+gbPush :: (Monoid w, Monad m) => Genotype -> FastGeneBuilderT g w m ()
 gbPush gt = do
     (dna, gtl) <- get
     case gtl of
@@ -163,10 +163,10 @@ gbTypical (min_, max_) = do
     let
         l = geneCount (absoluteGenotype (dna, gtl))
         ml = l `quot` 4
-    gbPush (FastGenotype 0 ml)
+    gbPush (Genotype 0 ml)
     mult <- gbNormalizedSum
     gbPop
-    gbPush (FastGenotype ml (l-ml))
+    gbPush (Genotype ml (l-ml))
     add <- gbNormalizedSum
     gbPop
     return $ min_ + mult * add * (max_ - min_)
@@ -186,7 +186,7 @@ gbRandomRanges ranges = do
             (min_, max_) = ranges !! i
             short = gbNormalizedSum >>= \x -> return $ min_ + (max_-min_) * x
             long = gbTypical (min_, max_)
-        gbPush (FastGenotype (i*l) l)
+        gbPush (Genotype (i*l) l)
         rn <- getRandom
         output <- if (l < 20 || rn) then short else long
         gbPop
@@ -208,5 +208,5 @@ GbRandomParams = GbRandomParams {
 
 --g is of class RandomGen
 --type RandomGenotypeSubBuilder = State (g, )
---gbRandom :: (RandomGen g, Monoid w, Monad m) => FastGenotype -> GbRandomParams -> FastGeneBuilderT m Float
+--gbRandom :: (RandomGen g, Monoid w, Monad m) => Genotype -> GbRandomParams -> FastGeneBuilderT m Float
 -}

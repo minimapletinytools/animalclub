@@ -25,8 +25,8 @@ Functions and types pertaining to Genotypes
 --{-# LANGUAGE ScopedTypeVariables                 #-} -- needed to access n of type sig in geneLength
 
 module AnimalClub.Genetics.Genotype (
-    FastGenotype(..),
-    combineFastGenotype,
+    Genotype(..),
+    combineGenotype,
     tryGeneSum,
     geneLength,
     geneSum
@@ -40,27 +40,27 @@ import Data.List (foldl')
 
 -- | sum all bits of the genotype given its host DNA
 -- throws an error if genotype is not a valid index subset of the dna
-tryGeneSum ::  DNA -> FastGenotype -> Int
+tryGeneSum ::  DNA -> Genotype -> Int
 tryGeneSum dna gt =
     if geneLength gt > dnaLength dna
         then error $ "genotype longer than dna " ++ (show $ geneLength gt) ++ " " ++ (show $ 4 * V.length dna)
         else geneSum dna gt
 
 -- | represents a genotype as a start index and length
-data FastGenotype = FastGenotype {
+data Genotype = Genotype {
     startGene :: Int,
     geneCount :: Int
 } deriving (Show)
 
--- | combine 2 FastGenotypes
+-- | combine 2 Genotypes
 -- where gt2 is sub index set of gt1
-combineFastGenotype :: FastGenotype -- ^ child
-    -> FastGenotype -- ^ parent
-    -> FastGenotype -- ^ combined
-combineFastGenotype gt2 gt1 =
+combineGenotype :: Genotype -- ^ child
+    -> Genotype -- ^ parent
+    -> Genotype -- ^ combined
+combineGenotype gt2 gt1 =
     if startGene gt2 + geneCount gt2 > geneCount gt1
         then error $ "inconsistency " ++ (show $ gt1) ++ " " ++ (show $ gt2)
-        else FastGenotype (startGene gt1 + startGene gt2) (geneCount gt2)
+        else Genotype (startGene gt1 + startGene gt2) (geneCount gt2)
 
 -- dna start count -> sum
 fastGeneSumInternal :: DNA -> Int -> Int -> Int
@@ -80,9 +80,9 @@ fastGeneSumInternal' dna i (cnt, a) =
         fastGeneSumInternal' dna (i + totalBits) (cnt - totalBits, a + subSum)
 
 -- | length of genotype
-geneLength :: FastGenotype -> Int
+geneLength :: Genotype -> Int
 geneLength = geneCount
 
 -- | sum of all bit pairs in this genotype
-geneSum :: DNA -> FastGenotype -> Int
+geneSum :: DNA -> Genotype -> Int
 geneSum dna gt = fastGeneSumInternal dna (startGene gt) (geneCount gt)
