@@ -19,11 +19,11 @@ import qualified Debug.Trace as Debug
 main :: IO ()
 main = do
     segs <- return 20
-    dnaPerSeg <- return 100
-    mutationChance <- return 0.002
-    litterSize <- return 10
+    dnaPerSeg <- return 120
+    mutationChance <- return 0.003
+    litterSize <- return 12
     selectionSize <- return 3
-    generations <- return 1000
+    generations <- return 600
     printf "Breeding worms. segs: %i, dna per seg: %i, mutation: %f \n" segs dnaPerSeg mutationChance :: IO ()
     printf "litter: %i, selection: %i, generations: %i \n" litterSize selectionSize generations :: IO ()
     gen1 <- getStdGen

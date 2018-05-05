@@ -39,6 +39,7 @@ module AnimalClub.Genetics.Genotype (
     gbPop,
     gbSum,
     gbNormalizedSum,
+    gbSumRange,
     gbNormalizedThresh,
     gbTypical,
     gbRandomRanges
@@ -150,10 +151,18 @@ gbNormalizedSum = do
         answer = if length_ == 0 then 0 else 0.5 * fromIntegral sum_ / fromIntegral length_
 
 -- | Computation returns True if gbNormalizedSum > thresh, False otherwise
+gbSumRange :: (Monoid w, Monad m) => (Float,Float) -> GenotypeT g w m Float
+gbSumRange (min',max') = do
+    s <- gbNormalizedSum
+    return $ min' + s / (max'-min')
+
+-- | Computation returns True if gbNormalizedSum > thresh, False otherwise
 gbNormalizedThresh :: (Monoid w, Monad m) => Float -> GenotypeT g w m Bool
 gbNormalizedThresh thresh = do
     s <- gbNormalizedSum
     return $ s > thresh
+
+
 
 -- | Computation that sums a gene in two parts, treating the first part as a multiplier of the second part
 -- first 1/4 is multiplicative, last 3/4 is additive.
