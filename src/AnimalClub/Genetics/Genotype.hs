@@ -25,10 +25,11 @@ Functions and types pertaining to Genotypes
 --{-# LANGUAGE ScopedTypeVariables                 #-} -- needed to access n of type sig in geneLength
 
 module AnimalClub.Genetics.Genotype (
-    Genotype(..),
     FastGenotype(..),
     combineFastGenotype,
-    tryGeneSum
+    tryGeneSum,
+    geneLength,
+    geneSum
 ) where
 
 import           AnimalClub.Genetics.Gene
@@ -37,19 +38,9 @@ import qualified Data.Vector.Unboxed as V
 import           Data.Bits
 import Data.List (foldl')
 
--- | interface for Genotype, a hierarchical index sub sets of DNA
--- currently this class only has one instance.
--- in principle, all genotype operations could be implementation independent
-class Genotype gt where
-    -- | length of genotype
-    geneLength :: gt -> Int
-    -- | sum of all bit pairs in this genotype
-    geneSum :: DNA -> gt -> Int
-    --combine :: (Genotype m gt2, m <= n) => gt -> gt2 -> gt2
-
 -- | sum all bits of the genotype given its host DNA
 -- throws an error if genotype is not a valid index subset of the dna
-tryGeneSum :: (Genotype g) => DNA -> g -> Int
+tryGeneSum ::  DNA -> FastGenotype -> Int
 tryGeneSum dna gt =
     if geneLength gt > dnaLength dna
         then error $ "genotype longer than dna " ++ (show $ geneLength gt) ++ " " ++ (show $ 4 * V.length dna)
@@ -88,22 +79,10 @@ fastGeneSumInternal' dna i (cnt, a) =
     in
         fastGeneSumInternal' dna (i + totalBits) (cnt - totalBits, a + subSum)
 
-instance Genotype FastGenotype where
-    geneSum dna gt = fastGeneSumInternal dna (startGene gt) (geneCount gt)
-    geneLength = geneCount
+-- | length of genotype
+geneLength :: FastGenotype -> Int
+geneLength = geneCount
 
-
--- | NOT SUPPORTED YET AND PROBABLY NEVER WILL BE
--- it's nice in principle but the performance is terrible
--- and I doubt it adds any unique expressions
--- we could do
--- combine :: (Genotype g) => g -> g -> GeneralGenotype
--- but this would incur a performance hit in the case of
--- FastGenotype -> FastGenotype -> GeneralGenotype
-data GeneralGenotype = GeneralGenotype {
-    indices :: V.Vector Int
-}
-
-instance Genotype GeneralGenotype where
-    geneSum dna = fromInteger . toInteger . V.sum . V.map (\i -> dna V.! i) . indices
-    geneLength = V.length . indices
+-- | sum of all bit pairs in this genotype
+geneSum :: DNA -> FastGenotype -> Int
+geneSum dna gt = fastGeneSumInternal dna (startGene gt) (geneCount gt)

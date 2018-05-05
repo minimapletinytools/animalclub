@@ -18,7 +18,6 @@ module AnimalClub.Animal.Animal (
 
 import qualified Data.Text as T
 import Data.Monoid (Monoid)
-import Data.Either
 import Data.List (foldl', mapAccumL)
 import AnimalClub.Genetics
 import AnimalClub.Skellygen.AnimalNode
@@ -31,7 +30,7 @@ import Control.Monad.Writer (tell)
 
 type AnimalFloats = [(Either T.Text SkellyFunc, [Float])]
 
-tellBoneFunc :: (RandomGen g, Monad m) => BoneName' -> BoneMethod -> [Float] -> FastGeneBuilderT g AnimalFloats m ()
+tellBoneFunc :: (Monad m) => BoneName' -> BoneMethod -> [Float] -> FastGeneBuilderT g AnimalFloats m ()
 tellBoneFunc bn bm v = tell [(Right (SkellyFunc bn bm), v)]
 
 -- | DNA length, builder, random gen to seed builder
@@ -66,9 +65,9 @@ autoGenotypeSize (Normal _ x) = x
 
 -- | automatically create genome from given properties
 -- this version does no overlap. All properties are independent
--- UNSTESTED 
+-- UNSTESTED
 makeGenomeFromPropertiesSimple ::
-    Int -- ^ DNA length
+    Int -- ^ DNA length (vector length / 4)
     -> [(T.Text, AutoGenotypeMethod)] -- ^ other properties
     -> [(SkellyFunc, AutoGenotypeMethod)] -- ^ skellygen properties
     -> Genome StdGen AnimalFloats -- ^ output genome
