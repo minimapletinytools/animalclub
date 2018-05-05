@@ -61,7 +61,7 @@ library:
     - AnimalClub.Genetics
     - AnimalClub.Genetics.Gene
     - AnimalClub.Genetics.Genotype
-    - AnimalClub.Genetics.FastGeneBuilder
+    - AnimalClub.Genetics.GenomeBuilder
     # Skellygen
     - AnimalClub.Skellygen
     - AnimalClub.Skellygen.AnimalScript

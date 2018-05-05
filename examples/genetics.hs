@@ -1,5 +1,5 @@
 
-import           AnimalClub.Genetics.FastGeneBuilder
+import           AnimalClub.Genetics.GenomeBuilder
 import           AnimalClub.Genetics.Gene
 import           AnimalClub.Genetics.Genotype()
 
@@ -10,7 +10,7 @@ import           Data.Word
 import           System.Random
 
 
-gbExample :: (RandomGen g, Monad m) => FastGeneBuilderT g NamedFloats m ()
+gbExample :: (RandomGen g, Monad m) => GenomeBuilderT g NamedFloats m ()
 gbExample = do
     gbNormalizedSum >>= tellGene "first"
     gbNormalizedThresh 0.5 >>= tellGene "second" . (\x -> if x then 1 else 0)

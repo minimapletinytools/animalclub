@@ -1,5 +1,5 @@
 {-|
-Module      : FastGeneBuilder
+Module      : GenomeBuilder
 Description : Monad for building genes
 Copyright   : (c) Peter Lu, 2018
 License     : GPL-3
@@ -20,11 +20,11 @@ Monad for building genes using Genotype.
 {-# LANGUAGE MultiParamTypeClasses     #-} -- so I can do a multiparameter type class
 
 
-module AnimalClub.Genetics.FastGeneBuilder (
+module AnimalClub.Genetics.GenomeBuilder (
     -- * Monads
     -- $monaddoclink
-    FastGeneBuilderT,
-    FastGeneBuilder,
+    GenomeBuilderT,
+    GenomeBuilder,
     -- ** Monad evalution functions
     evalGeneBuilderT,
     evalGeneBuilder,
@@ -78,31 +78,31 @@ type NamedFloats = [(Text, [Float])]
 
 -- allow output type to be parameterized please
 -- | Monad transformer for building genes
-type FastGeneBuilderT g w m = StateT GeneBuilderState (WriterT w (RandT g m))
+type GenomeBuilderT g w m = StateT GeneBuilderState (WriterT w (RandT g m))
 -- | Monad for building genes
-type FastGeneBuilder g w = FastGeneBuilderT g w Identity
+type GenomeBuilder g w = GenomeBuilderT g w Identity
 
 -- | Write a single gene values in the builder
-tellGene :: (Monad m) => Text -> Float -> FastGeneBuilderT g NamedFloats m ()
+tellGene :: (Monad m) => Text -> Float -> GenomeBuilderT g NamedFloats m ()
 tellGene s v = tellGenes s [v]
 
 -- | Write several gene values in the builder
-tellGenes :: (Monad m) => Text -> [Float] -> FastGeneBuilderT g NamedFloats m ()
+tellGenes :: (Monad m) => Text -> [Float] -> GenomeBuilderT g NamedFloats m ()
 tellGenes s v = tell $ [(s, v)]
 
 -- | prefix all output
 -- good for duplicating output for L/R or something like that
-prefixGenes :: (Monad m) => Text -> FastGeneBuilderT g [(Text,b)] m a -> FastGeneBuilderT g [(Text,b)] m a
+prefixGenes :: (Monad m) => Text -> GenomeBuilderT g [(Text,b)] m a -> GenomeBuilderT g [(Text,b)] m a
 prefixGenes s m = do
     a <- m
     pass . return $ (a, map (\(x,v) -> (append x s, v)))
 
 -- | evalute the builder and obtain its output
-evalGeneBuilderT :: (RandomGen g, Monoid w, Monad m) => FastGeneBuilderT g w m a -> GeneBuilderState -> g -> m w
+evalGeneBuilderT :: (RandomGen g, Monoid w, Monad m) => GenomeBuilderT g w m a -> GeneBuilderState -> g -> m w
 evalGeneBuilderT m s g = (flip evalRandT) g . execWriterT $ evalStateT m s
 
 -- | evalute the builder and obtain its output
-evalGeneBuilder :: (RandomGen g, Monoid w) => FastGeneBuilder g w a -> GeneBuilderState -> g -> w
+evalGeneBuilder :: (RandomGen g, Monoid w) => GenomeBuilder g w a -> GeneBuilderState -> g -> w
 evalGeneBuilder m s g = runIdentity $ evalGeneBuilderT m s g
 
 -- | internal helper function for folding Genotype hierarchies in the builder
@@ -112,7 +112,7 @@ absoluteGenotype (dna, gtl) = foldr combineGenotype (Genotype 0 (4 * V.length dn
 
 
 -- | Push a genotype onto the hierarchy
-gbPush :: (Monoid w, Monad m) => Genotype -> FastGeneBuilderT g w m ()
+gbPush :: (Monoid w, Monad m) => Genotype -> GenomeBuilderT g w m ()
 gbPush gt = do
     (dna, gtl) <- get
     case gtl of
@@ -124,7 +124,7 @@ gbPush gt = do
     return ()
 
 -- | Pop a genotype from the hierarchy
-gbPop :: (Monoid w, Monad m) => FastGeneBuilderT g w m ()
+gbPop :: (Monoid w, Monad m) => GenomeBuilderT g w m ()
 gbPop = do
     (dna, gtl) <- get
     case gtl of
@@ -134,13 +134,13 @@ gbPop = do
 
 
 -- | Computation that adds all genes of current genotype
-gbSum :: (Monoid w, Monad m) => FastGeneBuilderT g w m Int
+gbSum :: (Monoid w, Monad m) => GenomeBuilderT g w m Int
 gbSum = state gbSum' where
     gbSum' s = (tryGeneSum (fst s) (absoluteGenotype s), s)
 
 
 -- | Same as gbSum but normalized to [0,1]
-gbNormalizedSum :: (Monoid w, Monad m) => FastGeneBuilderT g w m Float
+gbNormalizedSum :: (Monoid w, Monad m) => GenomeBuilderT g w m Float
 gbNormalizedSum = do
     state gbSum' where
     gbSum' (dna, gtl) = (answer, (dna, gtl)) where
@@ -150,14 +150,14 @@ gbNormalizedSum = do
         answer = if length_ == 0 then 0 else 0.5 * fromIntegral sum_ / fromIntegral length_
 
 -- | Computation returns True if gbNormalizedSum > thresh, False otherwise
-gbNormalizedThresh :: (Monoid w, Monad m) => Float -> FastGeneBuilderT g w m Bool
+gbNormalizedThresh :: (Monoid w, Monad m) => Float -> GenomeBuilderT g w m Bool
 gbNormalizedThresh thresh = do
     s <- gbNormalizedSum
     return $ s > thresh
 
 -- | Computation that sums a gene in two parts, treating the first part as a multiplier of the second part
 -- first 1/4 is multiplicative, last 3/4 is additive.
-gbTypical :: (Monoid w, Monad m) => (Float, Float) -> FastGeneBuilderT g w m Float
+gbTypical :: (Monoid w, Monad m) => (Float, Float) -> GenomeBuilderT g w m Float
 gbTypical (min_, max_) = do
     (dna, gtl) <- get
     let
@@ -173,7 +173,7 @@ gbTypical (min_, max_) = do
 
 
 -- | Computation that randomly creates several genes fitting the input range
-gbRandomRanges :: (RandomGen g, Monoid w, Monad m) => [(Float, Float)] -> FastGeneBuilderT g w m [Float]
+gbRandomRanges :: (RandomGen g, Monoid w, Monad m) => [(Float, Float)] -> GenomeBuilderT g w m [Float]
 gbRandomRanges ranges = do
     (dna, gtl) <- get
     let
@@ -208,5 +208,5 @@ GbRandomParams = GbRandomParams {
 
 --g is of class RandomGen
 --type RandomGenotypeSubBuilder = State (g, )
---gbRandom :: (RandomGen g, Monoid w, Monad m) => Genotype -> GbRandomParams -> FastGeneBuilderT m Float
+--gbRandom :: (RandomGen g, Monoid w, Monad m) => Genotype -> GbRandomParams -> GenomeBuilderT m Float
 -}
