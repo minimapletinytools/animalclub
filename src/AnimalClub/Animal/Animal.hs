@@ -19,11 +19,12 @@ module AnimalClub.Animal.Animal (
 import qualified Data.Text as T
 import Data.Monoid (Monoid)
 import Data.Either
-import Data.List (foldl')
+import Data.List (foldl', mapAccumL)
 import AnimalClub.Genetics
 import AnimalClub.Skellygen.AnimalNode
 import AnimalClub.Skellygen.AnimalProperty
-import System.Random (RandomGen)
+import System.Random
+import Control.Lens
 import Control.Monad
 import Control.Monad.Writer (tell)
 --import Control.Exception (assert)
@@ -49,4 +50,39 @@ generateAnimalProperties afs = generateAnimalProperties_ parsedafs where
         Left _ -> xs -- throw out non SkellyFunc values
         Right x -> (x,v):xs
 
---makeGenomeFromProperties ::
+-- TODO move to genetics
+data AutoGenotypeMethod =
+    Normal (Float, Float) Int
+
+
+-- | returns number of floats this genotype creates
+autoGenotypeCount :: AutoGenotypeMethod -> Int
+autoGenotypeCount (Normal _ x) = x
+
+-- | returns relative amount of DNA this genotype should take up
+-- note, this is NOT the same as how many float values need to be produced
+autoGenotypeSize :: AutoGenotypeMethod -> Int
+autoGenotypeSize (Normal _ x) = x
+
+-- | automatically create genome from given properties
+-- this version does no overlap. All properties are independent
+-- UNSTESTED 
+makeGenomeFromPropertiesSimple ::
+    Int -- ^ DNA length
+    -> [(T.Text, AutoGenotypeMethod)] -- ^ other properties
+    -> [(SkellyFunc, AutoGenotypeMethod)] -- ^ skellygen properties
+    -> Genome StdGen AnimalFloats -- ^ output genome
+makeGenomeFromPropertiesSimple dnasz ops sfps = Genome dnasz geneBuilder (mkStdGen 0) where
+    aps = map (over _1 Left) ops ++ map (over _1 Right) sfps
+    (total, withTotals) = mapAccumL (\acc (x,ag) -> (acc+autoGenotypeSize ag,(x, ag, acc))) 0 aps
+    geneBuilder = forM_ withTotals $ \(x, ag, start) -> do
+        let
+            gtsize = (dnasz) * (autoGenotypeSize ag) `div` total
+        gbPush (FastGenotype start (start+gtsize))
+        case ag of
+            Normal range cnt -> forM_ [0..(cnt-1)] $ \n -> do
+                gbPush (FastGenotype (n * gtsize) (gtsize `div` cnt))
+                val <- gbTypical range
+                tell [(x, [val])]
+                gbPop
+        gbPop
