@@ -29,7 +29,7 @@ wormNode 0 = AnimalNode (Bone (textFromInt 0)) (Rel $ V3 0.5 0 0) (Rel 1) False 
 wormNode n = AnimalNode (Bone (textFromInt n)) (Rel $ V3 0.5 0 0) (Rel 1) False [wormNode (n-1)]
 worm segs = AnimalNode (Bone (textFromInt (segs-1))) (Rel 0) (Abs 0.1) True [wormNode (segs-2)]
 
-wormGenome' :: (RandomGen g) => Int -> Int -> GenomeBuilder g AnimalFloats ()
+wormGenome' :: (RandomGen g) => Int -> Int -> GenotypeBuilder g AnimalFloats ()
 wormGenome' segs dnaPerSeg = do forM_ [0..(segs-1)] wormSeg where
     dnaPerSegOver2 = dnaPerSeg `div` 2
     wormSeg i = do

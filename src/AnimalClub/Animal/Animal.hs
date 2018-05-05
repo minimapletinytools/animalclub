@@ -30,11 +30,11 @@ import Control.Monad.Writer (tell)
 
 type AnimalFloats = [(Either T.Text SkellyFunc, [Float])]
 
-tellBoneFunc :: (Monad m) => BoneName' -> BoneMethod -> [Float] -> GenomeBuilderT g AnimalFloats m ()
+tellBoneFunc :: (Monad m) => BoneName' -> BoneMethod -> [Float] -> GenotypeBuilderT g AnimalFloats m ()
 tellBoneFunc bn bm v = tell [(Right (SkellyFunc bn bm), v)]
 
 -- | DNA length, builder, random gen to seed builder
-data Genome g w = Genome Int (GenomeBuilder g w ()) g
+data Genome g w = Genome Int (GenotypeBuilder g w ()) g
 
 -- | evalute the genome and obtain its output
 evalGenome :: (RandomGen g, Monoid w) => Genome g w -> DNA -> w
