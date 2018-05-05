@@ -125,6 +125,7 @@ _toAnimalNode'' props pn cn = outan where
     bDist = norm c_pos
     c_pos' = if bDist == 0 then 0 else
         c_pos ^* ((bDist + _distance prop) / bDist)
+    --orient = QH.fromEulerXYZ (V3 (pi/6) 0.0 0.0)
     --orient = QH.fromEulerXYZ (V3 0.0 (pi/6) 0.0)
     orient = _orientation prop
     c_pos'' = Q.rotate (p_abs_rot >*> orient >*> p_abs_rot_inv) c_pos'

@@ -34,28 +34,28 @@ wormGenome' segs dnaPerSeg = do forM_ [0..(segs-1)] wormSeg where
     dnaPerSegOver2 = dnaPerSeg `div` 2
     wormSeg i = do
         gbPush $ Gene (dnaPerSeg*i) dnaPerSegOver2
-        x <- gbNormalizedSum
-        tellBoneFunc (Bone' (textFromInt i)) Thickness [x*8-3] --[x*0.5+0.75]
+        x <- gbTypical (0.1, 4.5)
+        tellBoneFunc (Bone' (textFromInt i)) Thickness [x] --[x*0.5+0.75]
         gbPop
-        gbPush $ Gene (dnaPerSeg*i + dnaPerSegOver2) dnaPerSegOver2 -- overlaps with thickness why not :D
+        gbPush $ Gene (dnaPerSeg*i + dnaPerSegOver2) dnaPerSegOver2
         orients <- gbRandomRanges (replicate 3 (-1.5,1.5))
         tellBoneFunc (Bone' (textFromInt i)) Orientation orients
         gbPop
 
 wormGenome :: Int -> Int -> Genome StdGen AnimalFloats
-wormGenome segs dnaPerSeg = Debug.trace "poop" $ Genome (segs*dnaPerSeg) (wormGenome' segs dnaPerSeg) (mkStdGen 0)
+wormGenome segs dnaPerSeg = Genome (segs*dnaPerSeg) (wormGenome' segs dnaPerSeg) (mkStdGen 0)
 
 testWorm :: Int -> AnimalPropertyMap -> Float
 testWorm segs props = score where
     desiredThick i =  (fromIntegral i / fromIntegral segs) * 3 + 0.5
     --desiredThick i =  (sin ((fromIntegral i / fromIntegral wormSegs) * pi * 2)*0.5 + 1)
     --desiredOrient _ = QH.fromEulerXYZ (V3 (pi/20) (pi/3) 0.0)
-    desiredOrient _ = QH.fromEulerXYZ (V3 0 (pi/6) 0.0)
+    desiredOrient _ = QH.fromEulerXYZ (V3 0 (pi/6) 0)
     name i = Bone' (textFromInt i)
     prop i = Map.findWithDefault (error $ "could not find " ++ show (name i)) (name i) props
     thick i = _skinParams $ prop i
     orient i = _orientation $ prop i
-    off i = thick i - desiredThick i + 3*(Metric.distance (orient i) (desiredOrient i))
+    off i = (thick i - desiredThick i) + 5*(Metric.distance (orient i) (desiredOrient i))
     score = sqrt $ sum [off x * off x | x <- [0..(segs-1)]]
 
 -- |
