@@ -7,7 +7,7 @@ import           Data.Word
 import           System.Random
 
 
-gbExample :: (RandomGen g, Monad m) => GenotypeBuilderT g NamedFloats m ()
+gbExample :: (RandomGen g, Monad m) => GenotypeT g NamedFloats m ()
 gbExample = do
     gbNormalizedSum >>= tellGene "first"
     gbNormalizedThresh 0.5 >>= tellGene "second" . (\x -> if x then 1 else 0)

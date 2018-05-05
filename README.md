@@ -4,9 +4,7 @@ _Animal Club_ (_AC_) is still in development. I'm working hard on a first releas
 
 The _Animal Club_  _Genetics_ module is a general purpose genetic expression library written in Haskell. _DNA_ is a bit array. When breeding two _DNAs_, 1 bit out of every 2 from each parent is randomly chosen and put together to be the the 2 new bits of child's _DNA_.
 
-_Genotype_ is a computation on an indexed subset of _DNA_. _AC_ includes several basic computations for either strategically or randomly creating these computations.
-
-The _GeneBuilder_ monad is a Writer / State monad for creating _Genotypes_. The State portion contains hierarchical info about what part of the DNA to operate on. The writer portion is where the user writes out computed values with string labels to be read by another program. A typical usage might look something like this:
+_Gene_ is a computation on an indexed subset of _DNA_. The _Genotype_ monad is a Writer / State monad for creating computations on _Genes_. _AC_ includes several basic computations for either strategically or randomly creating these computations. The State portion contains hierarchical info about what part of the _DNA_ (_Genes_) to operate on. The writer portion is where the user writes out computed values with string labels to be read by another program. A typical usage might look something like this:
 
 ```haskell
 import           AnimalClub.Genetics
