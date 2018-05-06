@@ -59,7 +59,7 @@ combineGene :: Gene -- ^ child
     -> Gene -- ^ combined
 combineGene gt2 gt1 =
     if startGene gt2 + geneCount gt2 > geneCount gt1
-        then error $ "inconsistency " ++ (show $ gt1) ++ " " ++ (show $ gt2)
+        then error $ "parent child mismatch " ++ (show $ gt1) ++ " " ++ (show $ gt2)
         else Gene (startGene gt1 + startGene gt2) (geneCount gt2)
 
 -- dna start count -> sum

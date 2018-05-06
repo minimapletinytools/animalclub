@@ -1,22 +1,16 @@
 {-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 {-# OPTIONS_GHC -fno-warn-unused-top-binds #-}
 
-
+module Animals (
+    goat
+) where
+    
 import AnimalClub.Animal.Animal
 import AnimalClub.Skellygen
 import AnimalClub.Skellygen.Math.Hierarchical
 import AnimalClub.Skellygen.Math.Mesh
 import           Linear.V3
-
-
---AllBones'
-
--- Goat properties
-goatPropertyList :: [(SkellyFunc, AutoGeneMethod)]
-goatPropertyList = [
-    
-    ]
-
+import Data.Text as T
 
 -- | whatever helper
 relV3 x y z = Rel $ V3 x y z

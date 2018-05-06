@@ -85,8 +85,8 @@ executables:
     dependencies:
     - animalclub
 
-  animals:
-    main:                animals.hs
+  goat:
+    main:                goat.hs
     source-dirs:         examples
     ghc-options:
     - -threaded

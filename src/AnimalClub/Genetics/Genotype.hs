@@ -120,8 +120,8 @@ gbPush :: (Monoid w, Monad m) => Gene -> GenotypeT g w m ()
 gbPush gt = do
     (dna, gtl) <- get
     case gtl of
-        (x:_) -> if geneLength gt >= geneLength x
-            then error "Prepending Gene with length greater than length of last Gene on stack"
+        (x:_) -> if geneLength gt > geneLength x
+            then error ("prepending Gene with length greater than length of last Gene on stack " ++ show (geneLength gt) ++ " " ++ show (geneLength x))
             else return ()
         _ -> return ()
     put (dna, gt:gtl)
@@ -157,7 +157,7 @@ gbNormalizedSum = do
 gbSumRange :: (Monoid w, Monad m) => (Float,Float) -> GenotypeT g w m Float
 gbSumRange (min',max') = do
     s <- gbNormalizedSum
-    return $ min' + s / (max'-min')
+    return $ min' + s * (max'-min')
 
 -- | Computation returns True if gbNormalizedSum > thresh, False otherwise
 gbNormalizedThresh :: (Monoid w, Monad m) => Float -> GenotypeT g w m Bool

@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
+
 {-|
 Module      : Animal
 Description : Binds Genetics and Skellygen together
@@ -21,6 +23,8 @@ module AnimalClub.Animal.Animal (
 import qualified Data.Text as T
 import Data.Monoid (Monoid)
 import Data.List (foldl', mapAccumL)
+import Control.DeepSeq
+import GHC.Generics (Generic)
 import AnimalClub.Genetics
 import AnimalClub.Skellygen
 import System.Random
@@ -28,6 +32,8 @@ import Control.Lens
 import Control.Monad
 import Control.Monad.Writer (tell)
 --import Control.Exception (assert)
+
+import Debug.Trace (trace)
 
 type AnimalFloats = [(Either T.Text SkellyFunc, [Float])]
 
@@ -50,11 +56,10 @@ generateAnimalProperties afs = generateAnimalProperties_ parsedafs where
         Left _ -> xs -- throw out non SkellyFunc values
         Right x -> (x,v):xs
 
-
-
 -- TODO move everything below to Cute/AutoGenotype.hs or osmetihng like that
 data AutoGeneMethod =
     Normal (Float, Float) Int
+    deriving (Generic, NFData)
 
 
 -- | returns number of floats this genotype creates
@@ -76,15 +81,22 @@ makeGenomeFromPropertiesSimple ::
     -> Genome StdGen AnimalFloats -- ^ output genome
 makeGenomeFromPropertiesSimple dnasz ops sfps = Genome dnasz geneBuilder (mkStdGen 0) where
     aps = map (over _1 Left) ops ++ map (over _1 Right) sfps
-    (total, withTotals) = mapAccumL (\acc (x,ag) -> (acc+autoGeneSize ag,(x, ag, acc))) 0 aps
-    geneBuilder = forM_ withTotals $ \(x, ag, start) -> do
+    --(total, withTotals) :: (Int, (Either T.Text SkellyFunc, AutoGenoMethod, Int)) -- (total weights, incremental weights)
+    (total, withTotals) = mapAccumL (\acc (x,ag) -> (acc + autoGeneSize ag, (x, ag, acc))) 0 aps
+    geneBuilder = forM_ withTotals $ \(x, ag, startWeight) -> do
         let
-            gtsize = (dnasz) * (autoGeneSize ag) `div` total
-        gbPush (Gene start (start+gtsize))
+            gtsize = dnasz * (autoGeneSize ag) `div` total
+            start = dnasz * startWeight `div` total
+        --trace (show start ++ " : " ++ show gtsize) $ gbPush (Gene start gtsize)
+        gbPush (Gene start gtsize)
         case ag of
-            Normal range cnt -> forM_ [0..(cnt-1)] $ \n -> do
-                gbPush (Gene (n * gtsize) (gtsize `div` cnt))
-                val <- gbTypical range
-                tell [(x, [val])]
-                gbPop
+            Normal range cnt -> do
+                vals <- forM [0..(cnt-1)] $ \n -> do
+                    --trace ((show $ n * gtsize `div` cnt) ++ " ! " ++ (show $ gtsize `div` cnt)) $  gbPush (Gene (n * gtsize `div` cnt) (gtsize `div` cnt))
+                    gbPush (Gene (n * gtsize `div` cnt) (gtsize `div` cnt))
+                    --val <- gbTypical range
+                    val <- gbSumRange range
+                    gbPop
+                    return val
+                tell [(x, vals)]
         gbPop

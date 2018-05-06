@@ -34,12 +34,12 @@ import qualified Debug.Trace as Debug
 --import qualified Prelude (read)
 --read x = Prelude.read $ Debug.trace x x
 
-data BoneMethod = Orientation | Length | Thickness | Color deriving (Read, Show)
+data BoneMethod = Orientation | Length | Thickness | Color deriving (Read, Show, Generic, NFData)
 
 data SkellyFunc = SkellyFunc {
     sfBone' :: BoneName',
     sfMethod :: BoneMethod
-} deriving (Read, Show)
+} deriving (Read, Show, Generic, NFData)
 
 
 -- | these map animal properties used for generating skelly on top of base skelly
@@ -70,6 +70,8 @@ defaultAnimalProperty = AnimalProperty {
 -- TODO create an intermediary type BoneName'' to make this type safe
 type AnimalPropertyMap = Map.Map BoneName' AnimalProperty
 
+-- |
+-- TODO this assert is not actually getting evaluated
 assertLength :: Int -> [b] -> a -> a
 assertLength n xs = assert (length xs == n)
 
@@ -86,8 +88,8 @@ generateAnimalPropertiesInternal_ _props xs = foldl addProp (foldl addProp (fold
     allProps = List.filter ((\case {AllBones' _ -> True; _ -> False}) . sfBone' . fst) xs
 
     -- Next do multi index EnumBones' case (just convert to EnumBone, inefficient, but whatever)
+    -- UNTESTED
     enumBonesProps' = List.filter ((\case {EnumBones' _ _ -> True; _ -> False}) . sfBone' . fst) xs
-    enumBonesToEnumBoneMapFn :: (SkellyFunc, [Float]) -> [(SkellyFunc, [Float])]
     enumBonesToEnumBoneMapFn = \case
         (SkellyFunc (EnumBones' name indices) method, vals) ->
             map (\i -> (SkellyFunc (EnumBone' name i) method, vals)) indices
@@ -106,7 +108,9 @@ generateAnimalPropertiesInternal_ _props xs = foldl addProp (foldl addProp (fold
                 EnumBones' boneName' _ -> error "this should have been filtered and mapped out!"
                 _ -> defaultAnimalProperty
             oldProp = Map.findWithDefault defaultProperty boneName accProp
-            newProp = case method of
+            -- combine with what's already there
+            -- TODO consider making combine/not combine a parameter
+            newProp = Debug.trace (show method ++ " " ++ show vals) $ case method of
                 Orientation -> assertLength 3 vals $
                     over orientation (inherit $ QH.fromEulerXYZ (V3 (vals !! 0) (vals !! 1) (vals !! 2))) oldProp
                 Length -> assertLength 1 vals $

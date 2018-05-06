@@ -128,6 +128,7 @@ _toAnimalNode'' props pn cn = outan where
     --orient = QH.fromEulerXYZ (V3 (pi/6) 0.0 0.0)
     --orient = QH.fromEulerXYZ (V3 0.0 (pi/6) 0.0)
     orient = _orientation prop
+    --c_pos'' = Debug.trace (show (_name' cn) ++ show orient) $ Q.rotate (p_abs_rot >*> orient >*> p_abs_rot_inv) c_pos'
     c_pos'' = Q.rotate (p_abs_rot >*> orient >*> p_abs_rot_inv) c_pos'
 
     -- update with new translation and rotation
