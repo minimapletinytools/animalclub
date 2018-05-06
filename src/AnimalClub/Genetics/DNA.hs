@@ -61,6 +61,8 @@ makeZeroDNA c = assert (c `mod` 4 == 0) $ V.generate c (const 0)
 makeRandDNA :: (RandomGen g) => g -> Int -> DNA
 makeRandDNA g c = assert (c `mod` 4 == 0) $ V.unfoldrN (c `div` 4) (Just . random) g
 
+-- | breed 2 DNAs with given random generator
+-- TODO write a version that takes a seed instead and uses the faster RNG maybe?
 breed :: (RandomGen g) => g -> DNA -> DNA -> DNA
 breed g a b = V.map choose (V.zip3 a b rands) where
     rands = V.fromList . take (V.length a) . randoms $ g
@@ -79,6 +81,7 @@ mutateBit g x = unsafeShiftL 0x01 (fst $ randomR (0,7) g) `xor` x
 
 -- |
 -- chance is chance of one bit mutating per byte
+-- TODO write a version that takes a seed instead and uses the faster RNG maybe?
 mutate :: (RandomGen g) => Float -> g -> DNA -> DNA
 mutate chance g dna = V.zipWith zipFunc rands dna where
     -- TODO running random twice here is very inefficient

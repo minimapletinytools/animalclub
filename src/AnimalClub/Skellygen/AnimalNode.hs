@@ -87,7 +87,7 @@ data BoneName' =
     Bone' T.Text -- ^ specific bone matching Bone String
     | EnumBone' T.Text Int -- ^ specific bone matching EnumBone String Int
     | AllBones' T.Text -- ^ all bones matching EnumBone String
-    -- | EnumBones' String [Int] -- TODO
+    | EnumBones' T.Text [Int] -- TODO
     deriving (Show, Ord, Eq, Read, NFData, Generic)
 
 -- TODO rename

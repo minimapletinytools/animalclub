@@ -13,7 +13,9 @@ module AnimalClub.Animal.Animal (
     tellBoneFunc,
     Genome(..),
     evalGenome,
-    generateAnimalProperties
+    generateAnimalProperties,
+    AutoGeneMethod(..),
+    makeGenomeFromPropertiesSimple
 ) where
 
 import qualified Data.Text as T
@@ -48,7 +50,9 @@ generateAnimalProperties afs = generateAnimalProperties_ parsedafs where
         Left _ -> xs -- throw out non SkellyFunc values
         Right x -> (x,v):xs
 
--- TODO move to genetics
+
+
+-- TODO move everything below to Cute/AutoGenotype.hs or osmetihng like that
 data AutoGeneMethod =
     Normal (Float, Float) Int
 

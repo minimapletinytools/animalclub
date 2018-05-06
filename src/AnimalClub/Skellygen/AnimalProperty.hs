@@ -63,6 +63,11 @@ defaultAnimalProperty = AnimalProperty {
     _skinParams = 1
 }
 
+-- |
+-- Note it's invalid to have keys with constructor
+-- AllBones' or EnumBones', these are used for ADDING to
+-- AnimalPropertyMap only
+-- TODO create an intermediary type BoneName'' to make this type safe
 type AnimalPropertyMap = Map.Map BoneName' AnimalProperty
 
 assertLength :: Int -> [b] -> a -> a
@@ -76,14 +81,29 @@ generateAnimalPropertiesInternal_ ::
     AnimalPropertyMap -- ^ accumulating map of properties.
     -> [(SkellyFunc, [Float])] -- ^ list of properties
     -> AnimalPropertyMap -- ^ output accumulated map of properties. EnumBone' property will override AllBone' property
-generateAnimalPropertiesInternal_ _props xs = foldl addProp (foldl addProp  (Map.empty) allProps) otherProps where
+generateAnimalPropertiesInternal_ _props xs = foldl addProp (foldl addProp (foldl addProp  (Map.empty) allProps) enumBonesProps) otherProps where
+    -- First go through AllBones' case which will be used as defaults for everything else
     allProps = List.filter ((\case {AllBones' _ -> True; _ -> False}) . sfBone' . fst) xs
-    otherProps = List.filter ((\case {AllBones' _ -> False; _ -> True}) . sfBone' . fst) xs
+
+    -- Next do multi index EnumBones' case (just convert to EnumBone, inefficient, but whatever)
+    enumBonesProps' = List.filter ((\case {EnumBones' _ _ -> True; _ -> False}) . sfBone' . fst) xs
+    enumBonesToEnumBoneMapFn :: (SkellyFunc, [Float]) -> [(SkellyFunc, [Float])]
+    enumBonesToEnumBoneMapFn = \case
+        (SkellyFunc (EnumBones' name indices) method, vals) ->
+            map (\i -> (SkellyFunc (EnumBone' name i) method, vals)) indices
+        _ -> error "should only be of constructor EnumBones'"
+    enumBonesProps = concatMap enumBonesToEnumBoneMapFn enumBonesProps'
+
+    -- Finally do everything else
+    otherProps = List.filter ((\case {Bone' _ -> True; EnumBone' _ _ -> True; _ -> False}) . sfBone' . fst) xs
+
+    -- add a proprety to the map
     addProp :: Map.Map BoneName' AnimalProperty -> (SkellyFunc,[Float]) -> Map.Map BoneName' AnimalProperty
     addProp accProp (SkellyFunc boneName method, vals) = Map.insert boneName newProp accProp where
             -- if EnumBone', use AllBone' as default
             defaultProperty = case boneName of
                 EnumBone' boneName' _ -> Map.findWithDefault defaultAnimalProperty (AllBones' boneName') accProp
+                EnumBones' boneName' _ -> error "this should have been filtered and mapped out!"
                 _ -> defaultAnimalProperty
             oldProp = Map.findWithDefault defaultProperty boneName accProp
             newProp = case method of
