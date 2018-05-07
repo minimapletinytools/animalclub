@@ -117,21 +117,26 @@ _toAnimalNode'' props pn cn = outan where
     p_abs_trs = _trsAbs' pn
     p_abs_rot = TRS._rot p_abs_trs
     p_abs_rot_inv = QH.inverse p_abs_rot
-
     c_rel_trs = _trs' cn
     c_pos = TRS._trans c_rel_trs
-
     prop = lookupBone' (toBoneName' $ _name' cn) props
-    bDist = norm c_pos
-    c_pos' = if bDist == 0 then 0 else
-        c_pos ^* ((bDist + _distance prop) / bDist)
+
+    -- compute new distance
+    -- multiplicative distance
+    c_pos' = c_pos ^* _distance prop
+    -- additive distance
+    --bDist = norm c_pos
+    --c_pos' = if bDist == 0 then 0 else
+    --    c_pos ^* ((bDist + _distance prop) / bDist)
+
+    -- compute new rotation
     --orient = QH.fromEulerXYZ (V3 (pi/6) 0.0 0.0)
     --orient = QH.fromEulerXYZ (V3 0.0 (pi/6) 0.0)
     orient = _orientation prop
     --c_pos'' = Debug.trace (show (_name' cn) ++ show orient) $ Q.rotate (p_abs_rot >*> orient >*> p_abs_rot_inv) c_pos'
     c_pos'' = Q.rotate (p_abs_rot >*> orient >*> p_abs_rot_inv) c_pos'
 
-    -- update with new translation and rotation
+    -- update with new distance and rotation
     -- TODO double check this is correct in cases where there is funny scale nonsense going on
     c_trs_new = set TRS.rot (QH.lookAtDefaultUp c_pos'') (set TRS.trans c_pos'' c_rel_trs)
 
@@ -217,7 +222,7 @@ toSkellygen' props cn =  outsn where
         SN._snTrs = cn_rel_trs,
         --SN._trs = Debug.trace ("rel: " ++ show cn_rel_trs) cn_rel_trs,
         --SN._trs = Debug.trace ("abs: " ++ show (_trsAbs' cn)) cn_rel_trs,
-        SN._snThickness = _skinParams prop * _thickness' cn
+        SN._snThickness = _skinParams prop * _thickness' cn -- combine with base thickness multiplicatively
     }
 
 -- | convert Animal Node to Skellygen

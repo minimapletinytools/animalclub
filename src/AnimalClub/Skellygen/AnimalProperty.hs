@@ -34,7 +34,7 @@ import qualified Debug.Trace as Debug
 --import qualified Prelude (read)
 --read x = Prelude.read $ Debug.trace x x
 
-data BoneMethod = Orientation | Length | Thickness | Color deriving (Read, Show, Generic, NFData)
+data BoneMethod = Thickness |  Length | Orientation | TLOCombined | Color deriving (Read, Show, Generic, NFData)
 
 data SkellyFunc = SkellyFunc {
     sfBone' :: BoneName',
@@ -45,9 +45,9 @@ data SkellyFunc = SkellyFunc {
 -- | these map animal properties used for generating skelly on top of base skelly
 -- these are mapped to properties in SkellyNode
 data AnimalProperty = AnimalProperty {
-    _orientation :: TRS.Rotation Float,
-    _distance :: Float,
-    _skinParams :: Float
+    _orientation :: TRS.Rotation Float, -- ^ combines multiplicatively
+    _distance :: Float, -- ^ combines multiplicatively
+    _skinParams :: Float -- ^ combines multiplicatively
     -- mesh + UV style
     -- UV map properties
     -- texture name, stretch shift,
@@ -59,7 +59,7 @@ makeLenses ''AnimalProperty
 defaultAnimalProperty :: AnimalProperty
 defaultAnimalProperty = AnimalProperty {
     _orientation = QH.identity,
-    _distance = 0,
+    _distance = 1,
     _skinParams = 1
 }
 
@@ -110,14 +110,17 @@ generateAnimalPropertiesInternal_ _props xs = foldl addProp (foldl addProp (fold
             oldProp = Map.findWithDefault defaultProperty boneName accProp
             -- combine with what's already there
             -- TODO consider making combine/not combine a parameter
-            newProp = Debug.trace (show method ++ " " ++ show vals) $ case method of
+            --newProp = Debug.trace (show method ++ " " ++ show vals) $ case method of
+            newProp = case method of
                 Orientation -> assertLength 3 vals $
                     over orientation (inherit $ QH.fromEulerXYZ (V3 (vals !! 0) (vals !! 1) (vals !! 2))) oldProp
                 Length -> assertLength 1 vals $
-                    over distance (+(vals !! 0)) oldProp
+                    over distance (*(vals !! 0)) oldProp
                 Thickness -> assertLength 1 vals $
-                    over skinParams (+(vals !! 0)) oldProp
+                    over skinParams (*(vals !! 0)) oldProp
+                -- TODO
                 Color -> oldProp
+                TLOCombined -> oldProp
 
 generateAnimalProperties_ ::
     [(SkellyFunc, [Float])] -- ^ list of properties

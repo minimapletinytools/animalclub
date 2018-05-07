@@ -21,9 +21,13 @@ sfGoatFront name = SkellyFunc (EnumBones' name [0,1])
 sfGoatBack name = SkellyFunc (EnumBones' name [2,3])
 
 
-defOrient = (-0.2, 0.2)
-defLength = (-0.2,0.2)
-defThick = (-1, 1)
+defOrient = (-0.5, 0.5)
+defLength = (0, 2)
+defThick = (0, 2)
+
+--defOrient = (0,0)
+--defLength = (0,0)
+--defThick = (0,0)
 
 
 -- Goat properties
@@ -40,6 +44,45 @@ goatPropertyList = [
     , (sfGoatFront "ankle" Length, Normal defLength 1)
     , (sfGoatFront "toe" Thickness, Normal defThick 1)
     , (sfGoatFront "toe" Length, Normal defLength 1)
+
+    , (sfGoatBack "leg" Thickness, Normal defThick 1)
+    , (sfGoatBack "leg" Orientation, Normal defOrient 3)
+    --, (sfGoatBack "leg" Length, Normal defLength 1)
+    , (sfGoatBack "knee" Thickness, Normal defThick 1)
+    , (sfGoatBack "knee" Orientation, Normal defOrient 3)
+    , (sfGoatBack "knee" Length, Normal defLength 1)
+    , (sfGoatBack "ankle" Thickness, Normal defThick 1)
+    , (sfGoatBack "ankle" Orientation, Normal defOrient 3)
+    , (sfGoatBack "ankle" Length, Normal defLength 1)
+    , (sfGoatBack "toe" Thickness, Normal defThick 1)
+    , (sfGoatBack "toe" Length, Normal defLength 1)
+
+    , (SkellyFunc (Bone' "neck") Thickness, Normal defThick 1)
+    , (SkellyFunc (Bone' "neck") Orientation, Normal defOrient 3)
+    , (SkellyFunc (Bone' "neck") Length, Normal defLength 1)
+
+    , (SkellyFunc (Bone' "head") Thickness, Normal defThick 1)
+    , (SkellyFunc (Bone' "head") Orientation, Normal defOrient 3)
+    , (SkellyFunc (Bone' "head") Length, Normal defLength 1)
+
+    , (SkellyFunc (Bone' "body") Thickness, Normal defThick 1)
+    , (SkellyFunc (Bone' "body") Orientation, Normal defOrient 3)
+    , (SkellyFunc (Bone' "body") Length, Normal defLength 1)
+
+    , (SkellyFunc (Bone' "body2") Thickness, Normal defThick 1)
+    , (SkellyFunc (Bone' "body2") Orientation, Normal defOrient 3)
+    , (SkellyFunc (Bone' "body2") Length, Normal defLength 1)
+
+    , (SkellyFunc (Bone' "tailbone") Thickness, Normal defThick 1)
+    , (SkellyFunc (Bone' "tailbone") Orientation, Normal defOrient 3)
+    , (SkellyFunc (Bone' "tailbone") Length, Normal defLength 1)
+
+    , (SkellyFunc (Bone' "tailend") Thickness, Normal defThick 1)
+    , (SkellyFunc (Bone' "tailend") Orientation, Normal defOrient 3)
+    , (SkellyFunc (Bone' "tailend") Length, Normal defLength 1)
+
+
+
     ]
 
 main :: IO ()

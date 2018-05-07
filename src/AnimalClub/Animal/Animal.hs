@@ -56,6 +56,9 @@ generateAnimalProperties afs = generateAnimalProperties_ parsedafs where
         Left _ -> xs -- throw out non SkellyFunc values
         Right x -> (x,v):xs
 
+
+-- breedAndSelectPoolProperty :: (RandomGen g) =>        
+
 -- TODO move everything below to Cute/AutoGenotype.hs or osmetihng like that
 data AutoGeneMethod =
     Normal (Float, Float) Int
