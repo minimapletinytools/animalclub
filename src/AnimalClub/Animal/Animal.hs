@@ -35,6 +35,7 @@ import Control.Monad.Writer (tell)
 
 import Debug.Trace (trace)
 
+-- TODO change to Word32 or Bytestring
 type AnimalFloats = [(Either T.Text SkellyFunc, [Float])]
 
 tellBoneFunc :: (Monad m) => BoneName' -> BoneMethod -> [Float] -> GenotypeT g AnimalFloats m ()
@@ -57,7 +58,7 @@ generateAnimalProperties afs = generateAnimalProperties_ parsedafs where
         Right x -> (x,v):xs
 
 
--- breedAndSelectPoolProperty :: (RandomGen g) =>        
+-- breedAndSelectPoolProperty :: (RandomGen g) =>
 
 -- TODO move everything below to Cute/AutoGenotype.hs or osmetihng like that
 data AutoGeneMethod =

@@ -28,11 +28,6 @@ module AnimalClub.Genetics.Genotype (
     -- ** Monad evalution functions
     evalGeneBuilderT,
     evalGeneBuilder,
-    -- * Writer monad operations using NamedFloats
-    NamedFloats,
-    tellGene,
-    tellGenes,
-    prefixGenes,
     -- * Gene building monad operations
     -- | push and pop operate on the Gene stack, while all other operations operate on the Gene defined by the stack
     gbPush,
@@ -75,9 +70,7 @@ import Control.Exception.Base (assert)
 type GenotypeState = (DNA, [Gene])
 
 
--- | Writer monoid for either value or names
--- rename to StandardNamedFloats
-type NamedFloats = [(Text, [Float])]
+
 
 
 -- allow output type to be parameterized please
@@ -85,21 +78,6 @@ type NamedFloats = [(Text, [Float])]
 type GenotypeT g w m = StateT GenotypeState (WriterT w (RandT g m))
 -- | Monad for building genes
 type Genotype g w = GenotypeT g w Identity
-
--- | Write a single gene values in the builder
-tellGene :: (Monad m) => Text -> Float -> GenotypeT g NamedFloats m ()
-tellGene s v = tellGenes s [v]
-
--- | Write several gene values in the builder
-tellGenes :: (Monad m) => Text -> [Float] -> GenotypeT g NamedFloats m ()
-tellGenes s v = tell $ [(s, v)]
-
--- | prefix all output
--- good for duplicating output for L/R or something like that
-prefixGenes :: (Monad m) => Text -> GenotypeT g [(Text,b)] m a -> GenotypeT g [(Text,b)] m a
-prefixGenes s m = do
-    a <- m
-    pass . return $ (a, map (\(x,v) -> (append x s, v)))
 
 -- | evalute the builder and obtain its output
 evalGeneBuilderT :: (RandomGen g, Monoid w, Monad m) => GenotypeT g w m a -> GenotypeState -> g -> m w
