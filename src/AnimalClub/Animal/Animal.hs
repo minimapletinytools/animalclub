@@ -28,7 +28,7 @@ import GHC.Generics (Generic)
 import AnimalClub.Genetics
 import AnimalClub.Skellygen
 import System.Random
-import Control.Lens
+import Lens.Micro.Platform
 import Control.Monad
 import Control.Monad.Writer (tell)
 --import Control.Exception (assert)

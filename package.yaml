@@ -49,7 +49,7 @@ dependencies:
 - array
 - text
 - linear
-- lens
+- microlens-platform
 - adjunctions
 - containers
 - clock

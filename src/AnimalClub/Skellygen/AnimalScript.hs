@@ -17,7 +17,7 @@ module AnimalClub.Skellygen.AnimalScript (
     animalNodeToSkellyNodeWithProps
 ) where
 
-import Control.Lens (set, makeLenses)
+import Lens.Micro.Platform (set, makeLenses)
 import qualified Data.Map as Map
 --import qualified Data.Text as T
 

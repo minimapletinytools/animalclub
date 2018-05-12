@@ -1,8 +1,9 @@
 {-# OPTIONS_GHC -fno-warn-unused-top-binds #-}
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
 
+{-# LANGUAGE DeriveAnyClass  #-}
+{-# LANGUAGE DeriveGeneric   #-}
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
 --{-# LANGUAGE BangPatterns #-}
 
 -- TOOD split into files
@@ -21,19 +22,19 @@ module AnimalClub.Skellygen.AnimalNode (
     flipAnimalNode,
 ) where
 
-import Control.Lens (set, makeLenses)
-import Control.DeepSeq
-import GHC.Generics (Generic)
+import           Control.DeepSeq
+import Lens.Micro.Platform                           (makeLenses, set)
+import           GHC.Generics                           (Generic)
 --import qualified Data.List as List
 --import qualified Data.Map as Map
-import qualified Data.Text as T
+import qualified Data.Text                              as T
 
 --import qualified Debug.Trace as Debug
 
-import qualified AnimalClub.Skellygen.Math.TRS as TRS
-import AnimalClub.Skellygen.Math.Hierarchical
+import           AnimalClub.Skellygen.Math.Hierarchical
+import qualified AnimalClub.Skellygen.Math.TRS          as TRS
 
-import Linear.V3
+import           Linear.V3
 --import Linear.Quaternion as Q
 
 -- | for affine transformations, just do (someTRS >*>)
@@ -45,19 +46,19 @@ import Linear.V3
 data BoneTrans = Same | ReflX | ReflY | ReflZ | ArbTrans (TRS.TRS Float -> TRS.TRS Float)
 
 instance Show BoneTrans where
-    show Same = "Same"
-    show ReflX = "ReflX"
-    show ReflY = "ReflY"
-    show ReflZ = "ReflZ"
+    show Same         = "Same"
+    show ReflX        = "ReflX"
+    show ReflY        = "ReflY"
+    show ReflZ        = "ReflZ"
     show (ArbTrans _) = "ArbTrans"
 
 composeBoneTrans :: BoneTrans -> BoneTrans -> BoneTrans
-composeBoneTrans Same x = x
-composeBoneTrans x Same = x
+composeBoneTrans Same x      = x
+composeBoneTrans x Same      = x
 composeBoneTrans ReflX ReflX = Same
 composeBoneTrans ReflY ReflY = Same
 composeBoneTrans ReflZ ReflZ = Same
-composeBoneTrans x y = ArbTrans $ applyBoneTrans x . applyBoneTrans y
+composeBoneTrans x y         = ArbTrans $ applyBoneTrans x . applyBoneTrans y
 
 -- |
 -- this is mainly for syntactic convenience
@@ -92,7 +93,7 @@ data BoneName' =
 
 -- TODO rename
 toBoneName' :: BoneName -> BoneName'
-toBoneName' (Bone name) = Bone' name
+toBoneName' (Bone name)             = Bone' name
 toBoneName' (EnumBone name index _) = EnumBone' name index
 
 -- TODO rename
@@ -108,12 +109,12 @@ toBoneName' (EnumBone name index _) = EnumBone' name index
 -- | these define static properties that make up the base SkellyNode
 -- user friendly version that is limited in what can be expressed
 data AnimalNode = AnimalNode {
-    _name :: BoneName, -- ^ name and transformation if relevant
-    _pos :: AbsOrRel (V3 Float), -- ^ BoneTrans is applied to this
+    _name      :: BoneName, -- ^ name and transformation if relevant
+    _pos       :: AbsOrRel (V3 Float), -- ^ BoneTrans is applied to this
     -- TODO some orientation parameter
     _thickness :: AbsOrRel Float, -- ^ base thickness, relative to parent thickness if rel
-    _isRoot :: Bool,
-    _children :: [AnimalNode]
+    _isRoot    :: Bool,
+    _children  :: [AnimalNode]
     -- TODO _nodeOrientation :: NodeOrientation
 }
 

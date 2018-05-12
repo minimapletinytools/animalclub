@@ -9,7 +9,7 @@ module AnimalClub.Skellygen.Skellygen
     , generateMesh
     ) where
 
-import Control.Lens
+import Lens.Micro.Platform
 import Control.DeepSeq
 import GHC.Generics (Generic)
 import Linear.Metric

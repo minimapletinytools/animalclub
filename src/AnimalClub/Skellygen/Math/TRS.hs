@@ -33,7 +33,7 @@ module AnimalClub.Skellygen.Math.TRS
 import AnimalClub.Skellygen.Math.Hierarchical
 import qualified AnimalClub.Skellygen.Math.Quaternion as QH
 
-import Control.Lens
+import Lens.Micro.Platform
 import Control.DeepSeq
 import GHC.Generics (Generic)
 import Linear.Conjugate

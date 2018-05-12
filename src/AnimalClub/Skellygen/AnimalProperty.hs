@@ -14,7 +14,7 @@ module AnimalClub.Skellygen.AnimalProperty (
 ) where
 
 import Control.Exception (assert)
-import Control.Lens
+import Lens.Micro.Platform
 import Control.DeepSeq
 import GHC.Generics (Generic)
 import qualified Data.Text as T

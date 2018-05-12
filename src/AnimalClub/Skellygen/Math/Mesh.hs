@@ -46,6 +46,7 @@ group n l
   | n > 0 = (take n l) : (group n (drop n l))
   | otherwise = error "Negative n"
 
+-- TODO change this to Data.Text
 meshToObj :: Mesh -> String
 meshToObj (Mesh m) = execWriter $ do
     tell "#beginning of mesh obj file \ng\n"
