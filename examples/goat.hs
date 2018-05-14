@@ -2,18 +2,16 @@
 {-# OPTIONS_GHC -fno-warn-unused-top-binds #-}
 
 import Animals
-import AnimalClub.Animal.Animal
+import AnimalClub.Animals
 import AnimalClub.Genetics
 import AnimalClub.Skellygen
-import AnimalClub.Skellygen.Math.Hierarchical
 import AnimalClub.Skellygen.Math.Mesh
-import           Linear.V3
-import Data.Text as T
+
 import Text.Printf (printf)
 import System.Random
 import Control.DeepSeq
 
-import Debug.Trace
+--import Debug.Trace
 
 --AllBones'
 

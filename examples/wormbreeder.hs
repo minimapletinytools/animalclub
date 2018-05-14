@@ -3,7 +3,7 @@
 
 import Worm
 
-import AnimalClub.Animal.Animal
+import AnimalClub.Animals
 import AnimalClub.Genetics
 import AnimalClub.Skellygen
 import AnimalClub.Skellygen.Math.Mesh
@@ -13,7 +13,7 @@ import           Data.List                       (unfoldr)
 import System.Random
 
 
-import qualified Debug.Trace as Debug
+--import qualified Debug.Trace as Debug
 
 
 main :: IO ()

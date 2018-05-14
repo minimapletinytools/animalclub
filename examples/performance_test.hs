@@ -5,7 +5,7 @@
 
 import Worm
 
-import AnimalClub.Animal.Animal
+import AnimalClub.Animals
 import AnimalClub.Genetics
 import AnimalClub.Skellygen
 import AnimalClub.Skellygen.Math.Mesh
@@ -13,9 +13,9 @@ import AnimalClub.Skellygen.Math.Mesh
 import Text.Printf (printf)
 import           Data.List                       (unfoldr)
 import System.Random
-import System.Clock
 
-import qualified Debug.Trace as Debug
+--import System.Clock
+--import qualified Debug.Trace as Debug
 
 
 {-clockSomething :: a -> IO ()

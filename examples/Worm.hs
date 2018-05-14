@@ -5,7 +5,7 @@ module Worm (
 worm, wormGenome, testWorm, breedAndSelectWormPool
 ) where
 
-import AnimalClub.Animal.Animal
+import AnimalClub.Animals
 import AnimalClub.Genetics
 import AnimalClub.Skellygen
 import AnimalClub.Skellygen.Math.Hierarchical

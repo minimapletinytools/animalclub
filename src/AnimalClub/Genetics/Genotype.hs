@@ -72,6 +72,7 @@ type GenotypeState = (DNA, [Gene])
 
 
 
+-- artisinal free range monad this so that you can rpar it
 
 -- allow output type to be parameterized please
 -- | Monad transformer for building genes

@@ -69,7 +69,7 @@ library:
     - AnimalClub.Skellygen.Math.Mesh
     - AnimalClub.Skellygen.Math.Quaternion
     # Animal
-    - AnimalClub.Animal.Animal
+    - AnimalClub.Animals
 
   dependencies:
 
