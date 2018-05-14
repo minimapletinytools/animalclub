@@ -29,7 +29,7 @@ wormNode 0 = AnimalNode (Bone (textFromInt 0)) (Rel $ V3 0.5 0 0) (Rel 1) False 
 wormNode n = AnimalNode (Bone (textFromInt n)) (Rel $ V3 0.5 0 0) (Rel 1) False [wormNode (n-1)]
 worm segs = AnimalNode (Bone (textFromInt (segs-1))) (Rel 0) (Abs 0.1) True [wormNode (segs-2)]
 
-wormGenome' :: (RandomGen g) => Int -> Int -> Genotype g AnimalFloats ()
+wormGenome' :: (RandomGen g) => Int -> Int -> Genotype g [AnimalExp] ()
 wormGenome' segs dnaPerSeg = do forM_ [0..(segs-1)] wormSeg where
     dnaPerSegOver4 = dnaPerSeg `div` 4
     wormSeg i = do
@@ -43,7 +43,7 @@ wormGenome' segs dnaPerSeg = do forM_ [0..(segs-1)] wormSeg where
         tellBoneFunc (Bone' (textFromInt i)) Orientation orients
         gbPop
 
-wormGenome :: Int -> Int -> Genome StdGen AnimalFloats
+wormGenome :: Int -> Int -> Genome StdGen [AnimalExp]
 wormGenome segs dnaPerSeg = Genome (segs*dnaPerSeg) (wormGenome' segs dnaPerSeg) (mkStdGen 0)
 
 testWorm :: Int -> AnimalPropertyMap -> Float
@@ -63,7 +63,7 @@ testWorm segs props = score where
 -- TODO use breedAndSelectPool in DNA
 breedAndSelectWormPool :: (RandomGen g) =>
     (AnimalPropertyMap -> Float) -- ^ test function
-    -> Genome StdGen AnimalFloats -- ^ worm genome
+    -> Genome StdGen [AnimalExp] -- ^ worm genome
     -> Float -- ^ mutation chance
     -> g -- ^ random generator
     -> (Int, Int) -- ^ size, winner

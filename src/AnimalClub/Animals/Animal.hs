@@ -11,7 +11,8 @@ Stability   : experimental
 -}
 
 module AnimalClub.Animals.Animal (
-    AnimalFloats,
+    AnimalExp(..),
+    parseSkellyFuncs,
     tellBoneFunc,
     Genome(..),
     evalGenome,
@@ -24,28 +25,29 @@ import AnimalClub.Skellygen
 import qualified Data.Text as T
 import           Data.Word
 import Data.Monoid (Monoid)
-import Data.List (foldl', mapAccumL)
+import Data.Maybe (catMaybes)
 import Control.DeepSeq
 import GHC.Generics (Generic)
 import System.Random
-import Lens.Micro.Platform
-import Control.Monad
 import Control.Monad.Writer (tell)
+
 --import Control.Exception (assert)
-
-import Debug.Trace (trace)
-
--- TODO change to Word32 or Bytestring
-type AnimalFloats = [(Either T.Text SkellyFunc, [Float])]
+--import Debug.Trace (trace)
 
 -- | various output expression of an animal genotype
 data AnimalExp =
     ExpBytes T.Text [Word32]
     | ExpFloats T.Text [Float]
-    | ExpSkellyFunc T.Text SkellyFunc [Float]
+    | ExpSkellyFunc SkellyFunc [Float] deriving (Generic, NFData, Show)
 
-tellBoneFunc :: (Monad m) => BoneName' -> BoneMethod -> [Float] -> GenotypeT g AnimalFloats m ()
-tellBoneFunc bn bm v = tell [(Right (SkellyFunc bn bm), v)]
+-- | pull out just the SkellyFuncs
+parseSkellyFuncs :: [AnimalExp] -> [(SkellyFunc, [Float])]
+parseSkellyFuncs = catMaybes . fmap (\case
+    ExpSkellyFunc sf f -> Just (sf,f)
+    _ -> Nothing)
+
+tellBoneFunc :: (Monad m) => BoneName' -> BoneMethod -> [Float] -> GenotypeT g [AnimalExp] m ()
+tellBoneFunc bn bm v = tell [(ExpSkellyFunc (SkellyFunc bn bm) v)]
 
 -- | DNA length, builder, random gen to seed builder
 data Genome g w = Genome Int (Genotype g w ()) g
@@ -55,13 +57,9 @@ evalGenome :: (RandomGen g, Monoid w) => Genome g w -> DNA -> w
 evalGenome (Genome _ gb g) dna = evalGeneBuilder gb (dna,[]) g
 
 generateAnimalProperties ::
-    AnimalFloats -- ^ list of properties
+    [AnimalExp] -- ^ list of properties
     -> AnimalPropertyMap -- ^ output accumulated map of properties. EnumBone' property will override AllBone' property
-generateAnimalProperties afs = generateAnimalProperties_ parsedafs where
-    parsedafs = foldl' foldfunc [] afs
-    foldfunc xs (sf, v) = case sf of
-        Left _ -> xs -- throw out non SkellyFunc values
-        Right x -> (x,v):xs
+generateAnimalProperties = generateAnimalProperties_ . parseSkellyFuncs
 
 
 -- breedAndSelectPoolProperty :: (RandomGen g) =>

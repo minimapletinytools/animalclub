@@ -20,8 +20,7 @@ import AnimalClub.Genetics
 import AnimalClub.Skellygen
 
 import qualified Data.Text as T
-import Data.Monoid (Monoid)
-import Data.List (foldl', mapAccumL)
+import Data.List (mapAccumL)
 import Control.DeepSeq
 import GHC.Generics (Generic)
 import System.Random
@@ -29,7 +28,7 @@ import Lens.Micro.Platform
 import Control.Monad
 import Control.Monad.Writer (tell)
 
-import Debug.Trace (trace)
+--import Debug.Trace (trace)
 
 
 -- TODO move everything below to Cute/AutoGenotype.hs or osmetihng like that
@@ -54,7 +53,7 @@ makeGenomeFromPropertiesSimple ::
     Int -- ^ DNA length (vector length / 4)
     -> [(T.Text, AutoGeneMethod)] -- ^ other properties
     -> [(SkellyFunc, AutoGeneMethod)] -- ^ skellygen properties
-    -> Genome StdGen AnimalFloats -- ^ output genome
+    -> Genome StdGen [AnimalExp] -- ^ output genome
 makeGenomeFromPropertiesSimple dnasz ops sfps = Genome dnasz geneBuilder (mkStdGen 0) where
     aps = map (over _1 Left) ops ++ map (over _1 Right) sfps
     --(total, withTotals) :: (Int, (Either T.Text SkellyFunc, AutoGenoMethod, Int)) -- (total weights, incremental weights)
@@ -74,5 +73,8 @@ makeGenomeFromPropertiesSimple dnasz ops sfps = Genome dnasz geneBuilder (mkStdG
                     val <- gbSumRange range
                     gbPop
                     return val
-                tell [(x, vals)]
+                case x of
+                    Right sf -> tell [ExpSkellyFunc sf vals]
+                    Left t -> tell [ExpFloats t vals]
+
         gbPop
