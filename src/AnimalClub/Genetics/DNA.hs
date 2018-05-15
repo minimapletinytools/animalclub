@@ -17,12 +17,14 @@ module AnimalClub.Genetics.DNA (
     dnaLength,
     breed,
     mutate,
+    mutateOld,
     breedAndMutate,
     breedAndSelectPool
 ) where
 
 import           Data.Bits
 import qualified Data.Vector.Unboxed         as V
+import qualified Data.Vector.Generic         as G
 import Data.List (mapAccumL, sortBy)
 import           Data.Ord                        (comparing)
 import           Data.Word
@@ -76,19 +78,36 @@ breed g a b = V.map choose (V.zip3 a b rands) where
         bc = (br .&. geneB) .|. (cbr .&. unsafeShiftR geneB 1)
         mated = ac .|. bc
 
-mutateBit :: (RandomGen g) => g -> Word8 -> Word8
-mutateBit g x = unsafeShiftL 0x01 (fst $ randomR (0,7) g) `xor` x
+
+
+-- |
+-- helper
+findIndices :: (G.Vector v a, G.Vector v Int) => (a -> Bool) -> v a -> v Int
+findIndices f v = G.unfoldr findNext 0 where
+    findNext i = if
+        | i >= G.length v -> Nothing
+        | f (v G.! i) -> Just (i, i+1)
+        | otherwise -> findNext (i+1)
 
 -- |
 -- chance is chance of one bit mutating per byte
--- TODO write a version that takes a seed instead and uses the faster RNG maybe?
 mutate :: (RandomGen g) => Float -> g -> DNA -> DNA
-mutate chance g dna = V.zipWith zipFunc rands dna where
+mutate chance g dna = V.accumulate_ mutateBit dna indices bitRands where
+    rands = V.fromList . take (V.length dna) . randoms $ g
+    indices = findIndices (< chance) rands
+    bitRands = V.fromList . take (V.length indices) . randoms $ g
+    mutateBit x index = unsafeShiftL 0x01 index `xor` x
+
+-- | old inefficient implementation, left for peformance testing reasons
+-- chance is chance of one bit mutating per byte
+mutateOld :: (RandomGen g) => Float -> g -> DNA -> DNA
+mutateOld chance g dna = V.zipWith zipFunc rands dna where
     -- TODO running random twice here is very inefficient
     -- you really want to mapAccumL a single generator over the dna
     -- and only evaluate a second time when there is a mutation
     rands = V.fromList . take (V.length dna) . randoms $ g
     zipFunc gx x = r where
+        mutateBit g x = unsafeShiftL 0x01 (fst $ randomR (0,7) g) `xor` x
         (c, gx') = randomR (0,1.0) (mkStdGen gx)
         r = if c < chance then mutateBit gx' x else x
 

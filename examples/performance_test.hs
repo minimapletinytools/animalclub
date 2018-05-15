@@ -9,10 +9,14 @@ import AnimalClub.Animals
 import AnimalClub.Genetics
 import AnimalClub.Skellygen
 import AnimalClub.Skellygen.Math.Mesh
+import qualified AnimalClub.Genetics.DNAMWC as MWC
 
 import Text.Printf (printf)
 import           Data.List                       (unfoldr)
 import System.Random
+
+import Criterion.Main
+import qualified System.Random.MWC as MWC
 
 --import System.Clock
 --import qualified Debug.Trace as Debug
@@ -25,20 +29,33 @@ clockSomething something = do
     end <- getTime Monotonic
     fprint (timeSpecs % "\n") start end-}
 
-main :: IO ()
-main = do
-    segs <- return 20
-    dnaPerSeg <- return 100
-    printf "Running tests. segs: %i, dna per seg: %i " segs dnaPerSeg :: IO ()
-    gen1 <- getStdGen
+mwcvsstd :: IO ()
+mwcvsstd = do
     let
-        (_, gen2) = next gen1
-        genome = (wormGenome segs dnaPerSeg)
-        original = makeRandDNA gen1 (segs * dnaPerSeg)
-        unfoldWormF (dnas, g) = Just $ (next_dnas, acc) where
-            acc@(next_dnas, _) = breedAndSelectWormPool (testWorm segs) genome 0.003 g (10,3) dnas
-        bestWorms = last $ take 300 $ unfoldr unfoldWormF ([original], gen2)
-        bestWorm = last bestWorms
-        bestWormProps = generateAnimalProperties $ evalGenome genome bestWorm
-        skelly = animalNodeToSkellyNodeWithProps bestWormProps (worm segs)
-    writeFile "wigglyworm.obj" . meshToObj . generateMesh $ skelly
+        lns = [100, 1000, 10000]
+    g <- MWC.create
+    stdg <- getStdGen
+    dnas <- mapM (MWC.makeRandDNA g) lns
+    defaultMain [
+        bgroup "MWC create" $ map (\l -> bench (show l) $ nfIO (MWC.makeRandDNA g l)) lns
+        ,bgroup "StdGen create" $ map (\l -> bench (show l) $ nf (makeRandDNA stdg) l) lns
+        ,bgroup "MWC breed" $ map (\(l, dna) -> bench (show l) $ nfIO (MWC.breed g dna dna)) (zip lns dnas)
+        ,bgroup "StdGen breed" $ map (\(l, dna) -> bench (show l) $ nf (breed stdg dna) dna) (zip lns dnas)
+        ,bgroup "MWC mutate 0.1" $ map (\(l, dna) -> bench (show l) $ nfIO (MWC.mutate 0.1 g dna)) (zip lns dnas)
+        ,bgroup "StdGen mutate 0.1" $ map (\(l, dna) -> bench (show l) $ nf (mutate 0.1 stdg) dna) (zip lns dnas)
+        ]
+
+mutatevsmutateold :: IO ()
+mutatevsmutateold = do
+    let
+        lns = [100, 1000, 10000]
+    stdg <- getStdGen
+    let
+        dnas = map (makeRandDNA stdg) lns
+    defaultMain [
+        bgroup "StdGen mutate 0.1" $ map (\(l, dna) -> bench (show l) $ nf (mutate 0.1 stdg) dna) (zip lns dnas)
+        ,bgroup "StdGen mutateOld 0.1" $ map (\(l, dna) -> bench (show l) $ nf (mutateOld 0.1 stdg) dna) (zip lns dnas)
+        ]
+
+main :: IO ()
+main = mutatevsmutateold
