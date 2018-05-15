@@ -10,16 +10,22 @@ data types pertaining to DNA and Genes.
 -}
 
 module AnimalClub.Genetics.DNAMWC (
-
+    -- * Types
+    DNA,
+    -- * Functions
+    makeRandDNA,
+    dnaLength,
+    breed,
+    mutate,
+    breedAndMutate,
+    breedAndSelectPool
 ) where
-
-import qualified AnimalClub.Genetics.DNA as DNA
 
 import           Data.Bits
 import qualified Data.Vector.Unboxed         as U
 import qualified Data.Vector                 as V
 import qualified Data.Vector.Generic         as G
-import Data.List (mapAccumL, sortBy)
+import Data.List (sortBy)
 import           Data.Ord                        (comparing)
 import           Data.Word
 import System.Random.MWC
@@ -27,15 +33,32 @@ import System.Random.MWC
 import Control.Monad.Primitive
 import Control.Exception.Base (assert)
 
+-- | Allele4 is 4 single gene pairs (allele represented as a Word8
+-- not really necessary type synonym tbh
+type Allele4 = Word8
+
+-- | DNA host genetic information for all gene transformations in this module
+-- DNA is an array of 'Allele4'
+type DNA = U.Vector Allele4
+
+-- | number of single gene pairs in DNA
+-- TODO rename to geneCount
+dnaLength :: DNA -> Int
+dnaLength dna = 4 * G.length dna
+
+-- | create DNA of all 0s with given dnaLength
+-- length must be multiple of 4
+makeZeroDNA :: Int -> DNA
+makeZeroDNA c = assert (c `mod` 4 == 0) $ U.generate c (const 0)
 
 -- | create random DNA with given dnaLength
 -- length must be multiple of 4
-makeRandDNA :: (PrimMonad m) => Gen (PrimState m) -> Int -> m DNA.DNA
+makeRandDNA :: (PrimMonad m) => Gen (PrimState m) -> Int -> m DNA
 makeRandDNA g c = assert (c `mod` 4 == 0) $ do
     uniformVector g (c `div` 4)
 
 -- | breed 2 DNAs with given random generator
-breed :: forall m. (PrimMonad m) => Gen (PrimState m) -> DNA.DNA -> DNA.DNA -> m DNA.DNA
+breed :: forall m. (PrimMonad m) => Gen (PrimState m) -> DNA -> DNA -> m DNA
 breed g a b = do
     rands <- uniformVector g (G.length a) :: m (U.Vector Word8)
     return $ G.map choose (G.zip3 a b rands)
@@ -69,7 +92,7 @@ uniformVectorR range gen n = G.replicateM n (uniformR range gen)
 
 -- |
 -- chance is chance of one bit mutating per byte
-mutate :: forall m. (PrimMonad m) => Float -> Gen (PrimState m) -> DNA.DNA -> m DNA.DNA
+mutate :: forall m. (PrimMonad m) => Float -> Gen (PrimState m) -> DNA -> m DNA
 mutate chance g dna = do
     rands <- uniformVector g (G.length dna)
     let
@@ -79,18 +102,18 @@ mutate chance g dna = do
     return $ U.accumulate_ mutateBit dna indices bitRands
 
 
-breedAndMutate :: (PrimMonad m) => Float -> Gen (PrimState m) -> DNA.DNA -> DNA.DNA -> m DNA.DNA
+breedAndMutate :: (PrimMonad m) => Float -> Gen (PrimState m) -> DNA -> DNA -> m DNA
 breedAndMutate chance g a b = do
     dna' <- breed g a b
     mutate chance g dna'
 
 breedAndSelectPool :: forall m. (PrimMonad m) =>
-    (DNA.DNA -> Float) -- ^ test function
+    (DNA -> Float) -- ^ test function
     -> Float -- ^ mutation chance
     -> Gen (PrimState m) -- ^ random generator
     -> (Int, Int) -- ^ size, winner
-    -> [DNA.DNA] -- ^ parent pool
-    -> m [DNA.DNA] -- ^ best children and new generator
+    -> [DNA] -- ^ parent pool
+    -> m [DNA] -- ^ best children and new generator
 breedAndSelectPool testfn chance g (size, winners) dnas = do
     let inputs = length dnas
     moms <- uniformVectorR (0,inputs-1) g size :: m (V.Vector Int)
