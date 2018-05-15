@@ -79,7 +79,7 @@ evalGeneBuilder m s g = runIdentity $ evalGeneBuilderT m s g
 
 -- | internal helper function for folding Gene hierarchies in the builder
 absoluteGene :: GenotypeState -> Gene
-absoluteGene (dna, gtl) = foldr combineGene (Gene 0 (4 * V.length dna)) gtl
+absoluteGene (dna, gtl) = foldr combineGene (Gene 0 (V.length dna)) gtl
 
 
 
@@ -113,13 +113,12 @@ gbSum = state gbSum' where
 
 -- | Same as gbSum but normalized to [0,1]
 gbNormalizedSum :: (Monoid w, Monad m) => GenotypeT g w m Float
-gbNormalizedSum = do
-    state gbSum' where
+gbNormalizedSum = state gbSum' where
     gbSum' (dna, gtl) = (answer, (dna, gtl)) where
-        foldedGene = (absoluteGene (dna, gtl))
+        foldedGene = absoluteGene (dna, gtl)
         sum_ = tryGeneSum dna foldedGene
         length_ = geneLength foldedGene
-        answer = if length_ == 0 then 0 else 0.5 * fromIntegral sum_ / fromIntegral length_
+        answer = if length_ == 0 then 0 else 0.125 * fromIntegral sum_ / fromIntegral length_
 
 -- | Computation returns True if gbNormalizedSum > thresh, False otherwise
 gbSumRange :: (Monoid w, Monad m) => (Float,Float) -> GenotypeT g w m Float
@@ -141,7 +140,7 @@ gbTypical :: (Monoid w, Monad m) => (Float, Float) -> GenotypeT g w m Float
 gbTypical (min_, max_) = do
     (dna, gtl) <- get
     let
-        l = geneCount (absoluteGene (dna, gtl))
+        l = _count (absoluteGene (dna, gtl))
         ml = l `quot` 4
     gbPush (Gene 0 ml)
     mult <- gbNormalizedSum
@@ -158,7 +157,7 @@ gbRandomRanges ranges = do
     (dna, gtl) <- get
     let
         rl = length ranges
-        gl = geneCount (absoluteGene (dna, gtl))
+        gl = _count (absoluteGene (dna, gtl))
         l = gl `quot` rl
     return $ assert (l > 0) ()
     forM [0..(rl-1)] $ \i -> do

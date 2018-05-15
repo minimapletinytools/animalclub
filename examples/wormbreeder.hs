@@ -19,11 +19,11 @@ import System.Random
 main :: IO ()
 main = do
     segs <- return 20
-    dnaPerSeg <- return 120
-    mutationChance <- return 0.003
-    litterSize <- return 30
+    dnaPerSeg <- return 15
+    mutationChance <- return 0.01
+    litterSize <- return 20
     selectionSize <- return 3
-    generations <- return 300
+    generations <- return 700
     printf "Breeding worms. segs: %i, dna per seg: %i, mutation: %f \n" segs dnaPerSeg mutationChance :: IO ()
     printf "litter: %i, selection: %i, generations: %i \n" litterSize selectionSize generations :: IO ()
     gen1 <- getStdGen

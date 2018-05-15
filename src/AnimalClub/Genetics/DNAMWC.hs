@@ -11,8 +11,6 @@ The signatures are adjusted accordingly.
 -}
 
 module AnimalClub.Genetics.DNAMWC (
-
-    -- * These have different typse
     makeRandDNA,
     breed,
     mutate,
@@ -36,8 +34,7 @@ import Control.Exception.Base (assert)
 -- | create random DNA with given dnaLength
 -- length must be multiple of 4
 makeRandDNA :: (PrimMonad m) => Gen (PrimState m) -> Int -> m DNA.DNA
-makeRandDNA g c = assert (c `mod` 4 == 0) $ do
-    uniformVector g (c `div` 4)
+makeRandDNA g c = uniformVector g c
 
 -- | breed 2 DNA with given random generator
 breed :: forall m. (PrimMonad m) => Gen (PrimState m) -> DNA.DNA -> DNA.DNA -> m DNA.DNA
@@ -76,7 +73,7 @@ uniformVectorR range gen n = G.replicateM n (uniformR range gen)
 -- chance is chance of one bit mutating per byte
 mutate :: forall m. (PrimMonad m) => Float -> Gen (PrimState m) -> DNA.DNA -> m DNA.DNA
 mutate chance g dna = do
-    rands <- uniformVector g (G.length dna)
+    rands <- uniformVectorR (0, 1.0) g (G.length dna)
     let
         indices = findIndices (< chance) rands
         mutateBit x index = unsafeShiftL 0x01 index `xor` x

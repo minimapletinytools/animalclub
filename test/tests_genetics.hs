@@ -5,6 +5,7 @@ import AnimalClub.Genetics
 
 import Control.Monad.Writer (tell)
 import Data.List
+import             Data.Semigroup (Semigroup, (<>))
 import qualified Data.Text as T
 import qualified Data.Vector.Unboxed as V
 import Data.Word
@@ -98,9 +99,12 @@ prop_gbRandomRanges dna' ranges' = pass
             dummyGen
     pass = all (\((mn, mx), x) -> (x >= mn) && (x <= mx)) $ zip ranges o
 
+instance Semigroup Float where
+    (<>) = (+)
+
 instance Monoid Float where
     mempty = 0
-    mappend = (+)
+    mappend = (<>)
 
 prop_convergence :: Int -> Bool
 prop_convergence seed = pass
@@ -108,7 +112,7 @@ prop_convergence seed = pass
     g1 = mkStdGen seed
     (target :: Float, g2) = randomR (0, 100) g1
     maxGenerations = 200
-    dnaLength_ = 100
+    dnaLength_ = 25
     thresh = 0.25
     original = makeRandDNA g1 dnaLength_
     testgene :: Genotype StdGen Float ()

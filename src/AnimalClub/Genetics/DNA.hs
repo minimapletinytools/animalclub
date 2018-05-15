@@ -43,24 +43,20 @@ type Allele4 = Word8
 
 -- | DNA host genetic information for all gene transformations in this module
 -- DNA is an array of 'Allele4'
--- TODO switch to Repa if you really want parallelizable tightly packed bit arrays
--- TODO consider newtyping this
 type DNA = V.Vector Allele4
 
--- | number of single gene pairs in DNA
--- TODO rename to geneCount
+-- | number of Allele4 in DNA
+-- that is to say, length in in 8-bit intervals
 dnaLength :: DNA -> Int
-dnaLength dna = 4 * V.length dna
+dnaLength = V.length
 
 -- | create DNA of all 0s with given dnaLength
--- length must be multiple of 4
 makeZeroDNA :: Int -> DNA
-makeZeroDNA c = assert (c `mod` 4 == 0) $ V.generate c (const 0)
+makeZeroDNA c = V.generate c (const 0)
 
 -- | create random DNA with given dnaLength
--- length must be multiple of 4
 makeRandDNA :: (RandomGen g) => g -> Int -> DNA
-makeRandDNA g c = assert (c `mod` 4 == 0) $ V.unfoldrN (c `div` 4) (Just . random) g
+makeRandDNA g c = V.unfoldrN c (Just . random) g
 
 -- | breed 2 DNAs with given random generator
 -- TODO write a version that takes a seed instead and uses the faster RNG maybe?
@@ -92,7 +88,7 @@ findIndices f v = G.unfoldr findNext 0 where
 -- chance is chance of one bit mutating per byte
 mutate :: (RandomGen g) => Float -> g -> DNA -> DNA
 mutate chance g dna = V.accumulate_ mutateBit dna indices bitRands where
-    rands = V.fromList . take (V.length dna) . randoms $ g
+    rands = V.fromList . take (V.length dna) . randomRs (0, 1.0) $ g
     indices = findIndices (< chance) rands
     bitRands = V.fromList . take (V.length indices) . randoms $ g
     mutateBit x index = unsafeShiftL 0x01 index `xor` x
