@@ -183,7 +183,7 @@ gbRandomRanges ranges = do
         gbPop
         return output
 
-
+--gbRandomContinuousSample :: (RandomGen g) 
 
 
 

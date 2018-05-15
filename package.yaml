@@ -37,14 +37,17 @@ default-extensions:
 - DeriveFoldable
 - DeriveTraversable
 - FlexibleInstances
+- FlexibleContexts
 - ScopedTypeVariables
+- MultiWayIf
 
 dependencies:
 - base >= 4.7 && < 5
 - vector
-- random
-- mtl
 - MonadRandom
+- random
+- mwc-random
+- mtl
 - QuickCheck
 - array
 - text
@@ -54,6 +57,7 @@ dependencies:
 - containers
 - clock
 - deepseq
+- primitive
 
 library:
   source-dirs: src

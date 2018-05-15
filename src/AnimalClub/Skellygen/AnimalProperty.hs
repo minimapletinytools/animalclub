@@ -105,7 +105,7 @@ generateAnimalPropertiesInternal_ _props xs = foldl addProp (foldl addProp (fold
             -- if EnumBone', use AllBone' as default
             defaultProperty = case boneName of
                 EnumBone' boneName' _ -> Map.findWithDefault defaultAnimalProperty (AllBones' boneName') accProp
-                EnumBones' boneName' _ -> error "this should have been filtered and mapped out!"
+                EnumBones' boneName' _ -> error $ "found " ++ (show boneName') ++ ", this should have been filtered and mapped out!"
                 _ -> defaultAnimalProperty
             oldProp = Map.findWithDefault defaultProperty boneName accProp
             -- combine with what's already there

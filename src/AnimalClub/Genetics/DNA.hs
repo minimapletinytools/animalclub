@@ -113,7 +113,7 @@ breedAndSelectPool testfn mChance g (size, winners) dnas = (r, outg) where
     parents = take size $ zip moms dads
     (outg, worms) = mapAccumL (\acc_g x -> (snd (next acc_g), breedAndMutate mChance acc_g (dnas !! fst x ) (dnas !! snd x))) g parents
     r = take winners $ sortBy (comparing testfn) worms
-    r' = head r
+    --r' = head r
 
 
 
