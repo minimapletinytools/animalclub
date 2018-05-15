@@ -90,7 +90,7 @@ mutate :: (RandomGen g) => Float -> g -> DNA -> DNA
 mutate chance g dna = V.accumulate_ mutateBit dna indices bitRands where
     rands = V.fromList . take (V.length dna) . randomRs (0, 1.0) $ g
     indices = findIndices (< chance) rands
-    bitRands = V.fromList . take (V.length indices) . randoms $ g
+    bitRands = V.fromList . take (V.length indices) . randomRs (0,7) $ g
     mutateBit x index = unsafeShiftL 0x01 index `xor` x
 
 -- | old inefficient implementation, left for peformance testing reasons

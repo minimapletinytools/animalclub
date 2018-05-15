@@ -32,15 +32,16 @@ worm segs = AnimalNode (Bone (textFromInt (segs-1))) (Rel 0) (Abs 0.1) True [wor
 wormGenome' :: (RandomGen g) => Int -> Int -> Genotype g [AnimalExp] ()
 wormGenome' segs dnaPerSeg = do forM_ [0..(segs-1)] wormSeg where
     dnaPerSegOver4 = dnaPerSeg `div` 4
+    dnaPerSegOver2 = dnaPerSeg `div` 2
     wormSeg i = do
-        gbPush $ Gene (dnaPerSeg*i) dnaPerSeg
-        --gbPush $ Gene (dnaPerSeg*i) dnaPerSegOver4
-        x <- gbTypical (-1.0, 6.0)
+        --gbPush $ Gene (dnaPerSeg*i) dnaPerSeg
+        gbPush $ Gene (dnaPerSeg*i) dnaPerSegOver2
+        x <- gbSumRange (-1.0, 6.0) -- using gbTypical here doesn't work very well for some reason :(
         --x <- gbSumRange (0.1, 4.5)
         tellBoneFunc (Bone' (textFromInt i)) Thickness [x] --[x*0.5+0.75]
         gbPop
         --gbPush $ Gene (dnaPerSeg*i + dnaPerSegOver4*2) (dnaPerSegOver4*2)
-        gbPush $ Gene (dnaPerSeg*i + dnaPerSegOver4) (dnaPerSegOver4*3)
+        gbPush $ Gene (dnaPerSeg*i + dnaPerSegOver2) (dnaPerSegOver2)
         orients <- gbRandomRanges (replicate 3 (-1.5,1.5))
         tellBoneFunc (Bone' (textFromInt i)) Orientation orients
         gbPop
@@ -58,7 +59,7 @@ testWorm segs props = score where
     prop i = Map.findWithDefault (error $ "could not find " ++ show (name i)) (name i) props
     thick i = _skinParams $ prop i
     orient i = _orientation $ prop i
-    off i = (thick i - desiredThick i) + 4*(Metric.distance (orient i) (desiredOrient i))
+    off i = (thick i - desiredThick i) + 5*(Metric.distance (orient i) (desiredOrient i))
     score = sqrt $ sum [off x * off x | x <- [0..(segs-1)]]
 
 -- |
