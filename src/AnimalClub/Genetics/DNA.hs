@@ -1,12 +1,11 @@
 {-|
-Module      : Gene
-Description : Functions and types pertaining to DNA and Genes
+Module      : DNA
+Description : Functions and types pertaining to DNA
 Copyright   : (c) Peter Lu, 2018
 License     : GPL-3
 Maintainer  : chippermonky@email.com
 Stability   : experimental
 
-data types pertaining to DNA and Genes.
 -}
 
 module AnimalClub.Genetics.DNA (

@@ -9,21 +9,6 @@ Stability   : experimental
 Functions and types pertaining to Genes
 -}
 
---{-# LANGUAGE AllowAmbiguousTypes       #-} -- defers type check until function is actually used, I don't really understand this
---{-# LANGUAGE DataKinds                 #-} -- so I can do data ___ (n::Nat)
---{-# LANGUAGE ExistentialQuantification #-}
---{-# LANGUAGE ExplicitNamespaces        #-}
---{-# LANGUAGE FlexibleContexts          #-}
---{-# LANGUAGE FlexibleInstances         #-} -- needed for instance declaration, not sure why I need this
---{-# LANGUAGE GADTs                     #-} -- so I can do fancy type constraints?
---{-# LANGUAGE KindSignatures            #-} -- so i can do (n::Nat)
---{-# LANGUAGE MultiParamTypeClasses     #-} -- so I can do a multiparameter type class
---{-# LANGUAGE TypeOperators             #-}
---{-# LANGUAGE RankNTypes                 #-}
---{-# LANGUAGE InstanceSigs                 #-} -- idk
---{-# LANGUAGE FunctionalDependencies                 #-} -- needed so we can do (KnownNat n) => ... in class Gene
---{-# LANGUAGE ScopedTypeVariables                 #-} -- needed to access n of type sig in geneLength
-
 module AnimalClub.Genetics.Gene (
     Gene(..),
     combineGene,

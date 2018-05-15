@@ -1,3 +1,5 @@
+-- WORK IN PROGRESS
+
 {-|
 Module      : Genotype
 Description : Monad for building genes

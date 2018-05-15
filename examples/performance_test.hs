@@ -58,4 +58,4 @@ mutatevsmutateold = do
         ]
 
 main :: IO ()
-main = mutatevsmutateold
+main = mwcvsstd

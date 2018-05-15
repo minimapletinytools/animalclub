@@ -9,17 +9,6 @@ Stability   : experimental
 Monad for building genes using Gene.
 -}
 
---{-# LANGUAGE KindSignatures            #-} -- needed to explictly declare (n::Nat)
---{-# LANGUAGE ExistentialQuantification #-} -- forall
---{-# LANGUAGE ExplicitNamespaces        #-} -- so I can import type (<=)
---{-# LANGUAGE TypeOperators             #-} -- so I can do (m <= n) on types
---{-# LANGUAGE DataKinds                 #-} -- so I can do data ___ (n::Nat)
---{-# LANGUAGE GADTs                     #-} -- data type constraints
-{-# LANGUAGE TypeSynonymInstances        #-} -- allows: instance ___ SomeTypeSynonym
-{-# LANGUAGE FlexibleInstances        #-}
-{-# LANGUAGE MultiParamTypeClasses     #-} -- so I can do a multiparameter type class
-
-
 module AnimalClub.Genetics.Genotype (
     -- * Monads
     -- $monaddoclink
@@ -183,7 +172,7 @@ gbRandomRanges ranges = do
         gbPop
         return output
 
---gbRandomContinuousSample :: (RandomGen g) 
+--gbRandomContinuousSample :: (RandomGen g)
 
 
 
