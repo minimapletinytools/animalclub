@@ -74,23 +74,28 @@ instance (Monoid w, RandomGen g, MonadParallel m) => Monad (GenotypeT g w m) whe
             (b, g'', w2) <- unGenotypeT (f a) g' dna
             return (b, g'', mappend w1 w2)
 
+
+-- | minimal dna length requirement for automatic parallelization
+genoTypeParMin :: Int
+genoTypeParMin = 10
+
 -- |
 -- RandomGen g constraint required to split the generator for deterministic parallel evaluation (whether it's actually used or not)
 instance forall w g m. (Monoid w, RandomGen g, MonadParallel m) => MonadParallel (GenotypeT g w m) where
-    bindM2 :: forall a b c. (a -> b -> GenotypeT g w m c) -> GenotypeT g w m a -> GenotypeT g w m b -> GenotypeT g w m c
     bindM2 f' a' b' = GenotypeT func where
-        func :: g -> DNA -> m (c, g, w)
-        func g dna = bindM2 f ra rb where
-            -- make generators
-            (g',(g'',g''')) = over _2 split $ split g
-            -- parallel evaluate a and b to produce c
-            ra = unGenotypeT a' g' dna
-            rb = unGenotypeT b' g'' dna
-            -- unwrap and rewrap the monadic output of the inner monad
-            f :: (a, g, w) -> (b, g, w) -> m (c, g, w)
-            f (x1,_,w1) (x2,_,w2) =
-                unGenotypeT (f' x1 x2) g''' dna
-                >>= \(c, g'''', w3) -> return (c, g'''', mconcat [w1,w2,w3])
+        bindM2Serial f ma mb = do { a <- ma; b <- mb; f a b }
+        func g dna = if dnaLength dna <= genoTypeParMin
+            then unGenotypeT (bindM2Serial f' a' b') g dna
+            else bindM2 f ra rb where
+                -- make generators
+                (g',(g'',g''')) = over _2 split $ split g
+                -- parallel evaluate a and b to produce c
+                ra = unGenotypeT a' g' dna
+                rb = unGenotypeT b' g'' dna
+                -- unwrap and rewrap the monadic output of the inner monad
+                f (x1,_,w1) (x2,_,w2) =
+                    unGenotypeT (f' x1 x2) g''' dna
+                    >>= \(c, g'''', w3) -> return (c, g'''', mconcat [w1,w2,w3])
 
 -- |
 -- constraints needed to satisfy Monad instance
