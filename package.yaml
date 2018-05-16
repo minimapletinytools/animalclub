@@ -40,6 +40,7 @@ default-extensions:
 - FlexibleContexts
 - ScopedTypeVariables
 - MultiWayIf
+- TupleSections
 
 dependencies:
 - base >= 4.7 && < 5
@@ -59,6 +60,8 @@ dependencies:
 - deepseq
 - primitive
 - criterion
+- monad-parallel
+- parallel
 
 library:
   source-dirs: src

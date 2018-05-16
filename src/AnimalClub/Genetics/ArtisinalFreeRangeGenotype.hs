@@ -37,14 +37,15 @@ module AnimalClub.Genetics.ArtisinalFreeRangeGenotype (
 import AnimalClub.Genetics.DNA
 import AnimalClub.Genetics.Gene
 
-import Data.Text (Text, append)
 import qualified Data.Vector.Unboxed as V
-import Control.Monad.Writer.Lazy (WriterT, tell, pass, execWriterT)
-import Control.Monad.State.Lazy (StateT, evalStateT, put, get, state)
-import Control.Monad.Identity (Identity, runIdentity)
-import Control.Monad.Random (RandT, evalRandT, getRandom)
-import Control.Monad (forM)
-import System.Random (RandomGen)
+
+import Lens.Micro.Platform (over, _1, _2)
+import Control.Parallel.Strategies
+import Control.Applicative
+import Control.Monad.Identity
+import Control.Monad.Random (MonadRandom(..), RandomGen(..))
+import Control.Monad.Parallel (MonadParallel(..))
+
 import Control.Exception.Base (assert)
 
 --import Debug.Trace
@@ -52,6 +53,45 @@ import Control.Exception.Base (assert)
 -- | StateT GenotypeState (WriterT w (RandT g m))
 newtype GenotypeT g w m a = GenotypeT { unGenotypeT :: g -> DNA -> m (a, g, w) }
 type Genotype g w = GenotypeT g w Identity
+
+instance (Functor m) => Functor (GenotypeT g w m) where
+	fmap f n = GenotypeT $ \g dna -> fmap (over _1 f) (unGenotypeT n g dna)
+
+
+-- |
+-- implemented using bindM2 for automatic parallelization using ApplicativeDo
+instance (Monoid w, RandomGen g, MonadParallel m) => Applicative (GenotypeT g w m) where
+	liftA2 f = bindM2 (\a b -> return (f a b))
+
+-- |
+-- requires MonadParallel m and RandomGen g constraints to support automatic parallelization using ApplicativeDo
+-- necessary as of GHC 7.10 now that Applicative is a superclass of Monad which is
+-- kind of an unfortunate consequence of an otherwise good change
+instance (Monoid w, RandomGen g, MonadParallel m) => Monad (GenotypeT g w m) where
+    return a = GenotypeT (\g _ -> return (a, g, mempty))
+
+instance forall w g m. (Monoid w, RandomGen g, MonadParallel m) => MonadParallel (GenotypeT g w m) where
+    bindM2 :: forall a b c. (a -> b -> GenotypeT g w m c) -> GenotypeT g w m a -> GenotypeT g w m b -> GenotypeT g w m c
+    bindM2 f' a' b' = GenotypeT func where
+        func :: g -> DNA -> m (c, g, w)
+        func g dna = bindM2 f ra rb where
+            -- make generators
+            (g',(g'',g''')) = over _2 split $ split g
+            -- parallel evaluate a and b to produce c
+            ra = unGenotypeT a' g' dna
+            rb = unGenotypeT b' g'' dna
+            -- unwrap and rewrap the monadic output of the inner monad
+            f :: (a, g, w) -> (b, g, w) -> m (c, g, w)
+            f (x1,_,w1) (x2,_,w2) =
+                unGenotypeT (f' x1 x2) g''' dna
+                >>= \(c, g'''', w3) -> return (c, g'''', mconcat [w1,w2,w3])
+
+
+
+instance (Monoid w, RandomGen g, MonadParallel m) => MonadRandom (GenotypeT g w m) where
+    getRandom = undefined
+    getRandomR r = undefined
+
 
 -- | evalute the builder and obtain its output
 evalGeneBuilderT :: (RandomGen g, Monoid w, Monad m) => GenotypeT g w m a -> DNA -> g -> m w
@@ -63,5 +103,5 @@ evalGeneBuilderT m s g = do
 evalGeneBuilder :: (RandomGen g, Monoid w) => Genotype g w a -> DNA -> g -> w
 evalGeneBuilder m s g = runIdentity $ evalGeneBuilderT m s g
 
-addGene :: Int -> Int -> GenotypeT g w m a -> GenotypeT g w m a
-addGene i n gt = GenotypeT $ \g dna -> unGenotypeT gt g (V.slice i n dna)
+usingGene :: Gene -> GenotypeT g w m a -> GenotypeT g w m a
+usingGene (Gene i n) gt = GenotypeT $ \g dna -> unGenotypeT gt g (V.slice i n dna)
