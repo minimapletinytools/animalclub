@@ -15,6 +15,7 @@ module AnimalClub.Genetics.DNA (
     makeRandDNA,
     dnaLength,
     dnaSum,
+    dnaBitCount,
     breed,
     mutate,
     mutateOld,
@@ -51,9 +52,14 @@ type DNA = V.Vector Allele4
 dnaLength :: DNA -> Int
 dnaLength = V.length
 
--- | sum of all bit pairs in DNA
+-- | sum of all bits in DNA
 dnaSum :: DNA -> Int
-dnaSum = V.foldl' (\acc x -> acc + popCount x) 0 
+dnaSum = V.foldl' (\acc x -> acc + popCount x) 0
+
+-- | returns an 8 length array that counts occurrence of each bit
+dnaBitCount :: DNA -> V.Vector Int
+dnaBitCount = V.foldl' f (V.replicate 8 0) where
+    f acc x = V.imap (\i a -> if ((unsafeShiftL 0x01 i) .&. x) /= 0 then a+1 else a) acc
 
 -- | create DNA of all 0s with given dnaLength
 makeZeroDNA :: Int -> DNA

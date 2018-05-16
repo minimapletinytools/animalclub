@@ -114,15 +114,72 @@ evalGeneBuilder :: (RandomGen g, Monoid w) => Genotype g w a -> DNA -> g -> w
 evalGeneBuilder m s g = runIdentity $ evalGeneBuilderT m s g
 
 -- | apply a computation on a Gene
+-- will error if Gene is out of bounds of DNA being operated on
 usingGene :: Gene -> GenotypeT g w m a -> GenotypeT g w m a
 usingGene (Gene i n) gt = GenotypeT $ \g dna -> unGenotypeT gt g (V.slice i n dna)
 
--- | Computation that adds all genes of current genotype
-gbSum :: (Monoid w, Monad m) => GenotypeT g w m Int
-gbSum = GenotypeT $ \g dna -> return (dnaSum dna, g, mempty)
-
-gbDNALength :: (Monoid w, Monad m) => GenotypeT g w m Int
+-- | return length of DNA being computed on
+gbDNALength :: (RandomGen g, Monoid w, Monad m) => GenotypeT g w m Int
 gbDNALength = GenotypeT $ \g dna -> return (dnaLength dna, g, mempty)
 
+-- | Computation that adds all genes of current genotype
+gbSum :: (RandomGen g, Monoid w, Monad m) => GenotypeT g w m Int
+gbSum = GenotypeT $ \g dna -> return (dnaSum dna, g, mempty)
+
+-- | gbSum normalized to [0,1]
 gbNormalizedSum :: (RandomGen g, Monoid w, MonadParallel m) => GenotypeT g w m Float
-gbNormalizedSum = liftA2 (\s l -> 0.125 * fromIntegral s / fromIntegral l) gbSum gbDNALength
+gbNormalizedSum = do
+    s <- gbSum
+    l <- gbDNALength
+    return $ 0.125 * fromIntegral s / fromIntegral l
+
+-- parallel version which I'm pretty sure runs slower
+--gbNormalizedSum :: (RandomGen g, Monoid w, MonadParallel m) => GenotypeT g w m Float
+--gbNormalizedSum = liftA2 (\s l -> 0.125 * fromIntegral s / fromIntegral l) gbSum gbDNALength
+
+-- | Computation returns True if gbNormalizedSum > thresh, False otherwise
+gbSumRange :: (RandomGen g, Monoid w, MonadParallel m) => (Float,Float) -> GenotypeT g w m Float
+gbSumRange (min',max') = do
+    s <- gbNormalizedSum
+    return $ min' + s * (max'-min')
+
+-- | Computation returns True if gbNormalizedSum > thresh, False otherwise
+gbNormalizedThresh :: (RandomGen g, Monoid w, MonadParallel m) => Float -> GenotypeT g w m Bool
+gbNormalizedThresh thresh = do
+    s <- gbNormalizedSum
+    return $ s > thresh
+
+
+
+-- | Computation that sums a gene in two parts, treating the first part as a multiplier of the second part
+-- first 1/4 is multiplicative, last 3/4 is additive.
+gbTypical :: (RandomGen g, Monoid w, MonadParallel m) => (Float, Float) -> GenotypeT g w m Float
+gbTypical (min_, max_) = do
+    l <- gbDNALength
+    let
+        ml = l `quot` 4
+    x <- usingGene (Gene 0 ml) gbNormalizedSum
+    y <- usingGene (Gene ml (l-ml)) gbNormalizedSum
+    return $ min_ + x * y * (max_ - min_)
+
+
+-- | Computation that randomly creates several genes fitting the input range
+gbRandomRanges :: (RandomGen g, Monoid w, MonadParallel m) => [(Float, Float)] -> GenotypeT g w m [Float]
+gbRandomRanges ranges = do
+    gl <- gbDNALength
+    let
+        rl = length ranges
+        l = gl `quot` rl
+    return $ assert (l > 0) ()
+    forM [0..(rl-1)] $ \i -> do
+        let
+            (min_, max_) = ranges !! i
+            short = gbNormalizedSum >>= \x -> return $ min_ + (max_-min_) * x
+            long = gbTypical (min_, max_)
+        usingGene (Gene (i*l) l) $ do
+            rn <- getRandom
+            if l < 20 || rn then short else long
+
+-- | returns an 8 length array that counts occurrence of each bit
+gbByteSample :: (RandomGen g, Monoid w, MonadParallel m) => GenotypeT g w m [Int]
+gbByteSample = GenotypeT (\g dna -> return (V.toList (dnaBitCount dna), g, mempty))

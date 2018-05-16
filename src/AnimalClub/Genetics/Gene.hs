@@ -79,5 +79,4 @@ geneSum dna gt = dnaSum $ V.slice (_start gt) (_count gt) dna
 
 -- | returns an 8 length array that counts occurrence of each bit
 geneBitCount :: DNA -> Gene -> V.Vector Int
-geneBitCount dna gt = V.foldl' f (V.replicate 8 0) $ V.slice (_start gt) (_count gt) dna where
-    f acc x = V.imap (\i a -> if ((unsafeShiftL 0x01 i) .&. x) /= 0 then a+1 else a) acc
+geneBitCount dna gt = dnaBitCount $ V.slice (_start gt) (_count gt) dna 
