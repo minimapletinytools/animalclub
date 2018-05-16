@@ -108,7 +108,7 @@ gbPop = do
 -- | Computation that adds all genes of current genotype
 gbSum :: (Monoid w, Monad m) => GenotypeT g w m Int
 gbSum = state gbSum' where
-    gbSum' s = (tryGeneSum (fst s) (absoluteGene s), s)
+    gbSum' s = (geneSum (fst s) (absoluteGene s), s)
 
 
 -- | Same as gbSum but normalized to [0,1]
@@ -116,7 +116,7 @@ gbNormalizedSum :: (Monoid w, Monad m) => GenotypeT g w m Float
 gbNormalizedSum = state gbSum' where
     gbSum' (dna, gtl) = (answer, (dna, gtl)) where
         foldedGene = absoluteGene (dna, gtl)
-        sum_ = tryGeneSum dna foldedGene
+        sum_ = geneSum dna foldedGene
         length_ = geneLength foldedGene
         answer = if length_ == 0 then 0 else 0.125 * fromIntegral sum_ / fromIntegral length_
 
@@ -171,7 +171,20 @@ gbRandomRanges ranges = do
         gbPop
         return output
 
+-- | returns an 8 length array that counts occurrence of each bit
+gbByteSample :: (RandomGen g, Monoid w, Monad m) => GenotypeT g w m [Int]
+gbByteSample = do
+    (dna, gtl) <- get
+    let
+        foldedGene = absoluteGene (dna, gtl)
+        bitCount = geneBitCount dna foldedGene
+    return $ V.toList bitCount
+
+
+
 --gbRandomContinuousSample :: (RandomGen g)
+
+
 
 
 

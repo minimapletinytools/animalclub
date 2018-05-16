@@ -12,9 +12,9 @@ Functions and types pertaining to Genes
 module AnimalClub.Genetics.Gene (
     Gene(..),
     combineGene,
-    tryGeneSum,
     geneLength,
-    geneSum
+    geneSum,
+    geneBitCount
 ) where
 
 import           AnimalClub.Genetics.DNA
@@ -22,14 +22,6 @@ import           AnimalClub.Genetics.DNA
 import qualified Data.Vector.Unboxed as V
 import           Data.Bits
 import Data.List (foldl')
-
--- | sum all bits of the genotype given its host DNA
--- throws an error if genotype is not a valid index subset of the dna
-tryGeneSum ::  DNA -> Gene -> Int
-tryGeneSum dna gt =
-    if _start gt + geneLength gt > dnaLength dna
-        then error $ "genotype longer than dna " ++ (show $ geneLength gt) ++ " " ++ (show $ dnaLength dna)
-        else geneSum dna gt
 
 -- | represents a genotype as a start index and length
 -- indices are on 8-bit (Word8) intervals
@@ -73,6 +65,19 @@ fastGeneSumInternalAlleles' dna i (cnt, a) =
 geneLength :: Gene -> Int
 geneLength = _count
 
+-- | sum all bits of the genotype given its host DNA
+-- throws an error if genotype is not a valid index subset of the dna
+{-tryGeneSum ::  DNA -> Gene -> Int
+tryGeneSum dna gt =
+    if _start gt + geneLength gt > dnaLength dna
+        then error $ "genotype longer than dna " ++ (show $ geneLength gt) ++ " " ++ (show $ dnaLength dna)
+        else geneSum dna gt-}
+
 -- | sum of all bit pairs in this genotype
 geneSum :: DNA -> Gene -> Int
 geneSum dna gt = V.foldl' (\acc x -> acc + popCount x) 0 $ V.slice (_start gt) (_count gt) dna
+
+-- | returns an 8 length array that counts occurrence of each bit
+geneBitCount :: DNA -> Gene -> V.Vector Int
+geneBitCount dna gt = V.foldl' f (V.replicate 8 0) $ V.slice (_start gt) (_count gt) dna where
+    f acc x = V.imap (\i a -> if ((unsafeShiftL 0x01 i) .&. x) /= 0 then a+1 else a) acc
