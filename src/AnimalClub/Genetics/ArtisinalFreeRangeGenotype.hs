@@ -1,5 +1,3 @@
--- WORK IN PROGRESS
-
 {-|
 Module      : Genotype
 Description : Monad for building genes
@@ -8,19 +6,9 @@ License     : GPL-3
 Maintainer  : chippermonky@email.com
 Stability   : experimental
 
-Monad for building genes using Gene.
+Monad for building Genotypes and evaluating them in Parallel
+Enable -XApplicativeDo for automatic parallelization
 -}
-
---{-# LANGUAGE KindSignatures            #-} -- needed to explictly declare (n::Nat)
---{-# LANGUAGE ExistentialQuantification #-} -- forall
---{-# LANGUAGE ExplicitNamespaces        #-} -- so I can import type (<=)
---{-# LANGUAGE TypeOperators             #-} -- so I can do (m <= n) on types
---{-# LANGUAGE DataKinds                 #-} -- so I can do data ___ (n::Nat)
---{-# LANGUAGE GADTs                     #-} -- data type constraints
-{-# LANGUAGE TypeSynonymInstances        #-} -- allows: instance ___ SomeTypeSynonym
-{-# LANGUAGE FlexibleInstances        #-}
-{-# LANGUAGE MultiParamTypeClasses     #-} -- so I can do a multiparameter type class
-
 
 module AnimalClub.Genetics.ArtisinalFreeRangeGenotype (
     -- * Monads
@@ -31,7 +19,13 @@ module AnimalClub.Genetics.ArtisinalFreeRangeGenotype (
     evalGeneBuilderT,
     evalGeneBuilder,
     -- * Gene building monad operations
-    -- | push and pop operate on the Gene stack, while all other operations operate on the Gene defined by the stack
+    gbDNALength,
+    gbSum,
+    gbNormalizedSum,
+    gbSumRange,
+    gbNormalizedThresh,
+    gbTypical,
+    gbRandomRanges
 ) where
 
 import AnimalClub.Genetics.DNA
@@ -45,6 +39,7 @@ import Control.Applicative
 import Control.Monad.Identity
 import Control.Monad.Random (MonadRandom(..), RandomGen(..))
 import Control.Monad.Parallel (MonadParallel(..))
+import Control.Monad.Writer
 
 import Control.Exception.Base (assert)
 
@@ -54,6 +49,7 @@ import Control.Exception.Base (assert)
 newtype GenotypeT g w m a = GenotypeT { unGenotypeT :: g -> DNA -> m (a, g, w) }
 type Genotype g w = GenotypeT g w Identity
 
+-- |
 instance (Functor m) => Functor (GenotypeT g w m) where
 	fmap f n = GenotypeT $ \g dna -> fmap (over _1 f) (unGenotypeT n g dna)
 
@@ -73,6 +69,17 @@ instance (Monoid w, RandomGen g, MonadParallel m) => Monad (GenotypeT g w m) whe
             (a, g', w1) <- unGenotypeT ma g dna
             (b, g'', w2) <- unGenotypeT (f a) g' dna
             return (b, g'', mappend w1 w2)
+
+instance (Monoid w, RandomGen g, MonadParallel m) => MonadWriter w (GenotypeT g w m) where
+    tell w = GenotypeT $ \g _ -> return ((), g, w)
+    listen ma = GenotypeT func where
+        func g dna = do
+            (a, g', w) <- unGenotypeT ma g dna
+            return ((a, w), g', w)
+    pass ma = GenotypeT func where
+        func g dna = do
+            ((a, f), g', w) <- unGenotypeT ma g dna
+            return (a, g', f w)
 
 
 -- | minimal dna length requirement for automatic parallelization
