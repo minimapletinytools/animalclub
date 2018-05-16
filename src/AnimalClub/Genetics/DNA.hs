@@ -14,6 +14,7 @@ module AnimalClub.Genetics.DNA (
     -- * Functions
     makeRandDNA,
     dnaLength,
+    dnaSum,
     breed,
     mutate,
     mutateOld,
@@ -49,6 +50,10 @@ type DNA = V.Vector Allele4
 -- that is to say, length in in 8-bit intervals
 dnaLength :: DNA -> Int
 dnaLength = V.length
+
+-- | sum of all bit pairs in DNA
+dnaSum :: DNA -> Int
+dnaSum = V.foldl' (\acc x -> acc + popCount x) 0 
 
 -- | create DNA of all 0s with given dnaLength
 makeZeroDNA :: Int -> DNA

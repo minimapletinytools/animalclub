@@ -75,7 +75,7 @@ tryGeneSum dna gt =
 
 -- | sum of all bit pairs in this genotype
 geneSum :: DNA -> Gene -> Int
-geneSum dna gt = V.foldl' (\acc x -> acc + popCount x) 0 $ V.slice (_start gt) (_count gt) dna
+geneSum dna gt = dnaSum $ V.slice (_start gt) (_count gt) dna
 
 -- | returns an 8 length array that counts occurrence of each bit
 geneBitCount :: DNA -> Gene -> V.Vector Int
