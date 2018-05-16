@@ -8,9 +8,35 @@ Stability   : experimental
 
 This module has the same functionality as AnimalClub.Genetics.DNA.DNAMWC except implemented using random-mwc
 The signatures are adjusted accordingly.
+
+
+---------------------------
+-- performance testing code
+---------------------------
+
+import qualified System.Random.MWC as MWC
+import qualified AnimalClub.Genetics.DNAMWC as MWC
+...
+mwcvsstd :: IO ()
+mwcvsstd = do
+    let
+        lns = [100, 1000, 10000]
+    g <- MWC.create
+    stdg <- getStdGen
+    dnas <- mapM (MWC.makeRandDNA g) lns
+    defaultMain [
+        bgroup "MWC create" $ map (\l -> bench (show l) $ nfIO (MWC.makeRandDNA g l)) lns
+        ,bgroup "StdGen create" $ map (\l -> bench (show l) $ nf (makeRandDNA stdg) l) lns
+        ,bgroup "MWC breed" $ map (\(l, dna) -> bench (show l) $ nfIO (MWC.breed g dna dna)) (zip lns dnas)
+        ,bgroup "StdGen breed" $ map (\(l, dna) -> bench (show l) $ nf (breed stdg dna) dna) (zip lns dnas)
+        ,bgroup "MWC mutate 0.1" $ map (\(l, dna) -> bench (show l) $ nfIO (MWC.mutate 0.1 g dna)) (zip lns dnas)
+        ,bgroup "StdGen mutate 0.1" $ map (\(l, dna) -> bench (show l) $ nf (mutate 0.1 stdg) dna) (zip lns dnas)
+        ]
+
+
 -}
 
-module AnimalClub.Genetics.DNAMWC (
+module AnimalClub.Genetics.Internal.Unused.DNAMWC (
     makeRandDNA,
     breed,
     mutate,

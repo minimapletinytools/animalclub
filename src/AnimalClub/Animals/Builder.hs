@@ -63,18 +63,12 @@ makeGenomeFromPropertiesSimple dnasz ops sfps = Genome dnasz geneBuilder (mkStdG
             gtsize = dnasz * (autoGeneSize ag) `div` total
             start = dnasz * startWeight `div` total
         --trace (show start ++ " : " ++ show gtsize) $ gbPush (Gene start gtsize)
-        gbPush (Gene start gtsize)
-        case ag of
-            Normal range cnt -> do
-                vals <- forM [0..(cnt-1)] $ \n -> do
-                    --trace ((show $ n * gtsize `div` cnt) ++ " ! " ++ (show $ gtsize `div` cnt)) $  gbPush (Gene (n * gtsize `div` cnt) (gtsize `div` cnt))
-                    gbPush (Gene (n * gtsize `div` cnt) (gtsize `div` cnt))
-                    --val <- gbTypical range
-                    val <- gbSumRange range
-                    gbPop
-                    return val
-                case x of
-                    Right sf -> tell [ExpSkellyFunc sf vals]
-                    Left t -> tell [ExpFloats t vals]
-
-        gbPop
+        usingGene (Gene start gtsize) $ do
+            case ag of
+                Normal range cnt -> do
+                    vals <- forM [0..(cnt-1)] $ \n -> do
+                        --trace ((show $ n * gtsize `div` cnt) ++ " ! " ++ (show $ gtsize `div` cnt)) $  gbPush (Gene (n * gtsize `div` cnt) (gtsize `div` cnt))
+                        usingGene (Gene (n * gtsize `div` cnt) (gtsize `div` cnt)) $ gbSumRange range
+                    case x of
+                        Right sf -> tell [ExpSkellyFunc sf vals]
+                        Left t -> tell [ExpFloats t vals]

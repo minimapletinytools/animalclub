@@ -5,6 +5,7 @@ import AnimalClub.Genetics
 
 import Control.Monad.Writer (tell)
 import Data.List
+import Control.Monad.Parallel (MonadParallel(..))
 import             Data.Semigroup (Semigroup, (<>))
 import qualified Data.Text as T
 import qualified Data.Vector.Unboxed as V
@@ -24,11 +25,11 @@ instance Arbitrary (DNA) where
 type NamedFloats = [(T.Text, [Float])]
 
 -- | Write a single gene values in the builder
-tellGene :: (Monad m) => T.Text -> Float -> GenotypeT g NamedFloats m ()
+tellGene :: (RandomGen g, MonadParallel m) => T.Text -> Float -> GenotypeT g NamedFloats m ()
 tellGene s v = tellGenes s [v]
 
 -- | Write several gene values in the builder
-tellGenes :: (Monad m) => T.Text -> [Float] -> GenotypeT g NamedFloats m ()
+tellGenes :: (RandomGen g, MonadParallel m) => T.Text -> [Float] -> GenotypeT g NamedFloats m ()
 tellGenes s v = tell $ [(s, v)]
 
 dummyGen = mkStdGen 0
@@ -47,7 +48,7 @@ prop_basicbreedingtest =
             extractFirstValue $
             evalGeneBuilder
                 (gbSum >>= tellGene "" . fromIntegral)
-                (bread, [])
+                bread
                 dummyGen
     in sm == fromIntegral n * 4
 
@@ -57,7 +58,7 @@ prop_gbNormalizedSum_test dna = (o >= 0.0) && (o <= 1.0)
   where
     o =
         extractFirstValue $
-        evalGeneBuilder (gbNormalizedSum >>= tellGene "") (dna, []) dummyGen
+        evalGeneBuilder (gbNormalizedSum >>= tellGene "") dna dummyGen
 
 prop_gbSum_test :: DNA -> Bool
 prop_gbSum_test dna = (o >= 0.0) && (o <= l)
@@ -67,7 +68,7 @@ prop_gbSum_test dna = (o >= 0.0) && (o <= l)
         extractFirstValue $
         evalGeneBuilder
             (gbSum >>= tellGene "" . fromIntegral)
-            (dna, [])
+            dna
             dummyGen
 
 prop_gbTypical :: DNA -> (Float, Float) -> Bool
@@ -77,7 +78,7 @@ prop_gbTypical dna (a', b') = (o >= a) && (o <= b)
     b = max a' b'
     o =
         extractFirstValue $
-        evalGeneBuilder (gbTypical (a, b) >>= tellGene "") (dna, []) dummyGen
+        evalGeneBuilder (gbTypical (a, b) >>= tellGene "") dna dummyGen
 
 prop_gbRandomRanges :: DNA -> [(Float, Float)] -> Bool
 prop_gbRandomRanges dna' ranges' = pass
@@ -95,7 +96,7 @@ prop_gbRandomRanges dna' ranges' = pass
         mconcat . map snd $
         evalGeneBuilder
             (gbRandomRanges ranges >>= mapM (tellGene ""))
-            (dna, [])
+            dna
             dummyGen
     pass = all (\((mn, mx), x) -> (x >= mn) && (x <= mx)) $ zip ranges o
 
@@ -117,7 +118,7 @@ prop_convergence seed = pass
     original = makeRandDNA g1 dnaLength_
     testgene :: Genotype StdGen Float ()
     testgene = gbTypical (-20, 120) >>= tell
-    test dna = evalGeneBuilder testgene (dna, []) (mkStdGen 0)
+    test dna = evalGeneBuilder testgene dna (mkStdGen 0)
     unfoldWormF (dnas, g) =
         if testResult < thresh
             then Nothing

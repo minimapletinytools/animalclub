@@ -19,6 +19,7 @@ module AnimalClub.Genetics.ArtisinalFreeRangeGenotype (
     evalGeneBuilderT,
     evalGeneBuilder,
     -- * Gene building monad operations
+    usingGene,
     gbDNALength,
     gbSum,
     gbNormalizedSum,
@@ -37,7 +38,7 @@ import Lens.Micro.Platform (over, _1, _2)
 import Control.Parallel.Strategies
 import Control.Applicative
 import Control.Monad.Identity
-import Control.Monad.Random (MonadRandom(..), RandomGen(..))
+import Control.Monad.Random
 import Control.Monad.Parallel (MonadParallel(..))
 import Control.Monad.Writer
 
@@ -53,22 +54,33 @@ type Genotype g w = GenotypeT g w Identity
 instance (Functor m) => Functor (GenotypeT g w m) where
 	fmap f n = GenotypeT $ \g dna -> fmap (over _1 f) (unGenotypeT n g dna)
 
+
 -- |
 -- implemented using bindM2 for automatic parallelization using ApplicativeDo
 instance (Monoid w, RandomGen g, MonadParallel m) => Applicative (GenotypeT g w m) where
 	liftA2 f = bindM2 (\a b -> return (f a b))
+	pure a = GenotypeT (\g _ -> return (a, g, mempty))
+
+-- |
+-- move to non paralellel version
+--instance (Monoid w, Applicative m) => Applicative (GenotypeT g w m) where
+--	liftA2 f ma mb = undefined
+--	pure a = GenotypeT (\g _ -> return (a, g, mempty))
 
 -- |
 -- requires MonadParallel m and RandomGen g constraints to support automatic parallelization using ApplicativeDo
 -- necessary as of GHC 7.10 now that Applicative is a superclass of Monad which is
 -- kind of an unfortunate consequence of an otherwise good change
 instance (Monoid w, RandomGen g, MonadParallel m) => Monad (GenotypeT g w m) where
-    return a = GenotypeT (\g _ -> return (a, g, mempty))
+    return = pure
     ma >>= f = GenotypeT func where
         func g dna = do
             (a, g', w1) <- unGenotypeT ma g dna
             (b, g'', w2) <- unGenotypeT (f a) g' dna
             return (b, g'', mappend w1 w2)
+
+instance (Monoid w) => MonadTrans (GenotypeT g w) where
+    lift m = GenotypeT (\g dna -> m >>= (\a -> return (a, g, mempty)))
 
 instance (Monoid w, RandomGen g, MonadParallel m) => MonadWriter w (GenotypeT g w m) where
     tell w = GenotypeT $ \g _ -> return ((), g, w)
@@ -107,8 +119,12 @@ instance forall w g m. (Monoid w, RandomGen g, MonadParallel m) => MonadParallel
 -- |
 -- constraints needed to satisfy Monad instance
 instance (Monoid w, RandomGen g, MonadParallel m) => MonadRandom (GenotypeT g w m) where
-    getRandom = undefined
-    getRandomR r = undefined
+    getRandom = GenotypeT $ func where
+        func g dna = return (a,g',mempty) where
+            (a,g') = random g
+    getRandomR r = GenotypeT $ func where
+        func g dna = return (a,g',mempty) where
+            (a,g') = randomR r g
 
 -- | evalute the builder and obtain its output
 evalGeneBuilderT :: (RandomGen g, Monoid w, Monad m) => GenotypeT g w m a -> DNA -> g -> m w
@@ -138,7 +154,7 @@ gbNormalizedSum :: (RandomGen g, Monoid w, MonadParallel m) => GenotypeT g w m F
 gbNormalizedSum = do
     s <- gbSum
     l <- gbDNALength
-    return $ 0.125 * fromIntegral s / fromIntegral l
+    return $ if l == 0 then 0 else 0.125 * fromIntegral s / fromIntegral l
 
 -- parallel version which I'm pretty sure runs slower
 --gbNormalizedSum :: (RandomGen g, Monoid w, MonadParallel m) => GenotypeT g w m Float
@@ -177,7 +193,7 @@ gbRandomRanges ranges = do
     let
         rl = length ranges
         l = gl `quot` rl
-    return $ assert (l > 0) ()
+    return $ if l == 0 then error "genes too short" else ()
     forM [0..(rl-1)] $ \i -> do
         let
             (min_, max_) = ranges !! i

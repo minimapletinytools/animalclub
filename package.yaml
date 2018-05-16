@@ -41,6 +41,7 @@ default-extensions:
 - ScopedTypeVariables
 - MultiWayIf
 - TupleSections
+- MultiParamTypeClasses
 
 dependencies:
 - base >= 4.7 && < 5
@@ -56,10 +57,8 @@ dependencies:
 - microlens-platform
 - adjunctions
 - containers
-- clock
 - deepseq
 - primitive
-- criterion
 - monad-parallel
 - parallel
 
@@ -69,9 +68,8 @@ library:
     # Genetics
     - AnimalClub.Genetics
     - AnimalClub.Genetics.DNA
-    - AnimalClub.Genetics.DNAMWC
     - AnimalClub.Genetics.Gene
-    - AnimalClub.Genetics.Genotype
+    #- AnimalClub.Genetics.Genotype
     # Skellygen
     - AnimalClub.Skellygen
     - AnimalClub.Skellygen.Math.Hierarchical
@@ -115,15 +113,18 @@ executables:
     dependencies:
     - animalclub
 
-  performance_test:
-    main:                performance_test.hs
-    source-dirs:         examples
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
+benchmarks:
+  genetics-benchmarks:
+    source-dirs: benchmark
+    main: performance_test.hs
     dependencies:
     - animalclub
+    - criterion
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
+
 
 tests:
   genetics-test:

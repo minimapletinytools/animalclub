@@ -35,16 +35,14 @@ wormGenome' segs dnaPerSeg = do forM_ [0..(segs-1)] wormSeg where
     dnaPerSegOver2 = dnaPerSeg `div` 2
     wormSeg i = do
         --gbPush $ Gene (dnaPerSeg*i) dnaPerSeg
-        gbPush $ Gene (dnaPerSeg*i) dnaPerSegOver2
-        x <- gbSumRange (-1.0, 6.0) -- using gbTypical here doesn't work very well for some reason :(
-        --x <- gbSumRange (0.1, 4.5)
-        tellBoneFunc (Bone' (textFromInt i)) Thickness [x] --[x*0.5+0.75]
-        gbPop
+        usingGene (Gene (dnaPerSeg*i) dnaPerSegOver2) $ do
+            x <- gbSumRange (-1.0, 6.0) -- using gbTypical here doesn't work very well for some reason :(
+            --x <- gbSumRange (0.1, 4.5)
+            tellBoneFunc (Bone' (textFromInt i)) Thickness [x] --[x*0.5+0.75]
         --gbPush $ Gene (dnaPerSeg*i + dnaPerSegOver4*2) (dnaPerSegOver4*2)
-        gbPush $ Gene (dnaPerSeg*i + dnaPerSegOver2) (dnaPerSegOver2)
-        orients <- gbRandomRanges (replicate 3 (-1.5,1.5))
-        tellBoneFunc (Bone' (textFromInt i)) Orientation orients
-        gbPop
+        usingGene (Gene (dnaPerSeg*i + dnaPerSegOver2) (dnaPerSegOver2)) $ do
+            orients <- gbRandomRanges (replicate 3 (-1.5,1.5))
+            tellBoneFunc (Bone' (textFromInt i)) Orientation orients
 
 wormGenome :: Int -> Int -> Genome StdGen [AnimalExp]
 wormGenome segs dnaPerSeg = Genome (segs*dnaPerSeg) (wormGenome' segs dnaPerSeg) (mkStdGen 0)

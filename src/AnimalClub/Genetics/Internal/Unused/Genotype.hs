@@ -9,7 +9,7 @@ Stability   : experimental
 Monad for building genes using Gene.
 -}
 
-module AnimalClub.Genetics.Genotype (
+module AnimalClub.Genetics.Internal.Unused.Genotype (
     -- * Monads
     -- $monaddoclink
     GenotypeT,
