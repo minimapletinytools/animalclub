@@ -30,7 +30,6 @@ import Control.DeepSeq
 import GHC.Generics (Generic)
 import System.Random
 import Control.Monad.Writer (tell)
-import Control.Monad.Parallel (MonadParallel(..))
 
 --import Control.Exception (assert)
 --import Debug.Trace (trace)
@@ -47,14 +46,14 @@ parseSkellyFuncs = catMaybes . fmap (\case
     ExpSkellyFunc sf f -> Just (sf,f)
     _ -> Nothing)
 
---tellBoneFunc :: (Monad m) => BoneName' -> BoneMethod -> [Float] -> GenotypeT g [AnimalExp] m ()
-tellBoneFunc bn bm v = tell [(ExpSkellyFunc (SkellyFunc bn bm) v)]
+tellBoneFunc :: (Monad m) => BoneName' -> BoneMethod -> [Float] -> GenotypeT g [AnimalExp] m ()
+tellBoneFunc bn bm v = tell [ExpSkellyFunc (SkellyFunc bn bm) v]
 
 -- | DNA length, builder, random gen to seed builder
 data Genome g w = Genome Int (Genotype g w ()) g
 
 -- | evalute the genome and obtain its output
-evalGenome :: (RandomGen g, Monoid w) => Genome g w -> DNA -> w
+evalGenome :: Genome g w -> DNA -> w
 evalGenome (Genome _ gb g) dna = evalGeneBuilder gb dna g
 
 generateAnimalProperties ::

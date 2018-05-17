@@ -12,9 +12,9 @@ Includes all modules exposed by genetics
 module AnimalClub.Genetics (
     module AnimalClub.Genetics.DNA,
     module AnimalClub.Genetics.Gene,
-    module AnimalClub.Genetics.GenotypeT
+    module AnimalClub.Genetics.Genotype
 ) where
 
 import AnimalClub.Genetics.DNA
 import AnimalClub.Genetics.Gene
-import AnimalClub.Genetics.GenotypeT
+import AnimalClub.Genetics.Genotype

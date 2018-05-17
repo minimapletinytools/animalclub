@@ -38,8 +38,8 @@ data AutoGeneMethod =
 
 
 -- | returns number of floats this genotype creates
-autoGeneCount :: AutoGeneMethod -> Int
-autoGeneCount (Normal _ x) = x
+--autoGeneCount :: AutoGeneMethod -> Int
+--autoGeneCount (Normal _ x) = x
 
 -- | returns relative amount of DNA this genotype should take up
 -- note, this is NOT the same as how many float values need to be produced

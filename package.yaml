@@ -69,7 +69,8 @@ library:
     - AnimalClub.Genetics
     - AnimalClub.Genetics.DNA
     - AnimalClub.Genetics.Gene
-    - AnimalClub.Genetics.GenotypeT
+    - AnimalClub.Genetics.Genotype
+    - AnimalClub.Genetics.GenotypePar
     # Skellygen
     - AnimalClub.Skellygen
     - AnimalClub.Skellygen.Math.Hierarchical

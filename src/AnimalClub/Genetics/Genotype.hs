@@ -12,10 +12,10 @@ Enable -XApplicativeDo for automatic parallelization
 
 {-# LANGUAGE DefaultSignatures #-}
 
-module AnimalClub.Genetics.GenotypeT (
+module AnimalClub.Genetics.Genotype (
     -- * Monads
     -- $monaddoclink
-    GenotypeT,
+    GenotypeT(..),
     Genotype,
     -- ** Monad evalution functions
     evalGeneBuilderT,
@@ -54,23 +54,18 @@ type Genotype g w = GenotypeT g w Identity
 
 -- |
 instance (Functor m) => Functor (GenotypeT g w m) where
-	fmap f n = GenotypeT $ \g dna -> fmap (over _1 f) (unGenotypeT n g dna)
+    fmap f n = GenotypeT $ \g dna -> fmap (over _1 f) (unGenotypeT n g dna)
 
 -- |
--- implemented using bindM2 for automatic parallelization using ApplicativeDo
---instance (Monoid w, RandomGen g, MonadParallel m) => Applicative (GenotypeT g w m) where
-	--liftA2 f = bindM2 (\a b -> return (f a b))
-	--pure a = GenotypeT (\g _ -> return (a, g, mempty))
+-- implemented using Monad m to ensure that (<*>) = ap (TEST)
+instance (Monoid w, Monad m) => Applicative (GenotypeT g w m) where
+    pure a = GenotypeT (\g _ -> pure (a, g, mempty))
+    liftA2 f ma mb = do
+        a <- ma
+        b <- mb
+        return $ f a b
 
 -- |
-instance (Monoid w, Applicative m) => Applicative (GenotypeT g w m) where
-	liftA2 f ma mb = undefined
-	pure a = GenotypeT (\g _ -> pure (a, g, mempty))
-
--- |
--- requires MonadParallel m and RandomGen g constraints to support automatic parallelization using ApplicativeDo
--- necessary as of GHC 7.10 now that Applicative is a superclass of Monad which is
--- kind of an unfortunate consequence of an otherwise good change
 instance (Monoid w, Monad m) => Monad (GenotypeT g w m) where
     return = pure
     ma >>= f = GenotypeT func where
@@ -101,16 +96,16 @@ genoTypeParMin = 10
 -- |
 -- RandomGen g constraint required to split the generator for deterministic parallel evaluation (whether it's actually used or not)
 instance forall w g m. (Monoid w, RandomGen g, MonadParallel m) => MonadParallel (GenotypeT g w m) where
-    bindM2 f' a' b' = GenotypeT func where
+    bindM2 f' ma mb = GenotypeT func where
         bindM2Serial f ma mb = do { a <- ma; b <- mb; f a b }
         func g dna = if dnaLength dna <= genoTypeParMin
-            then unGenotypeT (bindM2Serial f' a' b') g dna
+            then unGenotypeT (bindM2Serial f' ma mb) g dna
             else bindM2 f ra rb where
                 -- make generators
                 (g',(g'',g''')) = over _2 split $ split g
                 -- parallel evaluate a and b to produce c
-                ra = unGenotypeT a' g' dna
-                rb = unGenotypeT b' g'' dna
+                ra = unGenotypeT ma g' dna
+                rb = unGenotypeT mb g'' dna
                 -- unwrap and rewrap the monadic output of the inner monad
                 f (x1,_,w1) (x2,_,w2) =
                     unGenotypeT (f' x1 x2) g''' dna

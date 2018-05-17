@@ -9,6 +9,7 @@ Stability   : experimental
 -}
 
 {-# OPTIONS_GHC -fno-warn-missing-signatures #-}
+{-# OPTIONS_GHC -fno-warn-unused-local-binds #-}
 --{-# OPTIONS_GHC -fno-warn-unused-top-binds #-}
 
 module AnimalClub.Animals.Worm (
