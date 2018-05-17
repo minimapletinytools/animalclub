@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE FlexibleInstances #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 import AnimalClub.Genetics
 
@@ -12,7 +12,6 @@ import Data.Word
 import System.Random
 import Test.QuickCheck
 
-import Debug.Trace
 
 -- |
 instance Arbitrary (DNA) where
@@ -31,8 +30,10 @@ tellGene s v = tellGenes s [v]
 tellGenes :: (Monad m) => T.Text -> [Float] -> GenotypeT g NamedFloats m ()
 tellGenes s v = tell $ [(s, v)]
 
+dummyGen :: StdGen
 dummyGen = mkStdGen 0
 
+extractFirstValue :: [(a, [Float])] -> Float
 extractFirstValue = head . snd . head
 
 {- Breeding tests -}
@@ -133,5 +134,6 @@ prop_convergence seed = pass
 --Template haskell nonsense to run all properties prefixed with "prop_" in this file
 return []
 
+main :: IO Bool
 main = $quickCheckAll
 --main = $verboseCheckAll

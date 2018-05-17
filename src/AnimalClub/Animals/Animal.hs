@@ -24,11 +24,9 @@ import AnimalClub.Skellygen
 
 import qualified Data.Text as T
 import           Data.Word
-import Data.Monoid (Monoid)
 import Data.Maybe (catMaybes)
 import Control.DeepSeq
 import GHC.Generics (Generic)
-import System.Random
 import Control.Monad.Writer (tell)
 
 --import Control.Exception (assert)

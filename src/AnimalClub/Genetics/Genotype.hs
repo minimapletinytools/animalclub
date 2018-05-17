@@ -28,7 +28,8 @@ module AnimalClub.Genetics.Genotype (
     gbSumRange,
     gbNormalizedThresh,
     gbTypical,
-    gbRandomRanges
+    gbRandomRanges,
+    gbByteSample
 ) where
 
 import AnimalClub.Genetics.DNA
@@ -37,14 +38,11 @@ import AnimalClub.Genetics.Gene
 import qualified Data.Vector.Unboxed as V
 
 import Lens.Micro.Platform (over, _1, _2)
-import Control.Parallel.Strategies
 import Control.Applicative
 import Control.Monad.Identity
 import Control.Monad.Random
 import Control.Monad.Parallel (MonadParallel(..))
 import Control.Monad.Writer
-
-import Control.Exception.Base (assert)
 
 --import Debug.Trace
 
@@ -75,7 +73,7 @@ instance (Monoid w, Monad m) => Monad (GenotypeT g w m) where
             return (b, g'', mappend w1 w2)
 
 instance (Monoid w) => MonadTrans (GenotypeT g w) where
-    lift m = GenotypeT (\g dna -> m >>= (\a -> return (a, g, mempty)))
+    lift m = GenotypeT (\g _ -> m >>= (\a -> return (a, g, mempty)))
 
 instance (Monoid w, Monad m) => MonadWriter w (GenotypeT g w m) where
     tell w = GenotypeT $ \g _ -> return ((), g, w)
@@ -97,7 +95,7 @@ genoTypeParMin = 10
 -- RandomGen g constraint required to split the generator for deterministic parallel evaluation (whether it's actually used or not)
 instance forall w g m. (Monoid w, RandomGen g, MonadParallel m) => MonadParallel (GenotypeT g w m) where
     bindM2 f' ma mb = GenotypeT func where
-        bindM2Serial f ma mb = do { a <- ma; b <- mb; f a b }
+        bindM2Serial f ma' mb' = do { a <- ma'; b <- mb'; f a b }
         func g dna = if dnaLength dna <= genoTypeParMin
             then unGenotypeT (bindM2Serial f' ma mb) g dna
             else bindM2 f ra rb where
@@ -115,11 +113,13 @@ instance forall w g m. (Monoid w, RandomGen g, MonadParallel m) => MonadParallel
 -- constraints needed to satisfy Monad instance
 instance (Monoid w, RandomGen g, Monad m) => MonadRandom (GenotypeT g w m) where
     getRandom = GenotypeT func where
-        func g dna = return (a,g',mempty) where
+        func g _ = return (a,g',mempty) where
             (a,g') = random g
     getRandomR r = GenotypeT func where
-        func g dna = return (a,g',mempty) where
+        func g _ = return (a,g',mempty) where
             (a,g') = randomR r g
+    --getRandoms = undefined
+    --getRandomRs = undefined
 
 -- | evalute the builder and obtain its output
 evalGeneBuilderT :: (Monad m) => GenotypeT g w m a -> DNA -> g -> m w
