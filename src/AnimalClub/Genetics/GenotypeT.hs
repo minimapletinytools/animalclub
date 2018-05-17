@@ -10,7 +10,9 @@ Monad for building Genotypes and evaluating them in Parallel
 Enable -XApplicativeDo for automatic parallelization
 -}
 
-module AnimalClub.Genetics.ArtisinalFreeRangeGenotype (
+{-# LANGUAGE DefaultSignatures #-}
+
+module AnimalClub.Genetics.GenotypeT (
     -- * Monads
     -- $monaddoclink
     GenotypeT,
@@ -53,7 +55,6 @@ type Genotype g w = GenotypeT g w Identity
 -- |
 instance (Functor m) => Functor (GenotypeT g w m) where
 	fmap f n = GenotypeT $ \g dna -> fmap (over _1 f) (unGenotypeT n g dna)
-
 
 -- |
 -- implemented using bindM2 for automatic parallelization using ApplicativeDo
