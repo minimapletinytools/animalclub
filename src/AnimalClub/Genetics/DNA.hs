@@ -113,7 +113,7 @@ mutateOld chance g dna = V.zipWith zipFunc rands dna where
     -- and only evaluate a second time when there is a mutation
     rands = V.fromList . take (V.length dna) . randoms $ g
     zipFunc gx x = r where
-        mutateBit g x = unsafeShiftL 0x01 (fst $ randomR (0,7) g) `xor` x
+        mutateBit g' x' = unsafeShiftL 0x01 (fst $ randomR (0,7) g') `xor` x'
         (c, gx') = randomR (0,1.0) (mkStdGen gx)
         r = if c < chance then mutateBit gx' x else x
 

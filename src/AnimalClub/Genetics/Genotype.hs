@@ -43,7 +43,7 @@ import Control.Monad.Identity
 import Control.Monad.Random
 import Control.Monad.Parallel (MonadParallel(..))
 import Control.Monad.Writer
-
+import Control.Parallel.Strategies
 --import Debug.Trace
 
 -- | StateT GenotypeState (WriterT w (RandT g m))

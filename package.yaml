@@ -61,6 +61,8 @@ dependencies:
 - primitive
 - monad-parallel
 - parallel
+- clock
+- formatting
 
 library:
   source-dirs: src
@@ -79,6 +81,10 @@ library:
     # Animal
     - AnimalClub.Animals
     - AnimalClub.Animals.Worm
+
+    # Hidden stuff that's only here for testing reasons
+    - AnimalClub.Genetics.Internal.Unused.Genotype
+    # - AnimalClub.Genetics.Internal.Unused.DNAMWC
 
   dependencies:
 
@@ -117,10 +123,24 @@ executables:
     dependencies:
     - animalclub
 
+
+# stack bench --profile --ghc-options -threaded --benchmark-arguments='+RTS -N -RTS'
 benchmarks:
-  genetics-benchmarks:
+  agenotype-benchmarks:
     source-dirs: benchmark
-    main: performance_test.hs
+    main: genotype.hs
+    dependencies:
+    - animalclub
+    - criterion
+    ghc-options:
+    - -O2
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N2
+
+  dna-benchmarks:
+    source-dirs: benchmark
+    main: dna.hs
     dependencies:
     - animalclub
     - criterion
@@ -128,6 +148,7 @@ benchmarks:
     - -rtsopts
     - -threaded
     - -with-rtsopts=-N
+
 
 
 tests:
