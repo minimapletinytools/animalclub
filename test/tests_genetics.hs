@@ -5,7 +5,6 @@ import AnimalClub.Genetics
 
 import Control.Monad.Writer (tell)
 import Data.List
-import Control.Monad.Parallel (MonadParallel(..))
 import             Data.Semigroup (Semigroup, (<>))
 import qualified Data.Text as T
 import qualified Data.Vector.Unboxed as V
@@ -25,11 +24,11 @@ instance Arbitrary (DNA) where
 type NamedFloats = [(T.Text, [Float])]
 
 -- | Write a single gene values in the builder
-tellGene :: (RandomGen g, MonadParallel m) => T.Text -> Float -> GenotypeT g NamedFloats m ()
+tellGene :: (Monad m) => T.Text -> Float -> GenotypeT g NamedFloats m ()
 tellGene s v = tellGenes s [v]
 
 -- | Write several gene values in the builder
-tellGenes :: (RandomGen g, MonadParallel m) => T.Text -> [Float] -> GenotypeT g NamedFloats m ()
+tellGenes :: (Monad m) => T.Text -> [Float] -> GenotypeT g NamedFloats m ()
 tellGenes s v = tell $ [(s, v)]
 
 dummyGen = mkStdGen 0

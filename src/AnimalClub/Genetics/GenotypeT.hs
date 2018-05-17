@@ -58,21 +58,20 @@ instance (Functor m) => Functor (GenotypeT g w m) where
 
 -- |
 -- implemented using bindM2 for automatic parallelization using ApplicativeDo
-instance (Monoid w, RandomGen g, MonadParallel m) => Applicative (GenotypeT g w m) where
-	liftA2 f = bindM2 (\a b -> return (f a b))
-	pure a = GenotypeT (\g _ -> return (a, g, mempty))
+--instance (Monoid w, RandomGen g, MonadParallel m) => Applicative (GenotypeT g w m) where
+	--liftA2 f = bindM2 (\a b -> return (f a b))
+	--pure a = GenotypeT (\g _ -> return (a, g, mempty))
 
 -- |
--- move to non paralellel version
---instance (Monoid w, Applicative m) => Applicative (GenotypeT g w m) where
---	liftA2 f ma mb = undefined
---	pure a = GenotypeT (\g _ -> return (a, g, mempty))
+instance (Monoid w, Applicative m) => Applicative (GenotypeT g w m) where
+	liftA2 f ma mb = undefined
+	pure a = GenotypeT (\g _ -> pure (a, g, mempty))
 
 -- |
 -- requires MonadParallel m and RandomGen g constraints to support automatic parallelization using ApplicativeDo
 -- necessary as of GHC 7.10 now that Applicative is a superclass of Monad which is
 -- kind of an unfortunate consequence of an otherwise good change
-instance (Monoid w, RandomGen g, MonadParallel m) => Monad (GenotypeT g w m) where
+instance (Monoid w, Monad m) => Monad (GenotypeT g w m) where
     return = pure
     ma >>= f = GenotypeT func where
         func g dna = do
@@ -83,7 +82,7 @@ instance (Monoid w, RandomGen g, MonadParallel m) => Monad (GenotypeT g w m) whe
 instance (Monoid w) => MonadTrans (GenotypeT g w) where
     lift m = GenotypeT (\g dna -> m >>= (\a -> return (a, g, mempty)))
 
-instance (Monoid w, RandomGen g, MonadParallel m) => MonadWriter w (GenotypeT g w m) where
+instance (Monoid w, Monad m) => MonadWriter w (GenotypeT g w m) where
     tell w = GenotypeT $ \g _ -> return ((), g, w)
     listen ma = GenotypeT func where
         func g dna = do
@@ -119,22 +118,22 @@ instance forall w g m. (Monoid w, RandomGen g, MonadParallel m) => MonadParallel
 
 -- |
 -- constraints needed to satisfy Monad instance
-instance (Monoid w, RandomGen g, MonadParallel m) => MonadRandom (GenotypeT g w m) where
-    getRandom = GenotypeT $ func where
+instance (Monoid w, RandomGen g, Monad m) => MonadRandom (GenotypeT g w m) where
+    getRandom = GenotypeT func where
         func g dna = return (a,g',mempty) where
             (a,g') = random g
-    getRandomR r = GenotypeT $ func where
+    getRandomR r = GenotypeT func where
         func g dna = return (a,g',mempty) where
             (a,g') = randomR r g
 
 -- | evalute the builder and obtain its output
-evalGeneBuilderT :: (RandomGen g, Monoid w, Monad m) => GenotypeT g w m a -> DNA -> g -> m w
+evalGeneBuilderT :: (Monad m) => GenotypeT g w m a -> DNA -> g -> m w
 evalGeneBuilderT m s g = do
     (_,_,w) <- unGenotypeT m g s
     return w
 
 -- | evalute the builder and obtain its output
-evalGeneBuilder :: (RandomGen g, Monoid w) => Genotype g w a -> DNA -> g -> w
+evalGeneBuilder :: Genotype g w a -> DNA -> g -> w
 evalGeneBuilder m s g = runIdentity $ evalGeneBuilderT m s g
 
 -- | apply a computation on a Gene
@@ -143,15 +142,15 @@ usingGene :: Gene -> GenotypeT g w m a -> GenotypeT g w m a
 usingGene (Gene i n) gt = GenotypeT $ \g dna -> unGenotypeT gt g (V.slice i n dna)
 
 -- | return length of DNA being computed on
-gbDNALength :: (RandomGen g, Monoid w, Monad m) => GenotypeT g w m Int
+gbDNALength :: (Monoid w, Monad m) => GenotypeT g w m Int
 gbDNALength = GenotypeT $ \g dna -> return (dnaLength dna, g, mempty)
 
 -- | Computation that adds all genes of current genotype
-gbSum :: (RandomGen g, Monoid w, Monad m) => GenotypeT g w m Int
+gbSum :: (Monoid w, Monad m) => GenotypeT g w m Int
 gbSum = GenotypeT $ \g dna -> return (dnaSum dna, g, mempty)
 
 -- | gbSum normalized to [0,1]
-gbNormalizedSum :: (RandomGen g, Monoid w, MonadParallel m) => GenotypeT g w m Float
+gbNormalizedSum :: (Monoid w, Monad m) => GenotypeT g w m Float
 gbNormalizedSum = do
     s <- gbSum
     l <- gbDNALength
@@ -162,13 +161,13 @@ gbNormalizedSum = do
 --gbNormalizedSum = liftA2 (\s l -> 0.125 * fromIntegral s / fromIntegral l) gbSum gbDNALength
 
 -- | Computation returns True if gbNormalizedSum > thresh, False otherwise
-gbSumRange :: (RandomGen g, Monoid w, MonadParallel m) => (Float,Float) -> GenotypeT g w m Float
+gbSumRange :: (Monoid w, Monad m) => (Float,Float) -> GenotypeT g w m Float
 gbSumRange (min',max') = do
     s <- gbNormalizedSum
     return $ min' + s * (max'-min')
 
 -- | Computation returns True if gbNormalizedSum > thresh, False otherwise
-gbNormalizedThresh :: (RandomGen g, Monoid w, MonadParallel m) => Float -> GenotypeT g w m Bool
+gbNormalizedThresh :: (Monoid w, Monad m) => Float -> GenotypeT g w m Bool
 gbNormalizedThresh thresh = do
     s <- gbNormalizedSum
     return $ s > thresh
@@ -177,7 +176,7 @@ gbNormalizedThresh thresh = do
 
 -- | Computation that sums a gene in two parts, treating the first part as a multiplier of the second part
 -- first 1/4 is multiplicative, last 3/4 is additive.
-gbTypical :: (RandomGen g, Monoid w, MonadParallel m) => (Float, Float) -> GenotypeT g w m Float
+gbTypical :: (Monoid w, Monad m) => (Float, Float) -> GenotypeT g w m Float
 gbTypical (min_, max_) = do
     l <- gbDNALength
     let
@@ -188,7 +187,7 @@ gbTypical (min_, max_) = do
 
 
 -- | Computation that randomly creates several genes fitting the input range
-gbRandomRanges :: (RandomGen g, Monoid w, MonadParallel m) => [(Float, Float)] -> GenotypeT g w m [Float]
+gbRandomRanges :: (RandomGen g, Monoid w, Monad m) => [(Float, Float)] -> GenotypeT g w m [Float]
 gbRandomRanges ranges = do
     gl <- gbDNALength
     let
@@ -205,5 +204,5 @@ gbRandomRanges ranges = do
             if l < 20 || rn then short else long
 
 -- | returns an 8 length array that counts occurrence of each bit
-gbByteSample :: (RandomGen g, Monoid w, MonadParallel m) => GenotypeT g w m [Int]
+gbByteSample :: (Monoid w, Monad m) => GenotypeT g w m [Int]
 gbByteSample = GenotypeT (\g dna -> return (V.toList (dnaBitCount dna), g, mempty))

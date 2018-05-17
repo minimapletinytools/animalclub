@@ -2,7 +2,6 @@ import AnimalClub.Genetics
 
 import Control.Monad
 import Control.Monad.Writer
-import Control.Monad.Parallel (MonadParallel(..))
 import qualified Data.Text as T
 import qualified Data.Vector.Unboxed as V
 import Data.Word
@@ -12,14 +11,14 @@ import System.Random
 type NamedFloats = [(T.Text, [Float])]
 
 -- | Write a single gene values in the builder
-tellGene :: (RandomGen g, MonadParallel m) => T.Text -> Float -> GenotypeT g NamedFloats m ()
+tellGene :: (Monad m) => T.Text -> Float -> GenotypeT g NamedFloats m ()
 tellGene s v = tellGenes s [v]
 
 -- | Write several gene values in the builder
-tellGenes :: (RandomGen g, MonadParallel m) => T.Text -> [Float] -> GenotypeT g NamedFloats m ()
-tellGenes s v = tell $ [(s, v)]
+tellGenes :: (Monad m) => T.Text -> [Float] -> GenotypeT g NamedFloats m ()
+tellGenes s v = tell [(s, v)]
 
-gbExample :: (RandomGen g, MonadParallel m) => GenotypeT g NamedFloats m ()
+gbExample :: (RandomGen g, Monad m) => GenotypeT g NamedFloats m ()
 gbExample = do
     gbNormalizedSum >>= tellGene "first"
     gbNormalizedThresh 0.5 >>=
