@@ -2,6 +2,7 @@
 {-# OPTIONS_GHC -fno-warn-unused-top-binds #-}
 
 import Animals
+
 import AnimalClub.Animals
 import AnimalClub.Genetics
 import AnimalClub.Skellygen

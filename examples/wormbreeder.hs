@@ -1,7 +1,7 @@
 --{-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 --{-# OPTIONS_GHC -fno-warn-unused-top-binds #-}
 
-import Worm
+import AnimalClub.Animals.Worm
 
 import AnimalClub.Animals
 import AnimalClub.Genetics

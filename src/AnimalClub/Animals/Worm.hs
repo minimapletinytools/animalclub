@@ -1,7 +1,17 @@
+{-|
+Module      : Worm
+Description : Example worm
+Copyright   : (c) Peter Lu, 2018
+License     : GPL-3
+Maintainer  : chippermonky@email.com
+Stability   : experimental
+
+-}
+
 {-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 --{-# OPTIONS_GHC -fno-warn-unused-top-binds #-}
 
-module Worm (
+module AnimalClub.Animals.Worm (
 worm, wormGenome, testWorm, breedAndSelectWormPool
 ) where
 

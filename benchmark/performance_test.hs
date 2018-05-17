@@ -1,21 +1,10 @@
 {-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 --{-# OPTIONS_GHC -fno-warn-unused-top-binds #-}
 
-import Worm
-
-import AnimalClub.Animals
 import AnimalClub.Genetics
-import AnimalClub.Skellygen
-import AnimalClub.Skellygen.Math.Mesh
-
-import Text.Printf (printf)
-import           Data.List                       (unfoldr)
 import System.Random
 
 import Criterion.Main
-
---import qualified Debug.Trace as Debug
-
 
 mutatevsmutateold :: IO ()
 mutatevsmutateold = do
