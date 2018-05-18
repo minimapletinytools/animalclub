@@ -30,12 +30,17 @@ module AnimalClub.Genetics.Genotype (
     gbNormalizedThresh,
     gbTypical,
     gbRandomRanges,
-    gbByteSample
+    gbByteSample1,
+    --gbByteSample2,
+    --gbBytePattern4,
+    gbBytePattern
 ) where
 
 import AnimalClub.Genetics.DNA
 import AnimalClub.Genetics.Gene
 
+import Data.Word
+import Data.Bits
 import qualified Data.Vector.Unboxed as V
 
 import Lens.Micro.Platform (over, _1)
@@ -153,6 +158,10 @@ instance (Monoid w, RandomGen g, Monad m) => MonadRandom (GenotypeT g w m) where
 usingGene :: Gene -> GenotypeT g w m a -> GenotypeT g w m a
 usingGene (Gene i n) gt = GenotypeT $ \g dna -> unGenotypeT gt g (V.slice i n dna)
 
+-- | return the DNA so you can do whatever on it
+gbDNA :: (Monoid w, Monad m) => GenotypeT g w m DNA
+gbDNA = GenotypeT $ \g dna -> return (dna, g, mempty)
+
 -- | return length of DNA being computed on
 gbDNALength :: (Monoid w, Monad m) => GenotypeT g w m Int
 gbDNALength = GenotypeT $ \g dna -> return (dnaLength dna, g, mempty)
@@ -216,5 +225,26 @@ gbRandomRanges ranges = do
             if l < 20 || rn then short else long
 
 -- | returns an 8 length array that counts occurrence of each bit
-gbByteSample :: (Monoid w, Monad m) => GenotypeT g w m [Int]
-gbByteSample = GenotypeT (\g dna -> return (V.toList (dnaBitCount dna), g, mempty))
+gbByteSample1 :: (Monoid w, Monad m) => GenotypeT g w m [Int]
+gbByteSample1 = GenotypeT (\g dna -> return (V.toList (dnaBitCount dna), g, mempty))
+
+-- | returns a 4 length array that counts occurrence of [00,01,10,11]
+-- on non-overlapping intervals of 2 bits
+-- TODO
+gbByteSample2 :: (Monoid w, Monad m) => GenotypeT g w m [Int]
+gbByteSample2 = undefined
+
+-- | counts occurrence of given patterns on non-overlapping intervals of 4 bits
+-- argument is supplied as a pair of 2 4 bit patterns as a Word8
+-- and output is number occurrences of these 2 patterns as a tuple
+-- TODO
+gbBytePattern4 :: (Monoid w, Monad m) => Word8 -> GenotypeT g w m (Int, Int)
+gbBytePattern4 p = GenotypeT f where
+    f g dna = return (V.foldl' ff (0,0) dna, g, mempty) where
+        ff acc x = undefined
+
+-- | counts occurrence of given pattern on non-overlapping intervals of 8 bits
+gbBytePattern :: (Monoid w, Monad m) => Word8 -> GenotypeT g w m Int
+gbBytePattern p = GenotypeT f where
+    f g dna = return (V.foldl' ff 0 dna, g, mempty) where
+        ff acc x = if p `xor` x == 0 then acc + 1 else acc
