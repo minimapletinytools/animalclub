@@ -46,22 +46,26 @@ gbComplicated :: Genotype StdGen [Int] Int
 gbComplicated = do
     x <- gbSumRange (0, 99)
     y <- gbTypical (0, 99)
-    zs <- forM [1..10000] $ \x -> do gbNormalizedSum 
-    return $ round $ x + y + (foldl (+) 0 zs)
+    zs <- forM [1..10000] $ const gbNormalizedSum
+    return $ round $ x + y + sum zs
 
 
 
-gbParExample :: Int -> Genotype StdGen [Int] [Int]
-gbParExample dnal = do
+gbParExample :: Genotype StdGen [Int] Int
+gbParExample = do
+    dnal <- gbDNALength
     let
         ml = dnal `quot` splitCount
-    Par.forM [i*ml | i <- [0..(splitCount-1)]] (\x -> usingGene (Gene x ml) gbComplicated)
-
-gbSeqExample :: Int -> Genotype StdGen [Int] [Int]
-gbSeqExample dnal = do
+    vs <- Par.forM [i*ml | i <- [0..(splitCount-1)]] (\x -> usingGene (Gene x ml) gbComplicated)
+    return $ sum vs
+    
+gbSeqExample :: Genotype StdGen [Int] Int
+gbSeqExample = do
+    dnal <- gbDNALength
     let
         ml = dnal `quot` splitCount
-    Seq.forM [i*ml | i <- [0..(splitCount-1)]] (\x -> usingGene (Gene x ml) gbComplicated)
+    vs <- Seq.forM [i*ml | i <- [0..(splitCount-1)]] (\x -> usingGene (Gene x ml) gbComplicated)
+    return $ sum vs
 
 
 example1 :: IO ()
@@ -74,7 +78,7 @@ example1 = do
         bread33 = breed gen thirdDNA thirdDNA
     putStrLn "test DNA"
     forM_
-        (map show (zip [(0 :: Int) ..] [firstDNA, secondDNA, thirdDNA]))
+        (zipWith (curry show) [(0 :: Int) ..] [firstDNA, secondDNA, thirdDNA])
         putStrLn
     putStrLn "breeding 2 and 3"
     print bread33
@@ -82,6 +86,10 @@ example1 = do
     --putStrLn $ show $ evalGeneBuilder (gbNormalizedSum >>= tellGene) (bread33, []) gen
     print $ evalGeneBuilder gbExample bread33 gen
 
+forceEvaluateN :: Int -> Genotype StdGen [Int] Int -> DNA -> StdGen -> IO Int
+forceEvaluateN c gt dna g = do
+    rslt <- Seq.forM [0..c] $ \_ -> return $ force . (\(x,_,_) -> x) $ unGenotype gt dna g
+    return (length rslt)
 
 example2 :: IO ()
 example2 = do
@@ -92,9 +100,9 @@ example2 = do
     s0 <- getTime Monotonic
     dna' <- return (force dna)
     s1 <- getTime Monotonic
-    _ <- return $ evalGeneBuilder (gbParExample dnal >>= tell) dna' g
+    _ <- forceEvaluateN 10000 (gbParExample) dna' g
     s2 <- getTime Monotonic
-    _ <- return $ evalGeneBuilder (gbSeqExample dnal >>= tell) dna' g
+    _ <- forceEvaluateN 10000 (gbSeqExample) dna' g
     s3 <- getTime Monotonic
     -- these numbers seem to basically be random D:
     fprint (timeSpecs % "\n") s0 s1
@@ -103,4 +111,6 @@ example2 = do
 
 
 main :: IO ()
-main = example2
+main = do
+    example1
+    example2

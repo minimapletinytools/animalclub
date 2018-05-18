@@ -20,6 +20,7 @@ module AnimalClub.Genetics.Genotype (
     -- ** Monad evalution functions
     evalGeneBuilderT,
     evalGeneBuilder,
+    unGenotype,
     -- * Gene building monad operations
     usingGene,
     gbDNALength,
@@ -37,18 +38,34 @@ import AnimalClub.Genetics.Gene
 
 import qualified Data.Vector.Unboxed as V
 
-import Lens.Micro.Platform (over, _1, _2)
+import Lens.Micro.Platform (over, _1)
 import Control.Applicative
 import Control.Monad.Identity
 import Control.Monad.Random
 import Control.Monad.Parallel (MonadParallel(..))
 import Control.Monad.Writer
-import Control.Parallel.Strategies
+import Control.Parallel
 --import Debug.Trace
 
 -- | StateT GenotypeState (WriterT w (RandT g m))
 newtype GenotypeT g w m a = GenotypeT { unGenotypeT :: g -> DNA -> m (a, g, w) }
 type Genotype g w = GenotypeT g w Identity
+
+
+-- | evalute the builder and obtain its output
+evalGeneBuilderT :: (Monad m) => GenotypeT g w m a -> DNA -> g -> m w
+evalGeneBuilderT m s g = do
+    (_,_,w) <- unGenotypeT m g s
+    return w
+
+-- | evalute the builder and obtain its output
+evalGeneBuilder :: Genotype g w a -> DNA -> g -> w
+evalGeneBuilder m s g = runIdentity $ evalGeneBuilderT m s g
+
+-- | evalute the builder and obtain its output
+unGenotype :: Genotype g w a -> DNA -> g -> (a, g, w)
+unGenotype m s g = runIdentity $  unGenotypeT m g s
+
 
 -- |
 instance (Functor m) => Functor (GenotypeT g w m) where
@@ -88,26 +105,36 @@ instance (Monoid w, Monad m) => MonadWriter w (GenotypeT g w m) where
 
 
 -- | minimal dna length requirement for automatic parallelization
-genoTypeParMin :: Int
-genoTypeParMin = 10
+-- revert to sequential evaluation if the domain is small
+-- note, this isn't great because a small domain does not mean a fast computation or vice versa
+-- but we expect them to be reasonably correlated in most cases
+genotypeParMin :: Int
+genotypeParMin = 10
 
 -- |
 -- RandomGen g constraint required to split the generator for deterministic parallel evaluation (whether it's actually used or not)
+-- TODO/NOTE this is currently not actually creating any sparks
+-- It might be because it evaluate the output tuple to only whnf?
 instance forall w g m. (Monoid w, RandomGen g, MonadParallel m) => MonadParallel (GenotypeT g w m) where
     bindM2 f' ma mb = GenotypeT func where
+        -- revert to sequential evaluation if the domain is small, see comments in genotypeParMin
         bindM2Serial f ma' mb' = do { a <- ma'; b <- mb'; f a b }
-        func g dna = if dnaLength dna <= genoTypeParMin
+        func g dna = if dnaLength dna <= genotypeParMin
             then unGenotypeT (bindM2Serial f' ma mb) g dna
+            -- the inner monad should spark ra and rb :\
+            --else ra `par` rb `pseq` bindM2 f ra rb where
             else bindM2 f ra rb where
                 -- make generators
-                (g',(g'',g''')) = over _2 split $ split g
+                (g', g'') = split g
                 -- parallel evaluate a and b to produce c
                 ra = unGenotypeT ma g' dna
                 rb = unGenotypeT mb g'' dna
                 -- unwrap and rewrap the monadic output of the inner monad
+                -- to contain the results of ra and rb
                 f (x1,_,w1) (x2,_,w2) =
-                    unGenotypeT (f' x1 x2) g''' dna
-                    >>= \(c, g'''', w3) -> return (c, g'''', mconcat [w1,w2,w3])
+                    unGenotypeT (f' x1 x2) g dna
+                    >>= \(c, g_out, w3) -> c `seq` return (c, g_out, mconcat [w1,w2,w3])
+
 
 -- |
 -- constraints needed to satisfy Monad instance
@@ -120,16 +147,6 @@ instance (Monoid w, RandomGen g, Monad m) => MonadRandom (GenotypeT g w m) where
             (a,g') = randomR r g
     --getRandoms = undefined
     --getRandomRs = undefined
-
--- | evalute the builder and obtain its output
-evalGeneBuilderT :: (Monad m) => GenotypeT g w m a -> DNA -> g -> m w
-evalGeneBuilderT m s g = do
-    (_,_,w) <- unGenotypeT m g s
-    return w
-
--- | evalute the builder and obtain its output
-evalGeneBuilder :: Genotype g w a -> DNA -> g -> w
-evalGeneBuilder m s g = runIdentity $ evalGeneBuilderT m s g
 
 -- | apply a computation on a Gene
 -- will error if Gene is out of bounds of DNA being operated on
