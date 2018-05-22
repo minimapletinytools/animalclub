@@ -34,8 +34,13 @@ import qualified Debug.Trace as Debug
 --import qualified Prelude (read)
 --read x = Prelude.read $ Debug.trace x x
 
+-- |
+-- There are no defined overwrite rules when using TLOCombined
+-- so do not use it together with Thickness Length and Orientation
+-- or you will not be guaranteed which one overwrites which
 data BoneMethod = Thickness |  Length | Orientation | TLOCombined | Color deriving (Read, Show, Generic, NFData)
 
+-- |
 data SkellyFunc = SkellyFunc {
     sfBone' :: BoneName',
     sfMethod :: BoneMethod
@@ -83,7 +88,7 @@ generateAnimalPropertiesInternal_ ::
     AnimalPropertyMap -- ^ accumulating map of properties.
     -> [(SkellyFunc, [Float])] -- ^ list of properties
     -> AnimalPropertyMap -- ^ output accumulated map of properties. EnumBone' property will override AllBone' property
-generateAnimalPropertiesInternal_ _props xs = foldl addProp (foldl addProp (foldl addProp  (Map.empty) allProps) enumBonesProps) otherProps where
+generateAnimalPropertiesInternal_ _props xs = foldl addProp (foldl addProp (foldl addProp Map.empty allProps) enumBonesProps) otherProps where
     -- First go through AllBones' case which will be used as defaults for everything else
     allProps = List.filter ((\case {AllBones' _ -> True; _ -> False}) . sfBone' . fst) xs
 
@@ -118,9 +123,12 @@ generateAnimalPropertiesInternal_ _props xs = foldl addProp (foldl addProp (fold
                     over distance (*(vals !! 0)) oldProp
                 Thickness -> assertLength 1 vals $
                     over skinParams (*(vals !! 0)) oldProp
-                -- TODO
+                TLOCombined -> assertLength 5 vals $
+                    over orientation (inherit $ QH.fromEulerXYZ (V3 (vals !! 2) (vals !! 3) (vals !! 4)))
+                    $ over distance (*(vals !! 1))
+                    $ over skinParams (*(vals !! 0)) oldProp
                 Color -> oldProp
-                TLOCombined -> oldProp
+
 
 generateAnimalProperties_ ::
     [(SkellyFunc, [Float])] -- ^ list of properties

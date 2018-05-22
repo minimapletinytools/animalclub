@@ -63,6 +63,7 @@ dependencies:
 - parallel
 - clock
 - formatting
+- bytestring
 
 library:
   source-dirs: src

@@ -12,7 +12,11 @@ Stability   : experimental
 
 module AnimalClub.Animals.Builder (
     AutoGeneMethod(..),
-    makeGenomeFromPropertiesSimple
+    makeGenomeFromPropertiesSimple,
+
+    -- WIP
+    ATree,
+    DepFunc,
 ) where
 
 import AnimalClub.Animals.Animal
@@ -31,7 +35,19 @@ import Control.Monad.Writer (tell)
 --import Debug.Trace (trace)
 
 
--- TODO move everything below to Cute/AutoGenotype.hs or osmetihng like that
+data DepFunc = Linear Float | Mutate Float
+
+data ATree = ATree [((Either T.Text SkellyFunc, AutoGeneMethod), [(DepFunc, ATree)])]
+
+
+
+
+
+
+
+
+
+
 data AutoGeneMethod =
     Normal (Float, Float) Int
     deriving (Generic, NFData)

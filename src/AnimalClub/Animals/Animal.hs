@@ -23,8 +23,10 @@ import AnimalClub.Genetics
 import AnimalClub.Skellygen
 
 import qualified Data.Text as T
+import qualified Data.ByteString.Lazy as B
 import           Data.Word
 import Data.Maybe (catMaybes)
+
 import Control.DeepSeq
 import GHC.Generics (Generic)
 import Control.Monad.Writer (tell)
@@ -34,7 +36,7 @@ import Control.Monad.Writer (tell)
 
 -- | various output expression of an animal genotype
 data AnimalExp =
-    ExpBytes T.Text [Word32]
+    ExpBytes T.Text B.ByteString
     | ExpFloats T.Text [Float]
     | ExpSkellyFunc SkellyFunc [Float] deriving (Generic, NFData, Show)
 

@@ -10,24 +10,20 @@ import AnimalClub.Skellygen.Math.Mesh
 
 import Text.Printf (printf)
 import System.Random
-import Control.DeepSeq
 
---import Debug.Trace
 
---AllBones'
+
+
 
 sfGoatFront name = SkellyFunc (EnumBones' name [0,1])
 sfGoatBack name = SkellyFunc (EnumBones' name [2,3])
 
-
 defOrient = (-0.5, 0.5)
 defLength = (0, 2)
 defThick = (0, 2)
-
 --defOrient = (0,0)
 --defLength = (0,0)
 --defThick = (0,0)
-
 
 -- Goat properties
 goatPropertyList :: [(SkellyFunc, AutoGeneMethod)]
@@ -80,8 +76,6 @@ goatPropertyList = [
     , (SkellyFunc (Bone' "tailend") Orientation, Normal defOrient 3)
     , (SkellyFunc (Bone' "tailend") Length, Normal defLength 1)
 
-
-
     ]
 
 main :: IO ()
@@ -95,5 +89,4 @@ main = do
         original = makeRandDNA gen goatDNALength
         goatProps = generateAnimalProperties $ evalGenome goatGenome original
         skelly = animalNodeToSkellyNodeWithProps goatProps goat
-    putStrLn $ (evalGenome goatGenome original) `deepseq` "genome evaled"
     writeFile "wigglygoat.obj" . meshToObj . generateMesh $ skelly
