@@ -13,6 +13,13 @@ import System.Random
 
 
 
+-- data DepFunc = Linear Float | Mutate Float
+
+-- data ATree = ATree ((Either T.Text SkellyFunc, AutoGeneMethod), [(DepFunc, ATree)])
+
+-- energyNode = ATree ((Left "energy consumption", Normal (0,2) 10), [(Linear 1, undefined)])
+
+
 
 
 sfGoatFront name = SkellyFunc (EnumBones' name [0,1])

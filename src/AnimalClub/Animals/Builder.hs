@@ -37,7 +37,7 @@ import Control.Monad.Writer (tell)
 
 data DepFunc = Linear Float | Mutate Float
 
-data ATree = ATree [((Either T.Text SkellyFunc, AutoGeneMethod), [(DepFunc, ATree)])]
+data ATree = ATree ((Either T.Text SkellyFunc, AutoGeneMethod), [(DepFunc, ATree)])
 
 
 

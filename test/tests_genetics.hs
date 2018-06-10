@@ -100,6 +100,42 @@ prop_gbRandomRanges dna' ranges' = pass
             dummyGen
     pass = all (\((mn, mx), x) -> (x >= mn) && (x <= mx)) $ zip ranges o
 
+-- TODO
+{-
+prop_gbByteSample1 :: DNA -> Bool
+prop_gbByteSample1 dna = True
+    -- trivial test
+    V.toList (dnaBitCount dna) == o
+    where
+      o =
+         extractFirstValue $
+         evalGeneBuilder (prop_gbByteSample1 >>= tellGene "") dna dummyGen
+
+-- | returns a 4 length array that counts occurrence of [00,01,10,11]
+-- on non-overlapping intervals of 2 bits
+-- TODO
+prop_gbByteSample2 :: DNA -> Bool
+prop_gbByteSample2 dna = True
+
+-- | counts occurrence of given patterns on non-overlapping intervals of 4 bits
+-- argument is supplied as a pair of 2 4 bit patterns as a Word8
+-- and output is number occurrences of these 2 patterns as a tuple
+-- TODO
+prop_gbBytePattern4 :: DNA -> Bool
+prop_gbBytePattern4 dna = True
+
+-}
+
+-- | counts occurrence of given pattern on non-overlapping intervals of 8 bits
+prop_gbBytePattern_test1 :: Word8 -> Bool
+prop_gbBytePattern_test1 w = r == 100 where
+    dna = V.replicate 100 w
+    r = extractFirstValue $
+        evalGeneBuilder
+            (gbBytePattern w >>= tellGene "" . fromIntegral)
+            dna
+            dummyGen
+
 instance Semigroup Float where
     (<>) = (+)
 
@@ -122,9 +158,9 @@ prop_convergence seed = pass
     unfoldWormF (dnas, g) =
         if testResult < thresh
             then Nothing
-            else Just $ (next_dnas, acc)
+            else Just (next_dnas, acc)
       where
-        acc@(next_dnas, _) = breedAndSelectPool (test) 0.003 g (15, 2) dnas
+        acc@(next_dnas, _) = breedAndSelectPool test 0.003 g (15, 2) dnas
         testResult = test $ head next_dnas
     generations =
         length $ take maxGenerations $ unfoldr unfoldWormF ([original], g2)
