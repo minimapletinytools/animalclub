@@ -62,6 +62,7 @@ dependencies:
 - monad-parallel
 - parallel
 - clock
+- time
 - formatting
 - bytestring
 
@@ -125,9 +126,9 @@ executables:
     - animalclub
 
 
-# stack bench --profile --ghc-options -threaded --benchmark-arguments='+RTS -N -RTS'
+# stack bench animalclub:genotype-benchmarks --profile --ghc-options -threaded --benchmark-arguments='+RTS -N -C0.01 -sstderr -RTS'
 benchmarks:
-  agenotype-benchmarks:
+  genotype-benchmarks:
     source-dirs: benchmark
     main: genotype.hs
     dependencies:
@@ -137,7 +138,10 @@ benchmarks:
     - -O2
     - -rtsopts
     - -threaded
-    - -with-rtsopts=-N2
+    - -with-rtsopts=-sstderr
+    - -with-rtsopts=-N4
+    - -with-rtsopts=-C0.01
+
 
   dna-benchmarks:
     source-dirs: benchmark

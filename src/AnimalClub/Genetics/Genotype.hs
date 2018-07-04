@@ -7,10 +7,9 @@ Maintainer  : chippermonky@email.com
 Stability   : experimental
 
 Monad for building Genotypes and evaluating them in Parallel
+New version using an artisinal free range monad
 Enable -XApplicativeDo for automatic parallelization
 -}
-
-{-# LANGUAGE DefaultSignatures #-}
 
 module AnimalClub.Genetics.Genotype (
     -- * Monads
@@ -118,11 +117,11 @@ genotypeParMin = 10
 
 -- |
 -- RandomGen g constraint required to split the generator for deterministic parallel evaluation (whether it's actually used or not)
--- TODO/NOTE this is currently not actually creating any sparks
+-- TODO/NOTE this is currently not actually creating any sparks or when it does they all GC D:
 -- It might be because it evaluate the output tuple to only whnf?
 instance forall w g m. (Monoid w, RandomGen g, MonadParallel m) => MonadParallel (GenotypeT g w m) where
     bindM2 f' ma mb = GenotypeT func where
-        -- revert to sequential evaluation if the domain is small, see comments in genotypeParMin
+        -- sequential evaluation for small domains, see comments in genotypeParMin
         bindM2Serial f ma' mb' = do { a <- ma'; b <- mb'; f a b }
         func g dna = if dnaLength dna <= genotypeParMin
             then unGenotypeT (bindM2Serial f' ma mb) g dna

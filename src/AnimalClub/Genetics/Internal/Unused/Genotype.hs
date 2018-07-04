@@ -7,6 +7,7 @@ Maintainer  : chippermonky@email.com
 Stability   : experimental
 
 Monad for building genes using Gene.
+Old version using MTL
 -}
 
 module AnimalClub.Genetics.Internal.Unused.Genotype (

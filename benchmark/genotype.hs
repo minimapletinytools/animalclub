@@ -12,6 +12,9 @@ import Control.Monad.State (get)
 
 import Criterion.Main
 
+import Data.Time.Clock
+import Control.DeepSeq
+
 splitCount :: Int
 splitCount = 40
 
@@ -59,16 +62,44 @@ benchgtpar = do
         ml = dnal `quot` splitCount
     Par.forM [i*ml | i <- [0..(splitCount-1)]] (\x -> usingGene (Gene x ml) gbComplicated)
 
+markTime :: String -> UTCTime -> IO UTCTime
+markTime s t = do
+    t' <- getCurrentTime
+    putStrLn $ s ++ ": " ++ show (diffUTCTime t' t)
+    return t'
+
 main :: IO ()
 main = do
     g <- getStdGen
     let
         dnal = 1000000
         dna = makeRandDNA g dnal
+    dna `deepseq` return ()
+
+
+    -- simplified benchmarks
+    t1 <- getCurrentTime
+    r1 <- return $ evalGeneBuilder (benchgtpar >>= tell) dna g
+    r1 `deepseq` return ()
+    t2 <- markTime "par" t1
+
+    r2 <- return $ evalGeneBuilder (benchgtseq >>= tell) dna g
+    r2 `deepseq` return ()
+    t3 <- markTime "seq" t2
+
+    r3 <- return $ Old.evalGeneBuilder (benchgtold >>= tell) (dna, []) g
+    r3 `deepseq` return ()
+    t4 <- markTime "old" t3
+
+    return ()
+
+
+    -- criterion benchmarks
+    {-
     defaultMain [
         bgroup "genotype" [
             bench "serial" $ nf (evalGeneBuilder (benchgtseq >>= tell) dna) g
             ,bench "parallel" $ nf (evalGeneBuilder (benchgtpar >>= tell) dna) g
             ,bench "old" $ nf (Old.evalGeneBuilder (benchgtold >>= tell) (dna, [])) g
             ]
-        ]
+        ]-}
