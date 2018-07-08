@@ -9,6 +9,7 @@ import             Data.Semigroup (Semigroup, (<>))
 import qualified Data.Text as T
 import qualified Data.Vector.Unboxed as V
 import Data.Word
+import Data.Bits
 import System.Random
 import Test.QuickCheck
 
@@ -33,7 +34,7 @@ tellGenes s v = tell $ [(s, v)]
 dummyGen :: StdGen
 dummyGen = mkStdGen 0
 
-extractFirstValue :: [(a, [Float])] -> Float
+extractFirstValue :: [(a, [b])] -> b
 extractFirstValue = head . snd . head
 
 {- Breeding tests -}
@@ -100,33 +101,40 @@ prop_gbRandomRanges dna' ranges' = pass
             dummyGen
     pass = all (\((mn, mx), x) -> (x >= mn) && (x <= mx)) $ zip ranges o
 
--- TODO
-{-
-prop_gbByteSample1 :: DNA -> Bool
-prop_gbByteSample1 dna = True
-    -- trivial test
-    V.toList (dnaBitCount dna) == o
-    where
-      o =
-         extractFirstValue $
-         evalGeneBuilder (prop_gbByteSample1 >>= tellGene "") dna dummyGen
+prop_gbByteSample1 :: Word8 -> Bool
+prop_gbByteSample1 w = all id $ map (\i -> getBit w i * n == r !! i) [0..7] where
+    getBit a i = if testBit a i then 1 else 0
+    n = 100
+    dna = V.replicate n w
+    r = evalGeneBuilder
+            (gbByteSample1 >>= tell)
+            dna
+            dummyGen
 
+
+
+{-
 -- | returns a 4 length array that counts occurrence of [00,01,10,11]
 -- on non-overlapping intervals of 2 bits
 -- TODO
 prop_gbByteSample2 :: DNA -> Bool
 prop_gbByteSample2 dna = True
-
--- | counts occurrence of given patterns on non-overlapping intervals of 4 bits
--- argument is supplied as a pair of 2 4 bit patterns as a Word8
--- and output is number occurrences of these 2 patterns as a tuple
--- TODO
-prop_gbBytePattern4 :: DNA -> Bool
-prop_gbBytePattern4 dna = True
-
 -}
 
--- | counts occurrence of given pattern on non-overlapping intervals of 8 bits
+
+-- |
+{-
+prop_gbBytePattern4 :: Word8 -> Bool
+prop_gbBytePattern4 w = r == 100 * double where
+    double = if 0xF (Data.Bits..&.) w == shiftR w 4 then 2 else 1
+    dna = V.replicate 100 w
+    r = extractFirstValue $
+        evalGeneBuilder
+            (gbBytePattern4 w >>= tellGene "" . fromIntegral)
+            dna
+            dummyGen
+-}
+
 prop_gbBytePattern_test1 :: Word8 -> Bool
 prop_gbBytePattern_test1 w = r == 100 where
     dna = V.replicate 100 w

@@ -72,12 +72,14 @@ main :: IO ()
 main = do
     g <- getStdGen
     let
-        dnal = 1000000
+        dnal = 10000000
         dna = makeRandDNA g dnal
     dna `deepseq` return ()
 
 
     -- simplified benchmarks
+
+    -- making correct # of sparks as expected but sparks almost all get GC or fizzled
     t1 <- getCurrentTime
     r1 <- return $ evalGeneBuilder (benchgtpar >>= tell) dna g
     r1 `deepseq` return ()
@@ -94,7 +96,7 @@ main = do
     return ()
 
 
-    -- criterion benchmarks
+    -- criterion benchmarks, disabled for now until I get the above to work properly
     {-
     defaultMain [
         bgroup "genotype" [
