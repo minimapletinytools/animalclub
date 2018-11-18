@@ -41,6 +41,9 @@ import qualified Debug.Trace as Debug
 data BoneMethod = Thickness |  Length | Orientation | TLOCombined | Color deriving (Read, Show, Generic, NFData)
 
 -- |
+-- SkellyFunc represents a method applied to a bone
+-- parameters to the method are passed in as [Float]
+-- such non-type safety 😱
 data SkellyFunc = SkellyFunc {
     sfBone' :: BoneName',
     sfMethod :: BoneMethod

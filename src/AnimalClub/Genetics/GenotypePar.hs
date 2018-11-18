@@ -6,7 +6,8 @@ License     : GPL-3
 Maintainer  : chippermonky@email.com
 Stability   : experimental
 
-Import this module and enable -XApplicativeDo for automatic parallelization
+Import this module and enable -XApplicativeDo for automatic parallelization of Genotype
+(TODO test me)
 -}
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}

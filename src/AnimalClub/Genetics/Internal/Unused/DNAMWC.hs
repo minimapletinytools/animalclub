@@ -6,9 +6,13 @@ License     : GPL-3
 Maintainer  : chippermonky@email.com
 Stability   : experimental
 
-This module has the same functionality as AnimalClub.Genetics.DNA.DNAMWC except implemented using random-mwc
-The signatures are adjusted accordingly.
+This module has the same functionality as AnimalClub.Genetics.DNA except implemented using random-mwc
+The signatures are adjusted accordingly
+MWC is slower than StdGen and in this case we do not need the better random numbers
+Since the implementation is non-trivial and this may be useful someday, the code is left here for reference
 
+
+Use below for performance testing:
 
 ---------------------------
 -- performance testing code

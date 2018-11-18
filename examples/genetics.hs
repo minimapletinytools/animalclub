@@ -46,7 +46,7 @@ gbComplicated :: Genotype StdGen [Int] Int
 gbComplicated = do
     x <- gbSumRange (0, 99)
     y <- gbTypical (0, 99)
-    zs <- forM [1..10000] $ const gbNormalizedSum
+    zs <- forM [(1::Int)..10000] $ const gbNormalizedSum
     return $ round $ x + y + sum zs
 
 
@@ -58,7 +58,7 @@ gbParExample = do
         ml = dnal `quot` splitCount
     vs <- Par.forM [i*ml | i <- [0..(splitCount-1)]] (\x -> usingGene (Gene x ml) gbComplicated)
     return $ sum vs
-    
+
 gbSeqExample :: Genotype StdGen [Int] Int
 gbSeqExample = do
     dnal <- gbDNALength

@@ -8,7 +8,7 @@ Stability   : experimental
 
 Monad for building Genotypes and evaluating them in Parallel
 New version using an artisinal free range monad
-Enable -XApplicativeDo for automatic parallelization
+NOTE parallelization stuff is not actually running in parallel for some reason
 -}
 
 module AnimalClub.Genetics.Genotype (
@@ -55,6 +55,9 @@ import Control.Parallel
 newtype GenotypeT g w m a = GenotypeT { unGenotypeT :: g -> DNA -> m (a, g, w) }
 type Genotype g w = GenotypeT g w Identity
 
+-- | evalute the builder and obtain its output
+unGenotype :: Genotype g w a -> DNA -> g -> (a, g, w)
+unGenotype m s g = runIdentity $  unGenotypeT m g s
 
 -- | evalute the builder and obtain its output
 evalGeneBuilderT :: (Monad m) => GenotypeT g w m a -> DNA -> g -> m w
@@ -65,11 +68,6 @@ evalGeneBuilderT m s g = do
 -- | evalute the builder and obtain its output
 evalGeneBuilder :: Genotype g w a -> DNA -> g -> w
 evalGeneBuilder m s g = runIdentity $ evalGeneBuilderT m s g
-
--- | evalute the builder and obtain its output
-unGenotype :: Genotype g w a -> DNA -> g -> (a, g, w)
-unGenotype m s g = runIdentity $  unGenotypeT m g s
-
 
 -- |
 instance (Functor m) => Functor (GenotypeT g w m) where

@@ -88,8 +88,6 @@ library:
     - AnimalClub.Genetics.Internal.Unused.Genotype
     # - AnimalClub.Genetics.Internal.Unused.DNAMWC
 
-  dependencies:
-
 
 executables:
   genetics:
