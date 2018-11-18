@@ -59,7 +59,6 @@ import           Data.Word
 import System.Random.MWC
 
 import Control.Monad.Primitive
-import Control.Exception.Base (assert)
 
 -- | create random DNA with given dnaLength
 -- length must be multiple of 4

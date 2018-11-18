@@ -20,8 +20,6 @@ module AnimalClub.Genetics.Gene (
 import           AnimalClub.Genetics.DNA
 
 import qualified Data.Vector.Unboxed as V
-import           Data.Bits
-import Data.List (foldl')
 
 -- | represents a genotype as a start index and length
 -- indices are on 8-bit (Word8) intervals
@@ -79,4 +77,4 @@ geneSum dna gt = dnaSum $ V.slice (_start gt) (_count gt) dna
 
 -- | returns an 8 length array that counts occurrence of each bit
 geneBitCount :: DNA -> Gene -> V.Vector Int
-geneBitCount dna gt = dnaBitCount $ V.slice (_start gt) (_count gt) dna 
+geneBitCount dna gt = dnaBitCount $ V.slice (_start gt) (_count gt) dna

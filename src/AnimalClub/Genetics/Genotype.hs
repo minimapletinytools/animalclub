@@ -22,6 +22,7 @@ module AnimalClub.Genetics.Genotype (
     unGenotype,
     -- * Gene building monad operations
     usingGene,
+    gbDNA,
     gbDNALength,
     gbSum,
     gbNormalizedSum,
@@ -48,7 +49,6 @@ import Control.Monad.Identity
 import Control.Monad.Random
 import Control.Monad.Parallel (MonadParallel(..))
 import Control.Monad.Writer
-import Control.Parallel
 --import Debug.Trace
 
 -- | StateT GenotypeState (WriterT w (RandT g m))
@@ -147,8 +147,9 @@ instance (Monoid w, RandomGen g, Monad m) => MonadRandom (GenotypeT g w m) where
     getRandomR r = GenotypeT func where
         func g _ = return (a,g',mempty) where
             (a,g') = randomR r g
-    --getRandoms = undefined
-    --getRandomRs = undefined
+    -- TODO
+    getRandoms = undefined
+    getRandomRs = undefined
 
 -- | apply a computation on a Gene
 -- will error if Gene is out of bounds of DNA being operated on
@@ -225,20 +226,22 @@ gbRandomRanges ranges = do
 gbByteSample1 :: (Monoid w, Monad m) => GenotypeT g w m [Int]
 gbByteSample1 = GenotypeT (\g dna -> return (V.toList (dnaBitCount dna), g, mempty))
 
+{-
 -- | returns a 4 length array that counts occurrence of [00,01,10,11]
 -- on non-overlapping intervals of 2 bits
--- TODO
+-- TODO finish
 gbByteSample2 :: (Monoid w, Monad m) => GenotypeT g w m [Int]
 gbByteSample2 = undefined
 
 -- | counts occurrence of given patterns on non-overlapping intervals of 4 bits
 -- argument is supplied as a pair of 2 4 bit patterns as a Word8
 -- and output is number occurrences of these 2 patterns as a tuple
--- TODO
+-- TODO finish
 gbBytePattern4 :: (Monoid w, Monad m) => Word8 -> GenotypeT g w m (Int, Int)
 gbBytePattern4 p = GenotypeT f where
     f g dna = return (V.foldl' ff (0,0) dna, g, mempty) where
         ff acc x = undefined
+-}
 
 -- | counts occurrence of given pattern on non-overlapping intervals of 8 bits
 gbBytePattern :: (Monoid w, Monad m) => Word8 -> GenotypeT g w m Int

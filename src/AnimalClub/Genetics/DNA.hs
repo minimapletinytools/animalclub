@@ -12,6 +12,7 @@ module AnimalClub.Genetics.DNA (
     -- * Types
     DNA,
     -- * Functions
+    makeZeroDNA,
     makeRandDNA,
     dnaLength,
     dnaSum,
@@ -30,9 +31,6 @@ import Data.List (mapAccumL, sortBy)
 import           Data.Ord                        (comparing)
 import           Data.Word
 import           System.Random
-
-import Control.Exception.Base (assert)
-
 
 -- we don't use repa because repa uses Vector.Unboxed as its underlying type which is not tightly packed
 

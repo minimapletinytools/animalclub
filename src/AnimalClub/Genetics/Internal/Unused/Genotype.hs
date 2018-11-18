@@ -10,6 +10,8 @@ Monad for building genes using Gene.
 This is the old version using MTL
 -}
 
+{-# OPTIONS_GHC -fno-warn-redundant-constraints #-}
+
 module AnimalClub.Genetics.Internal.Unused.Genotype (
     -- * Monads
     -- $monaddoclink
@@ -27,15 +29,15 @@ module AnimalClub.Genetics.Internal.Unused.Genotype (
     gbSumRange,
     gbNormalizedThresh,
     gbTypical,
-    gbRandomRanges
+    gbRandomRanges,
+    gbByteSample
 ) where
 
 import AnimalClub.Genetics.DNA
 import AnimalClub.Genetics.Gene
 
-import Data.Text (Text, append)
 import qualified Data.Vector.Unboxed as V
-import Control.Monad.Writer.Lazy (WriterT, tell, pass, execWriterT)
+import Control.Monad.Writer.Lazy (WriterT, execWriterT)
 import Control.Monad.State.Lazy (StateT, evalStateT, put, get, state)
 import Control.Monad.Identity (Identity, runIdentity)
 import Control.Monad.Random (RandT, evalRandT, getRandom)
