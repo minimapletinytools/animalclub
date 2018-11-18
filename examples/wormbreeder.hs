@@ -1,7 +1,13 @@
+{-
+
+this example uses AnimalClub.Animals.Worm to breed a worm targetting some idea form
+
+-}
+
 --{-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 --{-# OPTIONS_GHC -fno-warn-unused-top-binds #-}
 
-import AnimalClub.Animals.Worm
+import ExamplesLib.Worm
 
 import AnimalClub.Animals
 import AnimalClub.Genetics

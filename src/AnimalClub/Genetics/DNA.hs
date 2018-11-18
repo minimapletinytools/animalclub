@@ -143,6 +143,10 @@ breedAndSelectPool testfn mChance g (size, winners) dnas = (r, outg) where
 
 
 {-
+
+I can't remember why I left this here, pretty sure it's safe to delete
+
+
 mutateBit :: (RandomGen g) => g -> Word8 -> Word8
 mutateBit g x = unsafeShiftL 0x01 (randomR (0,7) g) `xor` x
 

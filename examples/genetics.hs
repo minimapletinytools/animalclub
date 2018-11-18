@@ -14,6 +14,7 @@ import System.Clock
 
 import qualified Control.Monad.Parallel as Par
 
+-- helpers for examples
 -- | Writer monoid for either value or names
 type NamedFloats = [(T.Text, [Float])]
 
@@ -25,6 +26,7 @@ tellGene s v = tellGenes s [v]
 tellGenes :: (Monad m) => T.Text -> [Float] -> GenotypeT g NamedFloats m ()
 tellGenes s v = tell [(s, v)]
 
+-- | example genotype
 gbExample :: (RandomGen g, Monad m) => GenotypeT g NamedFloats m ()
 gbExample = do
     gbNormalizedSum >>= tellGene "first"
@@ -39,35 +41,7 @@ gbExample = do
     tellGenes "third" [a1, a2]
     gbRandomRanges [(0, 1) | _ <- [(0 :: Int) .. 9]] >>= tellGenes "ranges"
 
-splitCount :: Int
-splitCount = 100
-
-gbComplicated :: Genotype StdGen [Int] Int
-gbComplicated = do
-    x <- gbSumRange (0, 99)
-    y <- gbTypical (0, 99)
-    zs <- forM [(1::Int)..10000] $ const gbNormalizedSum
-    return $ round $ x + y + sum zs
-
-
-
-gbParExample :: Genotype StdGen [Int] Int
-gbParExample = do
-    dnal <- gbDNALength
-    let
-        ml = dnal `quot` splitCount
-    vs <- Par.forM [i*ml | i <- [0..(splitCount-1)]] (\x -> usingGene (Gene x ml) gbComplicated)
-    return $ sum vs
-
-gbSeqExample :: Genotype StdGen [Int] Int
-gbSeqExample = do
-    dnal <- gbDNALength
-    let
-        ml = dnal `quot` splitCount
-    vs <- Seq.forM [i*ml | i <- [0..(splitCount-1)]] (\x -> usingGene (Gene x ml) gbComplicated)
-    return $ sum vs
-
-
+-- basic example of using AnimalClub.Genetics
 example1 :: IO ()
 example1 = do
     gen <- getStdGen
@@ -86,10 +60,46 @@ example1 = do
     --putStrLn $ show $ evalGeneBuilder (gbNormalizedSum >>= tellGene) (bread33, []) gen
     print $ evalGeneBuilder gbExample bread33 gen
 
+
+
+
+------------------
+-- some potato code for testing parallel genotype eval
+-- shows that it's not working
+-- this really doesn't belong here, TODO move it to its own example file
+------------------
+splitCount :: Int
+splitCount = 100
+
+gbComplicated :: Genotype StdGen [Int] Int
+gbComplicated = do
+    x <- gbSumRange (0, 99)
+    y <- gbTypical (0, 99)
+    zs <- forM [(1::Int)..10000] $ const gbNormalizedSum
+    return $ round $ x + y + sum zs
+
+gbParExample :: Genotype StdGen [Int] Int
+gbParExample = do
+    dnal <- gbDNALength
+    let
+        ml = dnal `quot` splitCount
+    vs <- Par.forM [i*ml | i <- [0..(splitCount-1)]] (\x -> usingGene (Gene x ml) gbComplicated)
+    return $ sum vs
+
+gbSeqExample :: Genotype StdGen [Int] Int
+gbSeqExample = do
+    dnal <- gbDNALength
+    let
+        ml = dnal `quot` splitCount
+    vs <- Seq.forM [i*ml | i <- [0..(splitCount-1)]] (\x -> usingGene (Gene x ml) gbComplicated)
+    return $ sum vs
+
+
 forceEvaluateN :: Int -> Genotype StdGen [Int] Int -> DNA -> StdGen -> IO Int
 forceEvaluateN c gt dna g = do
     rslt <- Seq.forM [0..c] $ \_ -> return $ force . (\(x,_,_) -> x) $ unGenotype gt dna g
     return (length rslt)
+
 
 example2 :: IO ()
 example2 = do
@@ -108,6 +118,11 @@ example2 = do
     fprint (timeSpecs % "\n") s0 s1
     fprint (timeSpecs % "\n") s1 s2
     fprint (timeSpecs % "\n") s2 s3
+
+
+
+
+
 
 
 main :: IO ()

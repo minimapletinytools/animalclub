@@ -1,7 +1,15 @@
+{-
+
+this example uses AnimalClub.Animals.Builder to make a goat
+
+UNFINISH/WIP
+
+-}
+
 {-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 {-# OPTIONS_GHC -fno-warn-unused-top-binds #-}
 
-import Animals
+import ExamplesLib.Skeletons
 
 import AnimalClub.Animals
 import AnimalClub.Genetics

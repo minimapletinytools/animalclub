@@ -1,7 +1,18 @@
+{-|
+Module      : Animals
+Description : Example animals skeletons
+Copyright   : (c) Peter Lu, 2018
+License     : GPL-3
+Maintainer  : chippermonky@email.com
+Stability   : experimental
+
+provides example AnimalClub.Skellygen skeletons
+
+-}
 {-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 {-# OPTIONS_GHC -fno-warn-unused-top-binds #-}
 
-module Animals (
+module ExamplesLib.Skeletons (
     goat
 ) where
 
@@ -81,7 +92,7 @@ worm2 = AnimalNode (Bone "root") (relV3 0 0 0) (Abs 0.2) True
     , flipAnimalNode ReflX 2 flipWorm
     ]
 
--- | go!
+-- | write the example skeletons
 main = do
     writeFile "goat.obj" . meshToObj . generateMesh . animalNodeToSkellyNode $ goat
     writeFile "worm.obj" . meshToObj . generateMesh . animalNodeToSkellyNode $ worm2

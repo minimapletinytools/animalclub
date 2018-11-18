@@ -73,6 +73,7 @@ library:
     - AnimalClub.Genetics
     - AnimalClub.Genetics.DNA
     - AnimalClub.Genetics.Gene
+    - AnimalClub.Genetics.Genome
     - AnimalClub.Genetics.Genotype
     - AnimalClub.Genetics.GenotypePar
     # Skellygen
@@ -82,7 +83,6 @@ library:
     - AnimalClub.Skellygen.Math.Quaternion
     # Animal
     - AnimalClub.Animals
-    - AnimalClub.Animals.Worm
 
     # Hidden stuff that's only here for testing reasons
     - AnimalClub.Genetics.Internal.Unused.Genotype
@@ -108,7 +108,7 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     other-modules:
-    - Animals
+    - ExamplesLib.Skeletons
     dependencies:
     - animalclub
 
@@ -120,6 +120,8 @@ executables:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    other-modules:
+    - ExamplesLib.Worm
     dependencies:
     - animalclub
 
