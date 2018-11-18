@@ -12,6 +12,7 @@ Functions and types pertaining to Genes
 module AnimalClub.Genetics.Gene (
     Gene(..),
     combineGene,
+    extractDNA,
     geneLength,
     geneSum,
     geneBitCount
@@ -37,6 +38,14 @@ combineGene gt2 gt1 =
     if _start gt2 + _count gt2 > _count gt1
         then error $ "parent child mismatch " ++ (show $ gt1) ++ " " ++ (show $ gt2)
         else Gene (_start gt1 + _start gt2) (_count gt2)
+
+-- | extractDNA extracts a Gene from DNA producing a new DNA that is the subsection of the original DNA as defined by the Gene
+-- will throw an error if Gene is out of bounds of DNA being operated on
+extractDNA ::
+  Gene -- ^ Gene to extract
+  -> DNA -- ^ DNA to extract from
+  -> DNA
+extractDNA (Gene i n) = V.slice i n
 
 {-
 -- |

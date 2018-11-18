@@ -49,13 +49,13 @@ data ATree = ATree ((Either T.Text SkellyFunc, AutoGeneMethod), [(DepFunc, ATree
 
 
 data AutoGeneMethod =
-    Normal (Float, Float) Int
+    Normal (Float, Float) Int -- ^ normal distribution: (min, max) num_outputs
     deriving (Generic, NFData)
 
 
 -- | returns number of floats this genotype creates
---autoGeneCount :: AutoGeneMethod -> Int
---autoGeneCount (Normal _ x) = x
+autoGeneCount :: AutoGeneMethod -> Int
+autoGeneCount (Normal _ x) = x
 
 -- | returns relative amount of DNA this genotype should take up
 -- note, this is NOT the same as how many float values need to be produced
@@ -64,23 +64,26 @@ autoGeneSize (Normal _ x) = x
 
 -- | automatically create genome from given properties
 -- this version does no overlap. All properties are independent
--- UNSTESTED
 makeGenomeFromPropertiesSimple ::
     Int -- ^ DNA length (vector length / 4)
     -> [(T.Text, AutoGeneMethod)] -- ^ other properties
     -> [(SkellyFunc, AutoGeneMethod)] -- ^ skellygen properties
     -> Genome StdGen [AnimalExp] -- ^ output genome
 makeGenomeFromPropertiesSimple dnasz ops sfps = Genome dnasz geneBuilder (mkStdGen 0) where
+    -- combine other properties and skellygen properties into a single list
     aps = map (over _1 Left) ops ++ map (over _1 Right) sfps
-    --(total, withTotals) :: (Int, (Either T.Text SkellyFunc, AutoGenoMethod, Int)) -- (total weights, incremental weights)
-    (total, withTotals) = mapAccumL (\acc (x,ag) -> (acc + autoGeneSize ag, (x, ag, acc))) 0 aps
-    geneBuilder = forM_ withTotals $ \(x, ag, startWeight) -> do
+    -- sum the weights and track the totals (total weights, incremental weights)
+    --(total, withTotals) :: (Int, (Either T.Text SkellyFunc, AutoGenoMethod, Int))
+    (total, withTotals) = mapAccumL (\acc (x, agm) -> (acc + autoGeneSize agm, (x, agm, acc))) 0 aps
+    geneBuilder = forM_ withTotals $ \(x, agm, startWeight) -> do
         let
-            gtsize = dnasz * (autoGeneSize ag) `div` total
+            -- use accumulated weights and total to determine start and length of the gene
+            gtsize = dnasz * (autoGeneSize agm) `div` total
             start = dnasz * startWeight `div` total
-        --trace (show start ++ " : " ++ show gtsize) $ gbPush (Gene start gtsize)
+        -- and build the genotype for the gene as defined by AutoGeneMethod
+        --trace (show start ++ " : " ++ show gtsize) $ usingGene (Gene start gtsize) $ do
         usingGene (Gene start gtsize) $ do
-            case ag of
+            case agm of
                 Normal range cnt -> do
                     vals <- forM [0..(cnt-1)] $ \n -> do
                         --trace ((show $ n * gtsize `div` cnt) ++ " ! " ++ (show $ gtsize `div` cnt)) $  gbPush (Gene (n * gtsize `div` cnt) (gtsize `div` cnt))

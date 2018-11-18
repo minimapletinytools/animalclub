@@ -116,7 +116,8 @@ transformV4 trs v = fromTRS trs M.!* v
 --_componentMul (V3 ax ay az) (V3 bx by bz) = V3 (ax * bx) (ay * by) (az * bz)
 
 -- |
--- proof:
+-- TODO enable latex formatter 😱
+-- proof this is correct:
 -- assuming T R S is closed under multiplication (prove by representing as 4x4 homogenous matrix)
 -- w.t.s $$T * R * S = (T1 * R1 * S1) * (T2 * R2 * S2)$$
 -- since $T * v = TRS * v$ where $$v$$ is a vector
@@ -130,7 +131,7 @@ transformV4 trs v = fromTRS trs M.!* v
 -- $$S = invR2*S1*R2*S2$$
 -- it remains to show that $$S$$ has no rotation components in it.
 -- questions:
---  (1) can we further decompose $$S = Sh * S'$$ where $$Sh$$ is a shear matrix and $$S'$$ is a diagonal scale matirx
+--  (1) can we further decompose $$S = Sh * S'$$ where $$Sh$$ is a shear matrix and $$S'$$ is a diagonal scale matirx?
 instance (Conjugate a, RealFloat a) => Hierarchical (TRS a) where
   inherit (TRS pt pr ps) (TRS ct cr cs) =
     TRS

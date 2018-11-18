@@ -52,6 +52,7 @@ import Control.Monad.Writer
 --import Debug.Trace
 
 -- | StateT GenotypeState (WriterT w (RandT g m))
+-- Genotype is a Writer monad taking an taking an RNG and DNA as inputs
 newtype GenotypeT g w m a = GenotypeT { unGenotypeT :: g -> DNA -> m (a, g, w) }
 type Genotype g w = GenotypeT g w Identity
 
@@ -152,9 +153,10 @@ instance (Monoid w, RandomGen g, Monad m) => MonadRandom (GenotypeT g w m) where
     getRandomRs = undefined
 
 -- | apply a computation on a Gene
--- will error if Gene is out of bounds of DNA being operated on
+-- this creates a new computation where DNA is the subsection of the original DNA as defined by the gene
+-- will throw an error if Gene is out of bounds of DNA being operated on
 usingGene :: Gene -> GenotypeT g w m a -> GenotypeT g w m a
-usingGene (Gene i n) gt = GenotypeT $ \g dna -> unGenotypeT gt g (V.slice i n dna)
+usingGene gene gt = GenotypeT $ \g dna -> unGenotypeT gt g (extractDNA gene dna)
 
 -- | return the DNA so you can do whatever on it
 gbDNA :: (Monoid w, Monad m) => GenotypeT g w m DNA
