@@ -25,8 +25,9 @@ module AnimalClub.Genetics.DNA (
 ) where
 
 import           Data.Bits
-import qualified Data.Vector.Unboxed         as V
+import qualified Data.Vector.Storable         as V
 import qualified Data.Vector.Generic         as G
+import Foreign.Storable.Tuple()
 import Data.List (mapAccumL, sortBy)
 import           Data.Ord                        (comparing)
 import           Data.Word
@@ -70,7 +71,7 @@ makeRandDNA g c = V.unfoldrN c (Just . random) g
 -- | breed 2 DNAs with given random generator
 -- TODO write a version that takes a seed instead and uses the faster RNG maybe?
 breed :: (RandomGen g) => g -> DNA -> DNA -> DNA
-breed g a b = V.map choose (V.zip3 a b rands) where
+breed g a b = V.map choose (G.zip3 a b rands) where
     rands = V.fromList . take (V.length a) . randoms $ g
     choose :: (Allele4, Allele4, Word8) -> Allele4
     choose (geneA, geneB, r) = mated where

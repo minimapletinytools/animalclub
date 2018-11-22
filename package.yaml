@@ -65,6 +65,7 @@ dependencies:
 - time
 - formatting
 - bytestring
+- storable-tuple
 
 library:
   source-dirs: src

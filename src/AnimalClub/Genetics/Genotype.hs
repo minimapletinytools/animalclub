@@ -41,7 +41,7 @@ import AnimalClub.Genetics.Gene
 
 import Data.Word
 import Data.Bits
-import qualified Data.Vector.Unboxed as V
+import qualified Data.Vector.Generic as G
 
 import Lens.Micro.Platform (over, _1)
 import Control.Applicative
@@ -226,7 +226,7 @@ gbRandomRanges ranges = do
 
 -- | returns an 8 length array that counts occurrence of each bit
 gbByteSample1 :: (Monoid w, Monad m) => GenotypeT g w m [Int]
-gbByteSample1 = GenotypeT (\g dna -> return (V.toList (dnaBitCount dna), g, mempty))
+gbByteSample1 = GenotypeT (\g dna -> return (G.toList (dnaBitCount dna), g, mempty))
 
 {-
 -- | returns a 4 length array that counts occurrence of [00,01,10,11]
@@ -241,12 +241,12 @@ gbByteSample2 = undefined
 -- TODO finish
 gbBytePattern4 :: (Monoid w, Monad m) => Word8 -> GenotypeT g w m (Int, Int)
 gbBytePattern4 p = GenotypeT f where
-    f g dna = return (V.foldl' ff (0,0) dna, g, mempty) where
+    f g dna = return (G.foldl' ff (0,0) dna, g, mempty) where
         ff acc x = undefined
 -}
 
 -- | counts occurrence of given pattern on non-overlapping intervals of 8 bits
 gbBytePattern :: (Monoid w, Monad m) => Word8 -> GenotypeT g w m Int
 gbBytePattern p = GenotypeT f where
-    f g dna = return (V.foldl' ff 0 dna, g, mempty) where
+    f g dna = return (G.foldl' ff 0 dna, g, mempty) where
         ff acc x = if p `xor` x == 0 then acc + 1 else acc

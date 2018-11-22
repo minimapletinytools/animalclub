@@ -20,7 +20,8 @@ module AnimalClub.Genetics.Gene (
 
 import           AnimalClub.Genetics.DNA
 
-import qualified Data.Vector.Unboxed as V
+import qualified Data.Vector.Generic as G
+import qualified Data.Vector.Storable as V
 
 -- | represents a genotype as a start index and length
 -- indices are on 8-bit (Word8) intervals
@@ -45,7 +46,7 @@ extractDNA ::
   Gene -- ^ Gene to extract
   -> DNA -- ^ DNA to extract from
   -> DNA
-extractDNA (Gene i n) = V.slice i n
+extractDNA (Gene i n) = G.slice i n
 
 {-
 -- |
@@ -62,7 +63,7 @@ fastGeneSumInternalAlleles' dna i (cnt, a) =
         startIndex = i `quot` 4
         startBitDiv2 = (i `mod` 4)
         totalBits = min cnt (4 - startBitDiv2)
-        word = shiftR (dna V.! startIndex) (2 * startBitDiv2)
+        word = shiftR (dna G.! startIndex) (2 * startBitDiv2)
         subSum = fromInteger . toInteger $ foldl' (\acc x -> acc + 0x01 .&. shiftR word x) 0x00 [0..(totalBits*2-1)]
     in
         fastGeneSumInternalAlleles' dna (i + totalBits) (cnt - totalBits, a + subSum)
@@ -82,8 +83,8 @@ tryGeneSum dna gt =
 
 -- | sum of all bit pairs in this genotype
 geneSum :: DNA -> Gene -> Int
-geneSum dna gt = dnaSum $ V.slice (_start gt) (_count gt) dna
+geneSum dna gt = dnaSum $ G.slice (_start gt) (_count gt) dna
 
 -- | returns an 8 length array that counts occurrence of each bit
 geneBitCount :: DNA -> Gene -> V.Vector Int
-geneBitCount dna gt = dnaBitCount $ V.slice (_start gt) (_count gt) dna
+geneBitCount dna gt = dnaBitCount $ G.slice (_start gt) (_count gt) dna

@@ -7,7 +7,7 @@ import Control.Monad.Writer (tell)
 import Data.List
 import             Data.Semigroup (Semigroup, (<>))
 import qualified Data.Text as T
-import qualified Data.Vector.Unboxed as V
+import qualified Data.Vector.Storable as V
 import Data.Word
 import Data.Bits
 import System.Random

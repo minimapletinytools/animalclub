@@ -36,7 +36,7 @@ module AnimalClub.Genetics.Internal.Unused.Genotype (
 import AnimalClub.Genetics.DNA
 import AnimalClub.Genetics.Gene
 
-import qualified Data.Vector.Unboxed as V
+import qualified Data.Vector.Generic as G
 import Control.Monad.Writer.Lazy (WriterT, execWriterT)
 import Control.Monad.State.Lazy (StateT, evalStateT, put, get, state)
 import Control.Monad.Identity (Identity, runIdentity)
@@ -82,7 +82,7 @@ evalGeneBuilder m s g = runIdentity $ evalGeneBuilderT m s g
 
 -- | internal helper function for folding Gene hierarchies in the builder
 absoluteGene :: GenotypeState -> Gene
-absoluteGene (dna, gtl) = foldr combineGene (Gene 0 (V.length dna)) gtl
+absoluteGene (dna, gtl) = foldr combineGene (Gene 0 (G.length dna)) gtl
 
 
 
@@ -181,7 +181,7 @@ gbByteSample = do
     let
         foldedGene = absoluteGene (dna, gtl)
         bitCount = geneBitCount dna foldedGene
-    return $ V.toList bitCount
+    return $ G.toList bitCount
 
 
 

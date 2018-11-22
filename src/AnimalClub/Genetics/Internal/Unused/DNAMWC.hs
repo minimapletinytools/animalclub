@@ -50,7 +50,7 @@ module AnimalClub.Genetics.Internal.Unused.DNAMWC (
 
 import qualified AnimalClub.Genetics.DNA as DNA
 import           Data.Bits
-import qualified Data.Vector.Unboxed         as U
+import qualified Data.Vector.Storable         as S
 import qualified Data.Vector                 as V
 import qualified Data.Vector.Generic         as G
 import Data.List (sortBy)
@@ -68,7 +68,7 @@ makeRandDNA g c = uniformVector g c
 -- | breed 2 DNA with given random generator
 breed :: forall m. (PrimMonad m) => Gen (PrimState m) -> DNA.DNA -> DNA.DNA -> m DNA.DNA
 breed g a b = do
-    rands <- uniformVector g (G.length a) :: m (U.Vector Word8)
+    rands <- uniformVector g (G.length a) :: m (S.Vector Word8)
     return $ G.map choose (G.zip3 a b rands)
     where
         choose :: (Word8, Word8, Word8) -> Word8
@@ -107,7 +107,7 @@ mutate chance g dna = do
         indices = findIndices (< chance) rands
         mutateBit x index = unsafeShiftL 0x01 index `xor` x
     bitRands <- uniformVectorR (0, 7) g (G.length indices)
-    return $ U.accumulate_ mutateBit dna indices bitRands
+    return $ S.accumulate_ mutateBit dna indices bitRands
 
 
 breedAndMutate :: (PrimMonad m) => Float -> Gen (PrimState m) -> DNA.DNA -> DNA.DNA -> m DNA.DNA

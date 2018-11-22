@@ -3,7 +3,7 @@ import AnimalClub.Genetics
 import Control.Monad as Seq
 import Control.Monad.Writer
 import qualified Data.Text as T
-import qualified Data.Vector.Unboxed as V
+import qualified Data.Vector.Storable as V
 import Data.Word
 import System.Random
 import Control.DeepSeq
