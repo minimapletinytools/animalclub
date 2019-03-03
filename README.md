@@ -4,10 +4,6 @@
 
 _Animal Club_ (_AC_) is still in development. I'm working hard on a first release!! Each "animal" is made of _DNA_ and several _Genotypes_ written in a special purpose Monad. Using the _Skellygen_ and _Animal_ module, the animal's _Genome_ can be mapped onto a parameterized mesh generator to create unique 3D meshes for each genetic expression of the animal.
 
-![goat generated using skellygen](goat.png)
-
-![worm bread to curl in a circle with sinusoidal girth](worm.png)
-
 # genetics
 
 The _Animal Club_  _Genetics_ module is a general purpose genetic expression library written in Haskell. _DNA_ is a bit array. When breeding two _DNAs_, 1 bit out of every 2 from each parent is randomly chosen and put together to be the the 2 new bits of child's _DNA_.
@@ -28,9 +24,13 @@ example = do
     gbRandomRanges [(0,1) | _ <-[(0::Int)..9]] >>= tellGenes "Some Label 3"
 ```
 
+![worm bread to curl in a circle with sinusoidal girth](worm.png)
+
 # skellygen
 
 The _Skellygen_ module contains a special parameterizable mesh generating data structure. It's rather esoteric but works.
+
+![goat generated using skellygen](goat.png)
 
 # animals
 
