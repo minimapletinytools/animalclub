@@ -35,4 +35,4 @@ instance (RealFloat a) => Hierarchical (Quaternion a) where
     inherit x y = x * y
 
 instance Hierarchical Float where
-    inherit x y = y * x
+    inherit x y = x * y

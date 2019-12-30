@@ -116,6 +116,8 @@ transformV4 trs v = fromTRS trs M.!* v
 --_componentMul (V3 ax ay az) (V3 bx by bz) = V3 (ax * bx) (ay * by) (az * bz)
 
 -- |
+-- inherit P C returns P * C, i.e. C in the frame of P
+--
 -- TODO enable latex formatter 😱
 -- proof this is correct:
 -- assuming T R S is closed under multiplication (prove by representing as 4x4 homogenous matrix)
