@@ -36,22 +36,21 @@ module AnimalClub.Genetics.Genotype (
     gbBytePattern
 ) where
 
-import AnimalClub.Genetics.DNA
-import AnimalClub.Genetics.Gene
+import           AnimalClub.Genetics.DNA
+import           AnimalClub.Genetics.Gene
 
-import Data.Word
-import Data.Bits
-import qualified Data.Vector.Generic as G
+import           Data.Bits
+import qualified Data.Vector.Generic      as G
+import           Data.Word
 
-import Lens.Micro.Platform (over, _1)
-import Control.Applicative
-import Control.Monad.Identity
-import Control.Monad.Random
-import Control.Monad.Parallel (MonadParallel(..))
-import Control.Monad.Writer
+import           Control.Monad.Identity
+import           Control.Monad.Parallel   (MonadParallel (..))
+import           Control.Monad.Random
+import           Control.Monad.Writer
+import           Lens.Micro.Platform      (over, _1)
 --import Debug.Trace
 
--- | StateT GenotypeState (WriterT w (RandT g m))
+-- | this is just `StateT DNA (WriterT w (RandT g m))` unrolled
 -- Genotype is a Writer monad taking an taking an RNG and DNA as inputs
 newtype GenotypeT g w m a = GenotypeT { unGenotypeT :: g -> DNA -> m (a, g, w) }
 type Genotype g w = GenotypeT g w Identity
@@ -78,10 +77,16 @@ instance (Functor m) => Functor (GenotypeT g w m) where
 -- implemented using Monad m to ensure that (<*>) = ap (TEST)
 instance (Monoid w, Monad m) => Applicative (GenotypeT g w m) where
     pure a = GenotypeT (\g _ -> pure (a, g, mempty))
+    (<*>) mf ma = do
+        f <- mf
+        a <- ma
+        return $ f a
+{- doesn't seem to be in older version of GHC
     liftA2 f ma mb = do
         a <- ma
         b <- mb
         return $ f a b
+-}
 
 -- |
 instance (Monoid w, Monad m) => Monad (GenotypeT g w m) where
@@ -116,6 +121,8 @@ genotypeParMin = 10
 
 -- |
 -- RandomGen g constraint required to split the generator for deterministic parallel evaluation (whether it's actually used or not)
+-- NOTE parallel evaluation and serial evaluation produce different results due to par evaluation of RNG
+-- I think we can fix this by changing instance definition of Monad Genotype but why bother
 -- TODO/NOTE this is currently not actually creating any sparks or when it does they all GC D:
 -- It might be because it evaluate the output tuple to only whnf?
 instance forall w g m. (Monoid w, RandomGen g, MonadParallel m) => MonadParallel (GenotypeT g w m) where
@@ -136,7 +143,10 @@ instance forall w g m. (Monoid w, RandomGen g, MonadParallel m) => MonadParallel
                 -- to contain the results of ra and rb
                 f (x1,_,w1) (x2,_,w2) =
                     unGenotypeT (f' x1 x2) g dna
-                    >>= \(c, g_out, w3) -> c `seq` return (c, g_out, mconcat [w1,w2,w3])
+                    >>= \(c, g_out, w3) -> return (c, g_out, mconcat [w1,w2,w3])
+                    -- not sure why I wrote a version with seq here. force evaluating final output is not responsibility of this function
+                    -- pretty sure should delete
+                    -- >>= \(c, g_out, w3) -> c `seq` return (c, g_out, mconcat [w1,w2,w3])
 
 
 -- |
