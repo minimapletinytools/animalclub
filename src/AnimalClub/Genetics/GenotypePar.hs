@@ -15,12 +15,12 @@ Import this module and enable -XApplicativeDo for automatic parallelization of G
 module AnimalClub.Genetics.GenotypePar (
 ) where
 
-import AnimalClub.Genetics.Genotype
+import           AnimalClub.Genetics.Genotype
 
-import Control.Monad.Identity
-import Control.Monad.Random
-import Control.Applicative
-import Control.Monad.Parallel
+import           Control.Applicative
+import           Control.Monad.Identity
+import           Control.Monad.Parallel
+import           Control.Monad.Random
 
 
 -- |
