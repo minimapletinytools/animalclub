@@ -1,17 +1,17 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-import AnimalClub.Genetics
+import           AnimalClub.Genetics
 
-import Control.Monad.Writer (tell)
-import Data.List
-import             Data.Semigroup (Semigroup, (<>))
-import qualified Data.Text as T
+import           Control.Monad.Writer (tell)
+import           Data.Bits
+import           Data.List
+import           Data.Semigroup       (Semigroup, (<>))
+import qualified Data.Text            as T
 import qualified Data.Vector.Storable as V
-import Data.Word
-import Data.Bits
-import System.Random
-import Test.QuickCheck
+import           Data.Word
+import           System.Random
+import           Test.QuickCheck
 
 
 -- |
@@ -154,24 +154,40 @@ instance Monoid Float where
 prop_convergence :: Int -> Bool
 prop_convergence seed = pass
   where
+    -- simple gene that we will use to test if breeding repeatedly can let it converge to some value
+    testgene :: Genotype StdGen Float ()
+    testgene = gbTypical (-20, 120) >>= tell
+
+    -- pick a random targe value to converge to
     g1 = mkStdGen seed
     (target :: Float, g2) = randomR (0, 100) g1
+
+    -- hardcoded parameters
     maxGenerations = 200
     dnaLength_ = 25
     thresh = 0.25
+
+    -- start with a random DNA
     original = makeRandDNA g1 dnaLength_
-    testgene :: Genotype StdGen Float ()
-    testgene = gbTypical (-20, 120) >>= tell
-    test dna = evalGeneBuilder testgene dna (mkStdGen 0)
+
+    -- define our fitness function
+    fitness :: FitnessFunc
+    fitness dna = evalGeneBuilder testgene dna (mkStdGen 0) - target
+
+    -- breed until our fitness function above meets the threshold
     unfoldWormF (dnas, g) =
         if testResult < thresh
             then Nothing
             else Just (next_dnas, acc)
       where
-        acc@(next_dnas, _) = breedAndSelectPool test 0.003 g (15, 2) dnas
-        testResult = test $ head next_dnas
+        acc@(next_dnas, _) = breedAndSelectPool fitness 0.003 g (15, 2) dnas
+        testResult = fitness $ head next_dnas
+
+    -- count the number of generations it took to converge
     generations =
         length $ take maxGenerations $ unfoldr unfoldWormF ([original], g2)
+
+    -- pass if we took fewer than maxGenerations to converge
     --pass = trace ("took " ++ show generations ++ " to pass " ++ (show seed) ++ "\n") $ generations < maxGenerations
     pass = generations < maxGenerations
 

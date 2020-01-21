@@ -21,16 +21,19 @@ module AnimalClub.Genetics.DNA (
     mutate,
     mutateOld,
     breedAndMutate,
-    breedAndSelectPool
+
+    breedAndSelectPool,
+    FitnessFunc
+
 ) where
 
 import           Data.Bits
-import qualified Data.Vector.Storable         as V
-import qualified Data.Vector.Generic         as G
-import Foreign.Storable.Tuple()
-import Data.List (mapAccumL, sortBy)
-import           Data.Ord                        (comparing)
+import           Data.List              (mapAccumL, sortBy)
+import           Data.Ord               (comparing)
+import qualified Data.Vector.Generic    as G
+import qualified Data.Vector.Storable   as V
 import           Data.Word
+import           Foreign.Storable.Tuple ()
 import           System.Random
 
 -- we don't use repa because repa uses Vector.Unboxed as its underlying type which is not tightly packed
@@ -122,8 +125,11 @@ breedAndMutate chance g a b = dna where
     dna' = breed g' a b
     dna = mutate chance g'' dna'
 
+-- TODO separate this out to a different file
+-- e.g. Fitness.hs or something
+type FitnessFunc = DNA -> Float
 breedAndSelectPool :: (RandomGen g) =>
-    (DNA -> Float) -- ^ test function
+    FitnessFunc -- ^ test function
     -> Float -- ^ mutation chance
     -> g -- ^ random generator
     -> (Int, Int) -- ^ size, winner
