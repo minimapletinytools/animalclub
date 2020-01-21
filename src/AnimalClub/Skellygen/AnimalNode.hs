@@ -23,8 +23,8 @@ module AnimalClub.Skellygen.AnimalNode (
 ) where
 
 import           Control.DeepSeq
-import Lens.Micro.Platform                           (makeLenses, set)
 import           GHC.Generics                           (Generic)
+import           Lens.Micro.Platform                    (makeLenses, set)
 --import qualified Data.List as List
 --import qualified Data.Map as Map
 import qualified Data.Text                              as T
@@ -37,12 +37,17 @@ import qualified AnimalClub.Skellygen.Math.TRS          as TRS
 import           Linear.V3
 --import Linear.Quaternion as Q
 
--- | for affine transformations, just do (someTRS >*>)
--- NOTE, BoneTrans affects all sub children due to parenting
--- so, for example, if you have two legs, only add ReflX at the hips
--- and use SAME on everything below it
+
+
+
+
+
+-- | user friendly representation of a Bone transformation
+-- BoneTrans applies a transformation relative to identity TRS
+-- the transformation effects all children
+-- so, for example, if you have two legs, you only need to add ReflX at the hips
 -- BoneTrans is applied to _trs'/_pos of AnimalNode'/AnimalNode respectively
--- and is also applied to _orientation of AnimalProperty
+-- and by extension it also affects _orientation of AnimalProperty
 data BoneTrans = Same | ReflX | ReflY | ReflZ | ArbTrans (TRS.TRS Float -> TRS.TRS Float)
 
 instance Show BoneTrans where
@@ -62,7 +67,7 @@ composeBoneTrans x y         = ArbTrans $ applyBoneTrans x . applyBoneTrans y
 
 -- |
 -- this is mainly for syntactic convenience
--- I would only sorta consider BoneTrans Hierarchical semantically
+-- BoneTrans are not really 'Hierarchical'
 instance Hierarchical BoneTrans where
     inherit = composeBoneTrans
 
@@ -75,7 +80,10 @@ applyBoneTrans ReflZ = inherit (set TRS.scale (TRS.makeScale $ V3 1 1 (-1)) TRS.
 --applyBoneTrans ReflZ = (>*>) (set TRS.trans (V3 0 0 1) TRS.identity)
 applyBoneTrans (ArbTrans f) = f
 
--- |
+-- | TODO new comment
+-- TODO I don't know if I really like this EnumBone thing...
+-- Maybe something like `Bone T.Text [Tags]` where the third parameter is a list of tags (e.g. L/R/F/B/whatever) (or better yet a bitmask)
+-- [I don't understand what the comment below means anymore]
 -- index is NOT hierarchical
 -- you can hack it to be hierarchical by using the nth digit for the nth child or whatever
 -- this feature omitted because it's more complicated than it's worth which is not much in most cases
@@ -84,6 +92,8 @@ data BoneName =
     | EnumBone T.Text Int BoneTrans -- ^ enumerated bone: name index transform
     deriving (Show)
 
+-- | adds ways to match more types of bones
+-- TODO is there a more functional way to do this e.g. something like BoneMatcher BoneName -> Bool kinda thing?
 data BoneName' =
     Bone' T.Text -- ^ specific bone matching Bone String
     | EnumBone' T.Text Int -- ^ specific bone matching EnumBone String Int
@@ -110,23 +120,31 @@ toBoneName' (EnumBone name index _) = EnumBone' name index
 -- user friendly version that is limited in what can be expressed
 data AnimalNode = AnimalNode {
     _name      :: BoneName, -- ^ name and transformation if relevant
-    _pos       :: AbsOrRel (V3 Float), -- ^ BoneTrans is applied to this
-    -- TODO some orientation parameter
+    _pos       :: AbsOrRel (V3 Float), -- ^ position, relative to parent if rel, 'BoneTrans' in 'BoneName' is applied to this
     _thickness :: AbsOrRel Float, -- ^ base thickness, relative to parent thickness if rel
     _isRoot    :: Bool,
     _children  :: [AnimalNode]
-    -- TODO _nodeOrientation :: NodeOrientation
+    -- TODO some orientation parameter (right now orientation is determined based on parent position)
+    -- _nodeOrientation :: NodeOrientation
 }
 
 makeLenses ''AnimalNode
 
--- |
--- NOTE, there is currently no way to flip something that has child that has been flipped
+-- TODO helpers for constructing AnimalNode
+--defAnimalNode = AnimalNode {}
+-- makeAnimalNode :: ... -> AnimalNode
+
+-- TODO come up with better indexing scheme that isn't just an Int
+-- | flip an AnimalNode, the children of the flipped parent will inherit the flipped parent's new transform
+-- but their relative transforms do not change
+--
+-- N.B., there is currently no way to flip something that has child that has been flipped
 -- without munging all the indices rendering the flipped children indistinguishable
 -- if we are going to support nested flips, maybe try something this
 -- flipAnimalNodeFancy :: BoneTrans -> [Int] -> AnimalNode -> AnimalNode
+--
 flipAnimalNode ::
-    BoneTrans -- ^ trans (not passed down through children)
+    BoneTrans -- ^ trans to flip by (not passed down through children)
     -> Int -- ^ new index applied to all children
     -> AnimalNode -- ^ node to flip
     -> AnimalNode

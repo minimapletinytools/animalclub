@@ -1,4 +1,5 @@
-{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric  #-}
 
 {-|
 Module      : Animal
@@ -19,20 +20,21 @@ module AnimalClub.Animals.Animal (
     generateAnimalProperties,
 ) where
 
-import AnimalClub.Genetics
-import AnimalClub.Skellygen
+import           AnimalClub.Genetics
+import           AnimalClub.Skellygen
 
-import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as B
-import Data.Maybe (catMaybes)
+import           Data.Maybe           (catMaybes)
+import qualified Data.Text            as T
 
-import Control.DeepSeq
-import GHC.Generics (Generic)
-import Control.Monad.Writer (tell)
+import           Control.DeepSeq
+import           Control.Monad.Writer (tell)
+import           GHC.Generics         (Generic)
 
 --import Control.Exception (assert)
 --import Debug.Trace (trace)
 
+-- TODO fix the SkellyFunc part, all internal stuff should be type safe :O
 -- | various output expression of an animal genotype
 data AnimalExp =
     ExpBytes T.Text B.ByteString

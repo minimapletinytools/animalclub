@@ -1,7 +1,44 @@
+-- new bone and and skellyfunc stuff
+data BoneFlags = Front | Back | Left | Right | Top | Bottom | CustomS T.Text | CustomI Int deriving (Eq,Show)
+data NewBone = NewBone T.Text [BoneFlags] deriving (Eq,Show)
+type BoneMatcher = NewBoneName -> Bool
+
+boneMatcher :: NewBone -> BoneMatcher
+boneMatcher b b' = b == b'
+
+singleBoneMatcher :: T.Text -> BoneMatcher
+singleBoneMatcher name (NewBone name' []) = name == name'
+
+boneSetMatcher :: T.Text -> BoneMatcher
+boneSetMatcher name (NewBone name' _) = name == name'
+
+
+
+type FlagTrans = BoneTrans -> [Flag] -> [Flag]
+
+defTransFlag :: FlagTrans
+defTransFlag _ [] = []
+defTransFlag ReflZ (Left:xs) = (Right:defTransFlag ReflZ xs)
+
+flipAnimalNode :: BoneTrans -> FlagTrans -> AnimalNode -> AnimalNode
+
+
 ::TODO::
--see if you can add more type safety into integrating skellygen with genetics
-  -you can totally do it, just expand out skellyfuncs more as a ADT instead of using that float array nonsense for arguments
+-wtf are you using LHS coordinates for? Switch to RHS if possible or make it agnostic
+-add comment explaining default animal orientation assumptions
+-refactor
+  -rename AnimalNode' to AnimalNodeInternal
+  -expand skellyfunc to host all possibilities
+  -make AnimalNode/BoneName/BoneTrans stuff have better indexing
+    -`Bone T.Text [Tags]`
+    -add a comment explaining how reflecting bones in AnimalNode works
+      -the current implementation is weird, come up with something better
+  -add clear documentation to how skellygen skeleton hierarchy stuff works
 -review skellygen and see if you want to redesign cuz it's weird af
+-math
+  -finish invTRS
+  -finish lookAt function, and make its interface less weird
+-basic test cases
 -finish goat breeding app MVP
   -just randomly breed and see what happens?
     -I think I did this already

@@ -18,11 +18,11 @@ module AnimalClub.Skellygen.Math.Quaternion
     , lookAtDefaultUp -- BUGS
     ) where
 
-import Linear.Conjugate
-import Linear.Epsilon
-import Linear.Metric
-import Linear.Quaternion
-import Linear.V3
+import           Linear.Conjugate
+import           Linear.Epsilon
+import           Linear.Metric
+import           Linear.Quaternion
+import           Linear.V3
 --import Lens.Micro.Platform
 --import Linear.Matrix as M
 
@@ -90,7 +90,7 @@ fromTo fromv tov =
     fallback = Quaternion 0 (normalize $ _orthogonal u)
     output = Quaternion (dot u half) (cross u half)
 
--- TODO change to fromEuler :: XYZ -> V3 a -> Quternion a
+-- FUTURE make fancy version that is fromEuler :: XYZ -> V3 a -> Quternion a
 -- | x y z rotation order
 fromEulerXYZ :: (RealFloat a, Epsilon a) => V3 a -> Quaternion a
 fromEulerXYZ (V3 x y z) =

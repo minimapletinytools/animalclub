@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
+{-# LANGUAGE DeriveAnyClass  #-}
+{-# LANGUAGE DeriveGeneric   #-}
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
 
 
 module AnimalClub.Skellygen.AnimalProperty (
@@ -13,23 +14,23 @@ module AnimalClub.Skellygen.AnimalProperty (
     generateAnimalProperties_
 ) where
 
-import Control.Exception (assert)
-import Lens.Micro.Platform
-import Control.DeepSeq
-import GHC.Generics (Generic)
-import qualified Data.Text as T
-import qualified Data.Map as Map
-import qualified Data.List as List
+import           Control.DeepSeq
+import           Control.Exception                      (assert)
+import qualified Data.List                              as List
+import qualified Data.Map                               as Map
+import qualified Data.Text                              as T
+import           GHC.Generics                           (Generic)
+import           Lens.Micro.Platform
 
-import Linear.V3
+import           Linear.V3
 
-import AnimalClub.Skellygen.AnimalNode
-import AnimalClub.Skellygen.Math.Hierarchical
-import qualified AnimalClub.Skellygen.Math.TRS as TRS
-import qualified AnimalClub.Skellygen.Math.Quaternion as QH
+import           AnimalClub.Skellygen.AnimalNode
+import           AnimalClub.Skellygen.Math.Hierarchical
+import qualified AnimalClub.Skellygen.Math.Quaternion   as QH
+import qualified AnimalClub.Skellygen.Math.TRS          as TRS
 
 
-import qualified Debug.Trace as Debug
+import qualified Debug.Trace                            as Debug
 --import Prelude hiding (read)
 --import qualified Prelude (read)
 --read x = Prelude.read $ Debug.trace x x
@@ -40,22 +41,23 @@ import qualified Debug.Trace as Debug
 -- or you will not be guaranteed which one overwrites which
 data BoneMethod = Thickness |  Length | Orientation | TLOCombined | Color deriving (Read, Show, Generic, NFData)
 
+-- TODO add parameters to this so we don't use [Float] anymore!!
 -- |
 -- SkellyFunc represents a method applied to a bone
 -- parameters to the method are passed in as [Float]
 -- such non-type safety 😱
 data SkellyFunc = SkellyFunc {
-    sfBone' :: BoneName',
+    sfBone'  :: BoneName',
     sfMethod :: BoneMethod
 } deriving (Read, Show, Generic, NFData)
 
 
--- | these map animal properties used for generating skelly on top of base skelly
+-- | used for generating skelly over each bone of the base skelly
 -- these are mapped to properties in SkellyNode
 data AnimalProperty = AnimalProperty {
     _orientation :: TRS.Rotation Float, -- ^ combines multiplicatively
-    _distance :: Float, -- ^ combines multiplicatively
-    _skinParams :: Float -- ^ combines multiplicatively
+    _distance    :: Float, -- ^ combines multiplicatively
+    _skinParams  :: Float -- ^ combines multiplicatively
     -- mesh + UV style
     -- UV map properties
     -- texture name, stretch shift,
@@ -63,7 +65,7 @@ data AnimalProperty = AnimalProperty {
 
 makeLenses ''AnimalProperty
 
--- | all parameters except name are optional, build on top of this
+-- | the identity AnimalProperty
 defaultAnimalProperty :: AnimalProperty
 defaultAnimalProperty = AnimalProperty {
     _orientation = QH.identity,
@@ -71,7 +73,7 @@ defaultAnimalProperty = AnimalProperty {
     _skinParams = 1
 }
 
--- |
+-- | TODO
 -- Note it's invalid to have keys with constructor
 -- AllBones' or EnumBones', these are used for ADDING to
 -- AnimalPropertyMap only
@@ -86,6 +88,7 @@ assertLength n xs = assert (length xs == n)
 -- this wont work
 -- what we want is to be able to specify several bones +
 
+-- TODO get rid of EnumBones' nonsense probably?
 -- | adds properties to a map,
 generateAnimalPropertiesInternal_ ::
     AnimalPropertyMap -- ^ accumulating map of properties.

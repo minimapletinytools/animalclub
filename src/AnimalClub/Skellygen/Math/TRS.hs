@@ -8,8 +8,9 @@ Stability   : experimental
 
 -}
 
+{-# LANGUAGE DeriveAnyClass  #-}
+{-# LANGUAGE DeriveGeneric   #-}
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
 
 
 module AnimalClub.Skellygen.Math.TRS
@@ -30,18 +31,18 @@ module AnimalClub.Skellygen.Math.TRS
   , invTRS
   ) where
 
-import AnimalClub.Skellygen.Math.Hierarchical
-import qualified AnimalClub.Skellygen.Math.Quaternion as QH
+import           AnimalClub.Skellygen.Math.Hierarchical
+import qualified AnimalClub.Skellygen.Math.Quaternion   as QH
 
-import Lens.Micro.Platform
-import Control.DeepSeq
-import GHC.Generics (Generic)
-import Linear.Conjugate
-import qualified Linear.Matrix as M
-import Linear.Quaternion
-import Linear.V3
-import Linear.V4
-import Linear.Vector
+import           Control.DeepSeq
+import           GHC.Generics                           (Generic)
+import           Lens.Micro.Platform
+import           Linear.Conjugate
+import qualified Linear.Matrix                          as M
+import           Linear.Quaternion
+import           Linear.V3
+import           Linear.V4
+import           Linear.Vector
 
 -- TODO you can probably get rid of these
 type Translation a = V3 a
@@ -53,9 +54,9 @@ type Scale a = M.M33 a
 data TRS a = TRS
   {
   -- TODO rename to _translation or _pos
-  _trans :: Translation a
+  _trans   :: Translation a
   -- TODO rename to _rotation
-  , _rot :: Rotation a
+  , _rot   :: Rotation a
   , _scale :: Scale a -- ^ in actuality, a scale + shear matirx
   } deriving (Show, Generic, NFData)
 
@@ -141,7 +142,8 @@ instance (Conjugate a, RealFloat a) => Hierarchical (TRS a) where
       (pr * cr)
       (fromRotation (QH.inverse cr) M.!*! ps M.!*! fromRotation cr M.!*! cs)
 
--- | TODO this is probably wrong
+-- TODO this is probably wrong
+-- | inverts TRS (WIP)
 invTRS :: TRS a -> TRS a
 invTRS _ = undefined
 --invTRS (TRS t r s) = undefined

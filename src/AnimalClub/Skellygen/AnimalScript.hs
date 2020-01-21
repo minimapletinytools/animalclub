@@ -4,12 +4,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 --{-# LANGUAGE BangPatterns #-}
 
--- TOOD split into files
--- AnimalScriptTypes.hs
--- AnimalProprty.hs
--- AnimalNode.hs
-
-
 module AnimalClub.Skellygen.AnimalScript (
     module AnimalClub.Skellygen.AnimalNode,
     module AnimalClub.Skellygen.AnimalProperty,
@@ -17,37 +11,37 @@ module AnimalClub.Skellygen.AnimalScript (
     animalNodeToSkellyNodeWithProps
 ) where
 
-import Lens.Micro.Platform (set, makeLenses)
-import qualified Data.Map as Map
+import qualified Data.Map                               as Map
+import           Lens.Micro.Platform                    (makeLenses, set)
 --import qualified Data.Text as T
 
-import Control.Exception.Base (assert)
+import           Control.Exception.Base                 (assert)
 
-import qualified Debug.Trace as Debug
+import qualified Debug.Trace                            as Debug
 
-import AnimalClub.Skellygen.AnimalNode
-import AnimalClub.Skellygen.AnimalProperty
-import AnimalClub.Skellygen.Math.Hierarchical
-import qualified AnimalClub.Skellygen.Math.TRS as TRS
-import qualified AnimalClub.Skellygen.Math.Quaternion as QH
-import qualified AnimalClub.Skellygen.Skellygen as SN
+import           AnimalClub.Skellygen.AnimalNode
+import           AnimalClub.Skellygen.AnimalProperty
+import           AnimalClub.Skellygen.Math.Hierarchical
+import qualified AnimalClub.Skellygen.Math.Quaternion   as QH
+import qualified AnimalClub.Skellygen.Math.TRS          as TRS
+import qualified AnimalClub.Skellygen.Skellygen         as SN
 
 
-import Linear.V3
-import Linear.Vector
-import Linear.Metric
-import Linear.Quaternion as Q
+import           Linear.Metric
+import           Linear.Quaternion                      as Q
+import           Linear.V3
+import           Linear.Vector
 
 
 -- | these define static properties that make up the base SkellyNode
 -- internal, converted from AnimalNode
 data AnimalNode' = AnimalNode' {
-    _name' :: BoneName, -- ^ name and transformation if relevant
-    _trsAbs' :: TRS.TRS Float, -- ^ absolute
-    _trs' :: TRS.TRS Float, -- ^ rel to parent
+    _name'      :: BoneName, -- ^ name
+    _trsAbs'    :: TRS.TRS Float, -- ^ absolute
+    _trs'       :: TRS.TRS Float, -- ^ rel to parent
     _thickness' :: Float, -- ^ rel to _trans
-    _isRoot' :: Bool,
-    _children' :: [AnimalNode']
+    _isRoot'    :: Bool,
+    _children'  :: [AnimalNode']
 }
 
 makeLenses ''AnimalNode'
@@ -56,35 +50,36 @@ makeLenses ''AnimalNode'
 dummyAnimalNode' :: AnimalNode'
 dummyAnimalNode' = AnimalNode' (Bone "") TRS.identity TRS.identity 1 True []
 
--- | convert AnimalNode to internal format first pass
--- this function does not handle BoneTrans or attachOrientation/Distance
+-- | convert AnimalNode to internal format FIRST PASS
+-- this simply maps
+-- this does note apply the BoneTrans in the BoneName yet
 _toAnimalNode' ::
     AnimalNode' -- ^ parent Node
     -> AnimalNode -- ^ node to convert
     -> AnimalNode' -- ^ output
-_toAnimalNode' pn' cn = outan where
+_toAnimalNode' pn' cn = outan' where
     p_abs_trs = _trsAbs' pn'
     p_abs_rot = TRS._rot p_abs_trs
     p_abs_rot_inv = QH.inverse p_abs_rot
 
     c_pos = case _pos cn of
-        -- position is relative to parent translation coordinates
-        -- but assumes parent has identity rotation
-        -- so undo the parent rotation to get the complete relative position
+        -- child position is relative to parent translation coordinates assuming parent has identity rotation
+        -- so first undo the parent rotation to get the complete relative position
+        -- TODO I think this needs to be tested
         Rel a -> Q.rotate p_abs_rot_inv a
         -- Abs a -> TRS.transformV3 (TRS.invTRS p_abs_trs) a -- I have no idea if invTRS works or not
         Abs _ -> error "Absolute positions currently not supported"
 
     -- TODO process non-existant orientation parameter in AnimalNode
     -- TODO instead of using defaultUp, this should use up vector from parent rotation
-    -- convert absolute rotation to rotaion relative to parent
+    -- convert absolute rotation to rotation relative to parent
     c_rot = QH.lookAtDefaultUp c_pos
 
-    -- put it all together for the final relative rotation of the current child node
-    c_trs = TRS.TRS c_pos c_rot (TRS.makeScale $ V3 1 1 1) -- rel trs before BoneTrans
+    -- put it all together for the final relative trs of the current child node
+    c_trs = TRS.TRS c_pos c_rot (TRS.makeScale $ V3 1 1 1)
 
     --Debug.trace (show (_name cn) ++ ": " ++ show (p_abs_trs >*> c_trs))
-    outan = AnimalNode' {
+    outan' = AnimalNode' {
         _name' = _name cn,
         _trsAbs' = p_abs_trs >*> c_trs,
         _trs' = c_trs,
@@ -92,7 +87,7 @@ _toAnimalNode' pn' cn = outan where
             Rel a -> a * _thickness' pn'
             Abs a -> a,
         _isRoot' = _isRoot cn,
-        _children' = map (_toAnimalNode' outan) (_children cn)
+        _children' = map (_toAnimalNode' outan') (_children cn)
     }
 
 recomputeAbsTransAnimalNode' ::
@@ -168,13 +163,13 @@ reduceBoneTransAnimalNode' p c = c_new where
     c_rel_trs_new = btf $ _trs' c where
         btf = case _name' c of
             EnumBone _ _ bt -> applyBoneTrans bt
-            _ -> id
+            _               -> id
 
     -- TODO copy toAnimalNode'' recursive call, it's cleaner IMO maybe not..
     -- just make it consistent...
 
     -- update absTrs in all nodes
-    -- NOTE, this step is not necessary as we currently aren't using absTrs after this point
+    -- N.B, this step is not necessary as we currently aren't using absTrs after this point, but we still do it to future proof our data
     -- first set abs and rel trs for current node
     c_new' = set trsAbs' (p_abs_trs >*> c_rel_trs_new) $ set trs' c_rel_trs_new c
     -- then recompute abstrs in children
@@ -182,7 +177,7 @@ reduceBoneTransAnimalNode' p c = c_new where
     -- for performance, don't bother doing anything in the Same case
     c_new''' = case _name' c of
         EnumBone _ _ Same -> c
-        _ -> c_new''
+        _                 -> c_new''
 
     -- then recursively reduce all children
     c_new = set children' (map (reduceBoneTransAnimalNode' c_new''') (_children' c_new''')) c_new'''
