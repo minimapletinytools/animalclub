@@ -29,9 +29,9 @@ import           System.Random
 -- TODO change this back to CChar
 breed_hs ::
   CInt -- ^ random seed
-  -> Ptr CInt -- ^ DNA bytes 1
-  -> Ptr CInt -- ^ DNA bytes 2
-  -> Ptr CInt -- ^ DNA output
+  -> Ptr CChar -- ^ DNA bytes 1
+  -> Ptr CChar -- ^ DNA bytes 2
+  -> Ptr CChar -- ^ DNA output
   -> CSize -- ^ DNA size
   -> IO () -- ^ 😱
 breed_hs seed dna1' dna2' outdna' size = do
@@ -41,18 +41,15 @@ breed_hs seed dna1' dna2' outdna' size = do
   gen <- getStdGen
   let
     gen = mkStdGen (convert seed)
-    dna1v = V.unsafeFromForeignPtr0 dna1 (convert size*4) :: DNA
-    dna2v = V.unsafeFromForeignPtr0 dna2 (convert size*4) :: DNA
+    dna1v = V.unsafeFromForeignPtr0 dna1 (convert size) :: DNA
+    dna2v = V.unsafeFromForeignPtr0 dna2 (convert size) :: DNA
+    outdnav = V.unsafeFromForeignPtr0 outdna (convert size) :: DNA
     -- TODO implement an MVector version of breed that stores results in place
     newdna = breed gen dna1v dna2v
-
-    fakedna = V.replicate (convert size * 4) (0xF0 :: Word8)
-  --outdnamv <- V.thaw $ V.unsafeFromForeignPtr0 outdna (convert size)
-  outdnamv <- V.thaw fakedna
+  outdnamv <- V.unsafeThaw outdnav
   V.copy outdnamv newdna
-  putStrLn "hi meow meow"
 
-foreign export ccall breed_hs :: CInt -> Ptr CInt -> Ptr CInt -> Ptr CInt -> CSize -> IO ()
+foreign export ccall breed_hs :: CInt -> Ptr CChar -> Ptr CChar -> Ptr CChar -> CSize -> IO ()
 
 -- TODO figure out how to create genome
 {- dnaProps_hs ::

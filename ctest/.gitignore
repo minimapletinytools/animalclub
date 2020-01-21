@@ -1,5 +1,5 @@
 *.a
 *.o
-animalclub.dSYM
-animalclub
+test_all.dSYM
+test_all
 *.dylib

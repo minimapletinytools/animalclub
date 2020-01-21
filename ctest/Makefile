@@ -6,13 +6,13 @@ UNAME := $(shell uname)
 test_all: test_all.cpp
 # set linker path on Linux
 ifeq ($(UNAME), Linux)
-	g++ -g -Wall test_all.cpp -o $@ \
+	g++ -std=c++17 -g -Wall test_all.cpp -o $@ \
 	-I../csrc \
 	-Wl,-rpath='$$ORIGIN' \
 	-lanimalclub \
 	-L./
 else
-	g++ -g -Wall test_all.cpp -o $@ \
+	g++ -std=c++17 -g -Wall test_all.cpp -o $@ \
 	-I../csrc \
 	-lanimalclub \
 	-L./
