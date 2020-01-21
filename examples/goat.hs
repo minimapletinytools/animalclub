@@ -88,7 +88,7 @@ goatPropertyList = [
     , (SkellyFunc (Bone' "tailbone") defLength, Normal gdLength 1)
 
     , (SkellyFunc (Bone' "tailend") defThickness, Normal gdThick 1)
-    , (SkellyFunc (Bone' "tailend") defThickness, Normal gdOrient 3)
+    , (SkellyFunc (Bone' "tailend") defOrientation, Normal gdOrient 3)
     , (SkellyFunc (Bone' "tailend") defLength, Normal gdLength 1)
 
     ]

@@ -54,8 +54,6 @@ defOrientation = Orientation QH.identity
 defColor :: BoneMethod
 defColor = Color ()
 
-
--- TODO add parameters to this so we don't use [Float] anymore!!
 -- |
 -- SkellyFunc represents a method applied to a bone
 -- parameters to the method are passed in as [Float]
@@ -65,6 +63,8 @@ data SkellyFunc = SkellyFunc {
     sfMethod :: BoneMethod
 } deriving (Read, Show, Generic, NFData)
 
+-- | adds values to parameters in BoneMethod
+-- N.B this does no error checking on length of list being passed in
 addValuesToBoneMethod :: BoneMethod -> [Float] -> BoneMethod
 addValuesToBoneMethod m vals = case m of
   Orientation x ->
@@ -75,6 +75,8 @@ addValuesToBoneMethod m vals = case m of
     Thickness $ x * (vals !! 0)
   Color x -> Color x
 
+-- | adds values to parameters in BoneMethod inside SkellyFunc
+-- N.B this does no error checking on length of list being passed in
 addValuesToSkellyFunc :: SkellyFunc -> [Float] -> SkellyFunc
 addValuesToSkellyFunc (SkellyFunc b m) vals = SkellyFunc b (addValuesToBoneMethod m vals)
 

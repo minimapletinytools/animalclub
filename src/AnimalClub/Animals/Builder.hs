@@ -63,6 +63,7 @@ autoGeneCount (Normal _ x) = x
 autoGeneSize :: AutoGeneMethod -> Int
 autoGeneSize (Normal _ x) = x
 
+-- FUTURE make it so that number of params are enforced at type level in (SkellyFunc, AutoGeneMethod)
 -- | automatically create genome from given properties
 -- this version does no overlap. All properties are independent
 makeGenomeFromPropertiesSimple ::
