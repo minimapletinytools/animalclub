@@ -6,7 +6,9 @@
 
 module AnimalClub.Skellygen.AnimalProperty (
     BoneMethod(..),
+    defThickness, defLength, defOrientation, defColor,
     SkellyFunc(..),
+    addValuesToBoneMethod, addValuesToSkellyFunc,
     AnimalProperty(..),
     AnimalPropertyMap,
     orientation, distance, skinParams,
@@ -35,11 +37,23 @@ import qualified Debug.Trace                            as Debug
 --import qualified Prelude (read)
 --read x = Prelude.read $ Debug.trace x x
 
+-- TODO finish 'Color'
 -- |
 -- There are no defined overwrite rules when using TLOCombined
 -- so do not use it together with Thickness Length and Orientation
 -- or you will not be guaranteed which one overwrites which
-data BoneMethod = Thickness |  Length | Orientation | TLOCombined | Color deriving (Read, Show, Generic, NFData)
+-- FUTURE for performance, you could add `TLOCombined (Float, Float, TRS.Rotation)`
+data BoneMethod = Thickness Float |  Length Float | Orientation (TRS.Rotation Float) | Color () deriving (Read, Show, Generic, NFData)
+
+defThickness :: BoneMethod
+defThickness = Thickness 1
+defLength :: BoneMethod
+defLength = Length 1
+defOrientation :: BoneMethod
+defOrientation = Orientation QH.identity
+defColor :: BoneMethod
+defColor = Color ()
+
 
 -- TODO add parameters to this so we don't use [Float] anymore!!
 -- |
@@ -50,6 +64,20 @@ data SkellyFunc = SkellyFunc {
     sfBone'  :: BoneName',
     sfMethod :: BoneMethod
 } deriving (Read, Show, Generic, NFData)
+
+addValuesToBoneMethod :: BoneMethod -> [Float] -> BoneMethod
+addValuesToBoneMethod m vals = case m of
+  Orientation x ->
+    Orientation $ x `inherit` QH.fromEulerXYZ (V3 (vals !! 0) (vals !! 1) (vals !! 2))
+  Length x ->
+    Length $ x * (vals !! 0)
+  Thickness x ->
+    Thickness $ x * (vals !! 0)
+  Color x -> Color x
+
+addValuesToSkellyFunc :: SkellyFunc -> [Float] -> SkellyFunc
+addValuesToSkellyFunc (SkellyFunc b m) vals = SkellyFunc b (addValuesToBoneMethod m vals)
+
 
 
 -- | used for generating skelly over each bone of the base skelly
@@ -92,27 +120,27 @@ assertLength n xs = assert (length xs == n)
 -- | adds properties to a map,
 generateAnimalPropertiesInternal_ ::
     AnimalPropertyMap -- ^ accumulating map of properties.
-    -> [(SkellyFunc, [Float])] -- ^ list of properties
+    -> [SkellyFunc] -- ^ list of properties
     -> AnimalPropertyMap -- ^ output accumulated map of properties. EnumBone' property will override AllBone' property
 generateAnimalPropertiesInternal_ _props xs = foldl addProp (foldl addProp (foldl addProp Map.empty allProps) enumBonesProps) otherProps where
     -- First go through AllBones' case which will be used as defaults for everything else
-    allProps = List.filter ((\case {AllBones' _ -> True; _ -> False}) . sfBone' . fst) xs
+    allProps = List.filter ((\case {AllBones' _ -> True; _ -> False}) . sfBone') xs
 
     -- Next do multi index EnumBones' case (just convert to EnumBone, inefficient, but whatever)
     -- UNTESTED
-    enumBonesProps' = List.filter ((\case {EnumBones' _ _ -> True; _ -> False}) . sfBone' . fst) xs
+    enumBonesProps' = List.filter ((\case {EnumBones' _ _ -> True; _ -> False}) . sfBone') xs
     enumBonesToEnumBoneMapFn = \case
-        (SkellyFunc (EnumBones' name indices) method, vals) ->
-            map (\i -> (SkellyFunc (EnumBone' name i) method, vals)) indices
+        (SkellyFunc (EnumBones' name indices) method) ->
+            map (\i -> (SkellyFunc (EnumBone' name i) method)) indices
         _ -> error "should only be of constructor EnumBones'"
     enumBonesProps = concatMap enumBonesToEnumBoneMapFn enumBonesProps'
 
     -- Finally do everything else
-    otherProps = List.filter ((\case {Bone' _ -> True; EnumBone' _ _ -> True; _ -> False}) . sfBone' . fst) xs
+    otherProps = List.filter ((\case {Bone' _ -> True; EnumBone' _ _ -> True; _ -> False}) . sfBone') xs
 
     -- add a proprety to the map
-    addProp :: Map.Map BoneName' AnimalProperty -> (SkellyFunc,[Float]) -> Map.Map BoneName' AnimalProperty
-    addProp accProp (SkellyFunc boneName method, vals) = Map.insert boneName newProp accProp where
+    addProp :: Map.Map BoneName' AnimalProperty -> (SkellyFunc) -> Map.Map BoneName' AnimalProperty
+    addProp accProp (SkellyFunc boneName method) = Map.insert boneName newProp accProp where
             -- if EnumBone', use AllBone' as default
             defaultProperty = case boneName of
                 EnumBone' boneName' _ -> Map.findWithDefault defaultAnimalProperty (AllBones' boneName') accProp
@@ -123,21 +151,21 @@ generateAnimalPropertiesInternal_ _props xs = foldl addProp (foldl addProp (fold
             -- TODO consider making combine/not combine a parameter
             --newProp = Debug.trace (show method ++ " " ++ show vals) $ case method of
             newProp = case method of
-                Orientation -> assertLength 3 vals $
-                    over orientation (inherit $ QH.fromEulerXYZ (V3 (vals !! 0) (vals !! 1) (vals !! 2))) oldProp
-                Length -> assertLength 1 vals $
-                    over distance (*(vals !! 0)) oldProp
-                Thickness -> assertLength 1 vals $
-                    over skinParams (*(vals !! 0)) oldProp
-                TLOCombined -> assertLength 5 vals $
-                    over orientation (inherit $ QH.fromEulerXYZ (V3 (vals !! 2) (vals !! 3) (vals !! 4)))
-                    $ over distance (*(vals !! 1))
-                    $ over skinParams (*(vals !! 0)) oldProp
-                Color -> oldProp
+                Orientation x ->
+                    over orientation (inherit x) oldProp
+                    --over orientation (inherit $ QH.fromEulerXYZ (V3 (vals !! 0) (vals !! 1) (vals !! 2))) oldProp
+                Length x ->
+                    over distance (*x) oldProp
+                    --over distance (*(vals !! 0)) oldProp
+                Thickness x ->
+                    over skinParams (*x) oldProp
+                    --over skinParams (*(vals !! 0)) oldProp
+                -- TODO
+                Color _ -> oldProp
 
 
 generateAnimalProperties_ ::
-    [(SkellyFunc, [Float])] -- ^ list of properties
+    [SkellyFunc] -- ^ list of properties
     -> AnimalPropertyMap -- ^ output accumulated map of properties. EnumBone' property will override AllBone' property
 generateAnimalProperties_ = generateAnimalPropertiesInternal_ Map.empty
 

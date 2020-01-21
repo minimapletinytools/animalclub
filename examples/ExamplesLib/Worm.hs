@@ -19,23 +19,23 @@ module ExamplesLib.Worm (
   breedAndSelectWormPool
 ) where
 
-import AnimalClub.Animals
-import AnimalClub.Genetics
-import AnimalClub.Skellygen
-import AnimalClub.Skellygen.Math.Hierarchical
-import qualified AnimalClub.Skellygen.Math.Quaternion as QH
+import           AnimalClub.Animals
+import           AnimalClub.Genetics
+import           AnimalClub.Skellygen
+import           AnimalClub.Skellygen.Math.Hierarchical
+import qualified AnimalClub.Skellygen.Math.Quaternion   as QH
 
+import qualified Linear.Metric                          as Metric
 import           Linear.V3
-import qualified Linear.Metric as Metric
 
-import qualified Data.Text as T
-import qualified Data.Map as Map
-import           Data.List                       (sortBy, mapAccumL)
-import           Data.Ord                        (comparing)
-import Control.Monad (forM_)
-import System.Random
+import           Control.Monad                          (forM_)
+import           Data.List                              (mapAccumL, sortBy)
+import qualified Data.Map                               as Map
+import           Data.Ord                               (comparing)
+import qualified Data.Text                              as T
+import           System.Random
 
-import qualified Debug.Trace as Debug
+import qualified Debug.Trace                            as Debug
 
 textFromInt = T.pack . show
 
@@ -52,11 +52,11 @@ wormGenome' segs dnaPerSeg = do forM_ [0..(segs-1)] wormSeg where
         usingGene (Gene (dnaPerSeg*i) dnaPerSegOver2) $ do
             x <- gbSumRange (-1.0, 6.0) -- using gbTypical here doesn't work very well for some reason :(
             --x <- gbSumRange (0.1, 4.5)
-            tellSkellyFunc (Bone' (textFromInt i)) Thickness [x] --[x*0.5+0.75]
+            tellSkellyFunc (Bone' (textFromInt i)) (addValuesToBoneMethod defThickness [x]) --[x*0.5+0.75]
         --gbPush $ Gene (dnaPerSeg*i + dnaPerSegOver4*2) (dnaPerSegOver4*2)
         usingGene (Gene (dnaPerSeg*i + dnaPerSegOver2) (dnaPerSegOver2)) $ do
             orients <- gbRandomRanges (replicate 3 (-1.5,1.5))
-            tellSkellyFunc (Bone' (textFromInt i)) Orientation orients
+            tellSkellyFunc (Bone' (textFromInt i)) (addValuesToBoneMethod defOrientation orients)
 
 -- | generate the genome of a worm
 wormGenome ::

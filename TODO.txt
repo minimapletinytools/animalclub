@@ -23,7 +23,12 @@ defTransFlag ReflZ (Left:xs) = (Right:defTransFlag ReflZ xs)
 flipAnimalNode :: BoneTrans -> FlagTrans -> AnimalNode -> AnimalNode
 
 
+::TMRW::
+-refactor BoneName
+-refactor SkellyFunc
+
 ::TODO::
+-make TRS Float a type synonym 
 -wtf are you using LHS coordinates for? Switch to RHS if possible or make it agnostic
 -add comment explaining default animal orientation assumptions
 -refactor

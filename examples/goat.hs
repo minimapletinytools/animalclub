@@ -9,15 +9,15 @@ UNFINISH/WIP
 {-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 {-# OPTIONS_GHC -fno-warn-unused-top-binds #-}
 
-import ExamplesLib.Skeletons
+import           ExamplesLib.Skeletons
 
-import AnimalClub.Animals
-import AnimalClub.Genetics
-import AnimalClub.Skellygen
-import AnimalClub.Skellygen.Math.Mesh
+import           AnimalClub.Animals
+import           AnimalClub.Genetics
+import           AnimalClub.Skellygen
+import           AnimalClub.Skellygen.Math.Mesh
 
-import Text.Printf (printf)
-import System.Random
+import           System.Random
+import           Text.Printf                    (printf)
 
 
 
@@ -33,63 +33,63 @@ import System.Random
 sfGoatFront name = SkellyFunc (EnumBones' name [0,1])
 sfGoatBack name = SkellyFunc (EnumBones' name [2,3])
 
-defOrient = (-0.5, 0.5)
-defLength = (0, 2)
-defThick = (0, 2)
---defOrient = (0,0)
---defLength = (0,0)
---defThick = (0,0)
+gdOrient = (-0.5, 0.5)
+gdLength = (0, 2)
+gdThick = (0, 2)
+--gdOrient = (0,0)
+--gdLength = (0,0)
+--gdThick = (0,0)
 
 -- Goat properties
 goatPropertyList :: [(SkellyFunc, AutoGeneMethod)]
 goatPropertyList = [
-    (sfGoatFront "leg" Thickness, Normal defThick 1)
-    , (sfGoatFront "leg" Orientation, Normal defOrient 3)
-    --, (sfGoatFront "leg" Length, Normal defLength 1)
-    , (sfGoatFront "knee" Thickness, Normal defThick 1)
-    , (sfGoatFront "knee" Orientation, Normal defOrient 3)
-    , (sfGoatFront "knee" Length, Normal defLength 1)
-    , (sfGoatFront "ankle" Thickness, Normal defThick 1)
-    , (sfGoatFront "ankle" Orientation, Normal defOrient 3)
-    , (sfGoatFront "ankle" Length, Normal defLength 1)
-    , (sfGoatFront "toe" Thickness, Normal defThick 1)
-    , (sfGoatFront "toe" Length, Normal defLength 1)
+    (sfGoatFront "leg" defThickness, Normal gdThick 1)
+    , (sfGoatFront "leg" defOrientation, Normal gdOrient 3)
+    --, (sfGoatFront "leg" defLength, Normal gdLength 1)
+    , (sfGoatFront "knee" defThickness, Normal gdThick 1)
+    , (sfGoatFront "knee" defOrientation, Normal gdOrient 3)
+    , (sfGoatFront "knee" defLength, Normal gdLength 1)
+    , (sfGoatFront "ankle" defThickness, Normal gdThick 1)
+    , (sfGoatFront "ankle" defOrientation, Normal gdOrient 3)
+    , (sfGoatFront "ankle" defLength, Normal gdLength 1)
+    , (sfGoatFront "toe" defThickness, Normal gdThick 1)
+    , (sfGoatFront "toe" defLength, Normal gdLength 1)
 
-    , (sfGoatBack "leg" Thickness, Normal defThick 1)
-    , (sfGoatBack "leg" Orientation, Normal defOrient 3)
-    --, (sfGoatBack "leg" Length, Normal defLength 1)
-    , (sfGoatBack "knee" Thickness, Normal defThick 1)
-    , (sfGoatBack "knee" Orientation, Normal defOrient 3)
-    , (sfGoatBack "knee" Length, Normal defLength 1)
-    , (sfGoatBack "ankle" Thickness, Normal defThick 1)
-    , (sfGoatBack "ankle" Orientation, Normal defOrient 3)
-    , (sfGoatBack "ankle" Length, Normal defLength 1)
-    , (sfGoatBack "toe" Thickness, Normal defThick 1)
-    , (sfGoatBack "toe" Length, Normal defLength 1)
+    , (sfGoatBack "leg" defThickness, Normal gdThick 1)
+    , (sfGoatBack "leg" defOrientation, Normal gdOrient 3)
+    --, (sfGoatBack "leg" defLength, Normal gdLength 1)
+    , (sfGoatBack "knee" defThickness, Normal gdThick 1)
+    , (sfGoatBack "knee" defOrientation, Normal gdOrient 3)
+    , (sfGoatBack "knee" defLength, Normal gdLength 1)
+    , (sfGoatBack "ankle" defThickness, Normal gdThick 1)
+    , (sfGoatBack "ankle" defOrientation, Normal gdOrient 3)
+    , (sfGoatBack "ankle" defLength, Normal gdLength 1)
+    , (sfGoatBack "toe" defThickness, Normal gdThick 1)
+    , (sfGoatBack "toe" defLength, Normal gdLength 1)
 
-    , (SkellyFunc (Bone' "neck") Thickness, Normal defThick 1)
-    , (SkellyFunc (Bone' "neck") Orientation, Normal defOrient 3)
-    , (SkellyFunc (Bone' "neck") Length, Normal defLength 1)
+    , (SkellyFunc (Bone' "neck") defThickness, Normal gdThick 1)
+    , (SkellyFunc (Bone' "neck") defOrientation, Normal gdOrient 3)
+    , (SkellyFunc (Bone' "neck") defLength, Normal gdLength 1)
 
-    , (SkellyFunc (Bone' "head") Thickness, Normal defThick 1)
-    , (SkellyFunc (Bone' "head") Orientation, Normal defOrient 3)
-    , (SkellyFunc (Bone' "head") Length, Normal defLength 1)
+    , (SkellyFunc (Bone' "head") defThickness, Normal gdThick 1)
+    , (SkellyFunc (Bone' "head") defOrientation, Normal gdOrient 3)
+    , (SkellyFunc (Bone' "head") defLength, Normal gdLength 1)
 
-    , (SkellyFunc (Bone' "body") Thickness, Normal defThick 1)
-    , (SkellyFunc (Bone' "body") Orientation, Normal defOrient 3)
-    , (SkellyFunc (Bone' "body") Length, Normal defLength 1)
+    , (SkellyFunc (Bone' "body") defThickness, Normal gdThick 1)
+    , (SkellyFunc (Bone' "body") defOrientation, Normal gdOrient 3)
+    , (SkellyFunc (Bone' "body") defLength, Normal gdLength 1)
 
-    , (SkellyFunc (Bone' "body2") Thickness, Normal defThick 1)
-    , (SkellyFunc (Bone' "body2") Orientation, Normal defOrient 3)
-    , (SkellyFunc (Bone' "body2") Length, Normal defLength 1)
+    , (SkellyFunc (Bone' "body2") defThickness, Normal gdThick 1)
+    , (SkellyFunc (Bone' "body2") defOrientation, Normal gdOrient 3)
+    , (SkellyFunc (Bone' "body2") defLength, Normal gdLength 1)
 
-    , (SkellyFunc (Bone' "tailbone") Thickness, Normal defThick 1)
-    , (SkellyFunc (Bone' "tailbone") Orientation, Normal defOrient 3)
-    , (SkellyFunc (Bone' "tailbone") Length, Normal defLength 1)
+    , (SkellyFunc (Bone' "tailbone") defThickness, Normal gdThick 1)
+    , (SkellyFunc (Bone' "tailbone") defOrientation, Normal gdOrient 3)
+    , (SkellyFunc (Bone' "tailbone") defLength, Normal gdLength 1)
 
-    , (SkellyFunc (Bone' "tailend") Thickness, Normal defThick 1)
-    , (SkellyFunc (Bone' "tailend") Orientation, Normal defOrient 3)
-    , (SkellyFunc (Bone' "tailend") Length, Normal defLength 1)
+    , (SkellyFunc (Bone' "tailend") defThickness, Normal gdThick 1)
+    , (SkellyFunc (Bone' "tailend") defThickness, Normal gdOrient 3)
+    , (SkellyFunc (Bone' "tailend") defLength, Normal gdLength 1)
 
     ]
 

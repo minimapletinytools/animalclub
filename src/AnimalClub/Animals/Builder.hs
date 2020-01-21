@@ -1,4 +1,5 @@
-{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric  #-}
 
 {-|
 Module      : Builder
@@ -19,18 +20,18 @@ module AnimalClub.Animals.Builder (
     DepFunc,
 ) where
 
-import AnimalClub.Animals.Animal
-import AnimalClub.Genetics
-import AnimalClub.Skellygen
+import           AnimalClub.Animals.Animal
+import           AnimalClub.Genetics
+import           AnimalClub.Skellygen
 
-import qualified Data.Text as T
-import Data.List (mapAccumL)
-import Control.DeepSeq
-import GHC.Generics (Generic)
-import System.Random
-import Lens.Micro.Platform
-import Control.Monad
-import Control.Monad.Writer (tell)
+import           Control.DeepSeq
+import           Control.Monad
+import           Control.Monad.Writer      (tell)
+import           Data.List                 (mapAccumL)
+import qualified Data.Text                 as T
+import           GHC.Generics              (Generic)
+import           Lens.Micro.Platform
+import           System.Random
 
 --import Debug.Trace (trace)
 
@@ -67,7 +68,7 @@ autoGeneSize (Normal _ x) = x
 makeGenomeFromPropertiesSimple ::
     Int -- ^ DNA length (vector length / 4)
     -> [(T.Text, AutoGeneMethod)] -- ^ other properties
-    -> [(SkellyFunc, AutoGeneMethod)] -- ^ skellygen properties
+    -> [(SkellyFunc, AutoGeneMethod)] -- ^ skellygen properties, values in SkellyFunc are used as starting values
     -> Genome StdGen [AnimalExp] -- ^ output genome
 makeGenomeFromPropertiesSimple dnasz ops sfps = Genome dnasz geneBuilder (mkStdGen 0) where
     -- combine other properties and skellygen properties into a single list
@@ -89,5 +90,5 @@ makeGenomeFromPropertiesSimple dnasz ops sfps = Genome dnasz geneBuilder (mkStdG
                         --trace ((show $ n * gtsize `div` cnt) ++ " ! " ++ (show $ gtsize `div` cnt)) $  gbPush (Gene (n * gtsize `div` cnt) (gtsize `div` cnt))
                         usingGene (Gene (n * gtsize `div` cnt) (gtsize `div` cnt)) $ gbSumRange range
                     case x of
-                        Right sf -> tell [ExpSkellyFunc sf vals]
-                        Left t -> tell [ExpFloats t vals]
+                        Left t   -> tell [ExpFloats t vals]
+                        Right sf -> tell [ExpSkellyFunc (addValuesToSkellyFunc sf vals)]

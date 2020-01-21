@@ -35,21 +35,23 @@ import           GHC.Generics         (Generic)
 --import Debug.Trace (trace)
 
 -- TODO fix the SkellyFunc part, all internal stuff should be type safe :O
+-- TODO is it possible to parmeterize AnimalExp to allow users to pass in their own data types
+-- e.g. 'ExpUser T.Text a' or something like that... (ideally a list of types...)
 -- | various output expression of an animal genotype
 data AnimalExp =
     ExpBytes T.Text B.ByteString
-    | ExpFloats T.Text [Float]
-    | ExpSkellyFunc SkellyFunc [Float] deriving (Generic, NFData, Show)
+    | ExpFloats T.Text [Float] -- probably just use any type instead of [Float]?
+    | ExpSkellyFunc SkellyFunc deriving (Generic, NFData, Show)
 
 -- | pull out just the SkellyFuncs
-parseSkellyFuncs :: [AnimalExp] -> [(SkellyFunc, [Float])]
+parseSkellyFuncs :: [AnimalExp] -> [SkellyFunc]
 parseSkellyFuncs = catMaybes . fmap (\case
-    ExpSkellyFunc sf f -> Just (sf,f)
+    ExpSkellyFunc sf -> Just sf
     _ -> Nothing)
 
 -- | helper monad for writing out SkellyFuncs
-tellSkellyFunc :: (Monad m) => BoneName' -> BoneMethod -> [Float] -> GenotypeT g [AnimalExp] m ()
-tellSkellyFunc bn bm v = tell [ExpSkellyFunc (SkellyFunc bn bm) v]
+tellSkellyFunc :: (Monad m) => BoneName' -> BoneMethod -> GenotypeT g [AnimalExp] m ()
+tellSkellyFunc bn bm = tell [ExpSkellyFunc (SkellyFunc bn bm)]
 
 generateAnimalProperties ::
     [AnimalExp] -- ^ list of properties

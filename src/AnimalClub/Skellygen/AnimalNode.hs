@@ -39,47 +39,7 @@ import           Linear.V3
 
 
 
-
-
-
--- | user friendly representation of a Bone transformation
--- BoneTrans applies a transformation relative to identity TRS
--- the transformation effects all children
--- so, for example, if you have two legs, you only need to add ReflX at the hips
--- BoneTrans is applied to _trs'/_pos of AnimalNode'/AnimalNode respectively
--- and by extension it also affects _orientation of AnimalProperty
-data BoneTrans = Same | ReflX | ReflY | ReflZ | ArbTrans (TRS.TRS Float -> TRS.TRS Float)
-
-instance Show BoneTrans where
-    show Same         = "Same"
-    show ReflX        = "ReflX"
-    show ReflY        = "ReflY"
-    show ReflZ        = "ReflZ"
-    show (ArbTrans _) = "ArbTrans"
-
-composeBoneTrans :: BoneTrans -> BoneTrans -> BoneTrans
-composeBoneTrans Same x      = x
-composeBoneTrans x Same      = x
-composeBoneTrans ReflX ReflX = Same
-composeBoneTrans ReflY ReflY = Same
-composeBoneTrans ReflZ ReflZ = Same
-composeBoneTrans x y         = ArbTrans $ applyBoneTrans x . applyBoneTrans y
-
--- |
--- this is mainly for syntactic convenience
--- BoneTrans are not really 'Hierarchical'
-instance Hierarchical BoneTrans where
-    inherit = composeBoneTrans
-
-applyBoneTrans :: BoneTrans -> TRS.TRS Float -> TRS.TRS Float
-applyBoneTrans Same = id
-applyBoneTrans ReflX = inherit (set TRS.scale (TRS.makeScale $ V3 (-1) 1 1) TRS.identity)
-applyBoneTrans ReflY = inherit (set TRS.scale (TRS.makeScale $ V3 1 (-1) 1) TRS.identity)
-applyBoneTrans ReflZ = inherit (set TRS.scale (TRS.makeScale $ V3 1 1 (-1)) TRS.identity)
--- just for testing
---applyBoneTrans ReflZ = (>*>) (set TRS.trans (V3 0 0 1) TRS.identity)
-applyBoneTrans (ArbTrans f) = f
-
+-- TODO Bone stuff to be refactored
 -- | TODO new comment
 -- TODO I don't know if I really like this EnumBone thing...
 -- Maybe something like `Bone T.Text [Tags]` where the third parameter is a list of tags (e.g. L/R/F/B/whatever) (or better yet a bitmask)
@@ -109,6 +69,49 @@ toBoneName' (EnumBone name index _) = EnumBone' name index
 -- TODO rename
 -- toAll :: BoneName' -> BoneName'
 -- toAll (EnumBone' name _) = AllBones' name
+
+
+
+
+
+-- | user friendly representation of a Bone transformation
+-- BoneTrans applies a transformation relative to identity TRS
+-- the transformation effects all children
+-- so, for example, if you have two legs, you only need to add ReflX at the hips
+-- BoneTrans is applied to _trs'/_pos of AnimalNode'/AnimalNode respectively
+-- and by extension it also affects _orientation of AnimalProperty
+data BoneTrans = Same | ReflX | ReflY | ReflZ | ArbTrans (TRS.TRS Float -> TRS.TRS Float)
+
+instance Show BoneTrans where
+    show Same         = "Same"
+    show ReflX        = "ReflX"
+    show ReflY        = "ReflY"
+    show ReflZ        = "ReflZ"
+    show (ArbTrans _) = "ArbTrans"
+
+-- | combine two BoneTrans together
+composeBoneTrans :: BoneTrans -> BoneTrans -> BoneTrans
+composeBoneTrans Same x      = x
+composeBoneTrans x Same      = x
+composeBoneTrans ReflX ReflX = Same
+composeBoneTrans ReflY ReflY = Same
+composeBoneTrans ReflZ ReflZ = Same
+composeBoneTrans x y         = ArbTrans $ applyBoneTrans x . applyBoneTrans y
+
+-- BoneTrans are not really 'Hierarchical', this is mainly for syntactic convenience
+instance Hierarchical BoneTrans where
+    inherit = composeBoneTrans
+
+-- | applies BoneTrans to a TRS
+applyBoneTrans :: BoneTrans -> TRS.TRS Float -> TRS.TRS Float
+applyBoneTrans Same = id
+applyBoneTrans ReflX = inherit (set TRS.scale (TRS.makeScale $ V3 (-1) 1 1) TRS.identity)
+applyBoneTrans ReflY = inherit (set TRS.scale (TRS.makeScale $ V3 1 (-1) 1) TRS.identity)
+applyBoneTrans ReflZ = inherit (set TRS.scale (TRS.makeScale $ V3 1 1 (-1)) TRS.identity)
+-- just for testing
+--applyBoneTrans ReflZ = (>*>) (set TRS.trans (V3 0 0 1) TRS.identity)
+applyBoneTrans (ArbTrans f) = f
+
 
 -- TODO add optional orientation parameter
 -- direction is always looking down bone, orientation determines rotation along that bone
