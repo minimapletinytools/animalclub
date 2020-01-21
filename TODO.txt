@@ -1,0 +1,10 @@
+::TODO::
+-see if you can add more type safety into integrating skellygen with genetics
+  -you can totally do it, just expand out skellyfuncs more as a ADT instead of using that float array nonsense for arguments
+-review skellygen and see if you want to redesign cuz it's weird af
+-finish goat breeding app MVP
+  -just randomly breed and see what happens?
+    -I think I did this already
+  -try breeding to maximize volume and see what happens
+  -try breeding to maximize bending joints and see what happens
+-finish exporting genetics stuff to C++

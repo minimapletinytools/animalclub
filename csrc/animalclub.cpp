@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include <iostream>
+#include <cstdint>
+
 #include "HsFFI.h"
 #include "animalclub.h"
 #include "AnimalClub/ForeignBindings_stub.h"
@@ -17,7 +19,8 @@ void exit(void){
   hs_exit();
 }
 
+// TODO wrap exported haskell functions to be friendlier to call
 
-void test()
-{
+void breed(uint32_t seed, uint32_t* dna1, uint32_t* dna2, uint32_t* outdna, uint32_t size) {
+  breed_hs(seed, dna1, dna2, outdna, size);
 }

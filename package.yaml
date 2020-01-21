@@ -66,6 +66,7 @@ dependencies:
 - formatting
 - bytestring
 - storable-tuple
+- convertible
 
 library:
   source-dirs: src
@@ -177,3 +178,44 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - animalclub
+
+# hpack does not support foreign-library yet
+# please see comments in verbatim string on how to appropriately set fields
+verbatim: |
+  foreign-library animalclub
+    type:                native-shared
+    if os(Windows)
+      options: standalone
+      mod-def-file: AnimalClubLib.def
+    other-modules:       AnimalClub.ForeignBindings
+    -- copy this part from library default-extensions section of hpack generated cabal file
+    default-extensions: InstanceSigs LambdaCase OverloadedStrings GADTs DeriveFunctor DeriveFoldable DeriveTraversable FlexibleInstances FlexibleContexts ScopedTypeVariables MultiWayIf TupleSections MultiParamTypeClasses
+    -- copy this part from library build-depends section of hpack generated cabal file
+    build-depends:
+      MonadRandom
+      , QuickCheck
+      , adjunctions
+      , array
+      , base >=4.7 && <5
+      , bytestring
+      , clock
+      , containers
+      , deepseq
+      , formatting
+      , linear
+      , microlens-platform
+      , monad-parallel
+      , mtl
+      , mwc-random
+      , parallel
+      , primitive
+      , random
+      , storable-tuple
+      , text
+      , time
+      , vector
+      , convertible
+    hs-source-dirs:      src
+    c-sources:
+      csrc/animalclub.cpp
+    default-language:    Haskell2010
