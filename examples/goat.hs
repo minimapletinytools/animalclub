@@ -40,6 +40,7 @@ gdThick = (0, 2)
 --gdLength = (0,0)
 --gdThick = (0,0)
 
+
 -- Goat properties
 goatPropertyList :: [(SkellyFunc, AutoGeneMethod)]
 goatPropertyList = [

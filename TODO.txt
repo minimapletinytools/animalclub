@@ -1,7 +1,12 @@
 -- new bone and and skellyfunc stuff
 data BoneFlags = Front | Back | Left | Right | Top | Bottom | CustomS T.Text | CustomI Int deriving (Eq,Show)
 data NewBone = NewBone T.Text [BoneFlags] deriving (Eq,Show)
+
+-- | a function for matching BoneNames
 type BoneMatcher = NewBoneName -> Bool
+
+-- | bone matchers are applied in ascending order its priority
+type PrioritizedBoneMatcher = (Int,BoneMatcher)
 
 boneMatcher :: NewBone -> BoneMatcher
 boneMatcher b b' = b == b'
@@ -25,15 +30,14 @@ flipAnimalNode :: BoneTrans -> FlagTrans -> AnimalNode -> AnimalNode
 
 ::TMRW::
 -refactor BoneName
--refactor SkellyFunc
 
 ::TODO::
--make TRS Float a type synonym 
+-make TRS Float a type synonym
 -wtf are you using LHS coordinates for? Switch to RHS if possible or make it agnostic
 -add comment explaining default animal orientation assumptions
 -refactor
   -rename AnimalNode' to AnimalNodeInternal
-  -expand skellyfunc to host all possibilities
+  DONE-expand skellyfunc to host all possibilities
   -make AnimalNode/BoneName/BoneTrans stuff have better indexing
     -`Bone T.Text [Tags]`
     -add a comment explaining how reflecting bones in AnimalNode works

@@ -121,6 +121,10 @@ applyBoneTrans (ArbTrans f) = f
 
 -- | these define static properties that make up the base SkellyNode
 -- user friendly version that is limited in what can be expressed
+-- basically, as a bunch of connected points in space
+-- orientations are automatically determined based on parent position (see comments in AnimalScript)
+-- positions and thickness can be specified as absolute or relative for convenience I guess
+-- (albeit this makes things more complicated so consider switching to everything in Abs coordinates
 data AnimalNode = AnimalNode {
     _name      :: BoneName, -- ^ name and transformation if relevant
     _pos       :: AbsOrRel (V3 Float), -- ^ position, relative to parent if rel, 'BoneTrans' in 'BoneName' is applied to this
@@ -137,7 +141,6 @@ makeLenses ''AnimalNode
 --defAnimalNode = AnimalNode {}
 -- makeAnimalNode :: ... -> AnimalNode
 
--- TODO come up with better indexing scheme that isn't just an Int
 -- | flip an AnimalNode, the children of the flipped parent will inherit the flipped parent's new transform
 -- but their relative transforms do not change
 --

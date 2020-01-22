@@ -119,7 +119,7 @@ _toAnimalNode'' props pn cn = outan where
     -- compute new distance
     -- multiplicative distance
     c_pos' = c_pos ^* _distance prop
-    -- additive distance
+    -- additive distance (DELETE)
     --bDist = norm c_pos
     --c_pos' = if bDist == 0 then 0 else
     --    c_pos ^* ((bDist + _distance prop) / bDist)
@@ -135,6 +135,7 @@ _toAnimalNode'' props pn cn = outan where
     -- TODO double check this is correct in cases where there is funny scale nonsense going on
     c_trs_new = set TRS.rot (QH.lookAtDefaultUp c_pos'') (set TRS.trans c_pos'' c_rel_trs)
 
+    -- TODO at least switch to parMap
     -- inefficient recursion in recursion to update abs trans
     updatedChildren = map (recomputeAbsTransAnimalNode' outan) (_children' cn)
     --updatedChildren = (_children' cn)
@@ -201,7 +202,7 @@ toAnimalNode' props n = nodes where
     nodes = reduceBoneTransAnimalNode' dummyAnimalNode' nodes''
 
 -- | convert AnimalNode' to SkellyNode
--- specifically, adds skinning info to AnimalNode
+-- specifically, adds skinning info from AnimalProperty to the AnimalNode
 toSkellygen' ::
     Map.Map BoneName' AnimalProperty
     -> AnimalNode' -- ^ current node
