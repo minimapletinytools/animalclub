@@ -3,7 +3,21 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    size: 3619
+    url: https://github.com/pdlla/linear-tests/archive/ab26b11c9a4d21126df910edc52c284e9758414d.tar.gz
+    cabal-file:
+      size: 1744
+      sha256: 61b482c243c3b0429d5eb61dfdb265a5c80a48a0b55f39687cd2a511361f08dd
+    name: linear-tests
+    version: 0.1.0.0
+    sha256: da631d3bd54794b314d499853d8eb32848a5e33222bc750d9ffc6bf95f4f75c5
+    pantry-tree:
+      size: 518
+      sha256: 353f614613461535c51ab390ee5f93ced81061f22ea98fb5b7f7a759f65d561b
+  original:
+    url: https://github.com/pdlla/linear-tests/archive/ab26b11c9a4d21126df910edc52c284e9758414d.tar.gz
 snapshots:
 - completed:
     size: 524799

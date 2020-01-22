@@ -6,8 +6,8 @@ module AnimalClub.Skellygen.Math.Hierarchical (
 ) where
 
 
-import Linear.V3
-import Linear.Quaternion
+import           Linear.Quaternion
+import           Linear.V3
 
 class Hierarchical e where
     -- | parent -> child
@@ -17,6 +17,7 @@ infixl 7 >*>
 (>*>) :: (Hierarchical e) => e -> e -> e
 (>*>) = inherit
 
+-- | indicates whether to treat the contained object as relative or absolute to its parent
 data AbsOrRel a = Abs a | Rel a deriving (Functor, Show)
 
 unAbsOrRel :: AbsOrRel a -> a

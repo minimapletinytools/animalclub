@@ -39,7 +39,9 @@ packages:
 - .
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
-# extra-deps: []
+extra-deps:
+- github: pdlla/linear-tests
+  commit: ab26b11c9a4d21126df910edc52c284e9758414d 
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

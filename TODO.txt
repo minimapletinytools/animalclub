@@ -32,6 +32,7 @@ flipAnimalNode :: BoneTrans -> FlagTrans -> AnimalNode -> AnimalNode
 -refactor BoneName
 
 ::TODO::
+DONE-make separate testing library for matrix.linear
 -make TRS Float a type synonym
 -wtf are you using LHS coordinates for? Switch to RHS if possible or make it agnostic
 -add comment explaining default animal orientation assumptions

@@ -1,6 +1,10 @@
+--{-# OPTIONS_GHC -fno-warn-orphans #-}
 import           AnimalClub.Skellygen
+import           AnimalClub.Skellygen.Math.Hierarchical
 import           Test.Hspec
 import           Test.QuickCheck
+
+import           Linear.Arbitrary
 
 --prop_TRS
 
@@ -8,23 +12,18 @@ prop_justfortesting :: Int -> Bool
 prop_justfortesting x = (read . show) x == x
 
 
-{- TODO
-instance (Arbitrary a) => Arbitrary (V3 a) where
-  arbitrary = V3 <$> arbitrary <*> arbitrary <*> arbitrary
-
+-- TODO finish
 instance Arbitrary AnimalNode where
   arbitrary = sized arb where
     arb 0 = do
+      pos <- arbitrary
       return AnimalNode {
           _name = undefined
-          , _pos = undefined
-          , thickness = undefined
-          , isRoot = True
+          , _pos = Abs pos
+          , _thickness = undefined
+          , _isRoot = True
           , _children = []
         }
--}
-
-
 
 -- TODO flips an animal node using ReflX
 -- and checks that all X coordinates cancel out
