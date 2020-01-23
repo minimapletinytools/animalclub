@@ -1,3 +1,6 @@
+[![CircleCI](https://circleci.com/gh/pdlla/animalclub.svg?style=svg)](https://circleci.com/gh/pdlla/animalclub)
+
+
 # animalclub
 
 _Animal Club_ (_AC_) is still in development. I'm working hard on a first release!! Each "animal" is made of _DNA_ and several _Genotypes_ written in a special purpose Monad. Using the _Skellygen_ and _Animal_ module, the animal's _Genome_ can be mapped onto a parameterized mesh generator to create unique 3D meshes for each genetic expression of the animal.
