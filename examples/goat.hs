@@ -41,6 +41,16 @@ gdThick = (0, 2)
 --gdThick = (0,0)
 
 
+myHelper :: (BoneMethod -> SkellyFunc) -> (Float,Float,(Float,Float)) -> [(SkellyFunc, AutoGeneMethod)]
+myHelper bmf (l,t,o)= [
+  (bmf defLength, Normal l 1)
+  , (bmf defThickness, Normal t 1)
+  , (bmf defOrientation, Normal o 3)
+  ]
+
+myHelper (nameFlagMatcher "leg" [BF_Front]) (gdLength,gdThick,gdOrient)
+myHelper (idMatcher (BoneId "neck" [])) (gdLength,gdThick,gdOrient)
+
 -- Goat properties
 goatPropertyList :: [(SkellyFunc, AutoGeneMethod)]
 goatPropertyList = [

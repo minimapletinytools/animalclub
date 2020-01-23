@@ -16,9 +16,10 @@ module ExamplesLib.Skeletons (
     goat
 ) where
 
-import AnimalClub.Skellygen
-import AnimalClub.Skellygen.Math.Hierarchical
-import AnimalClub.Skellygen.Math.Mesh
+import           AnimalClub.Animals
+import           AnimalClub.Skellygen
+import           AnimalClub.Skellygen.Math.Hierarchical
+import           AnimalClub.Skellygen.Math.Mesh
 import           Linear.V3
 
 -- | whatever helper
@@ -41,55 +42,56 @@ goatBodyLegVert = -0.01
 goatLeg = 0.6
 
 -- | front leg!
-goatFrontLeftLeg =
-    AnimalNode (EnumBone "leg" 0 Same) (relV3 (0.05) goatBodyLegVert goatBodyLegWidth) (Rel 0.3) True
-        [AnimalNode (EnumBone "knee" 0 Same) (relV3 (-0.05) (-goatLeg/2.0) 0) (Rel 0.8) False
-            [AnimalNode (EnumBone "ankle" 0 Same) (relV3 (0.05) (-goatLeg/2.0) 0) (Rel 0.8) False
-                [AnimalNode (EnumBone "toe" 0 Same) (relV3 (-0.1) 0 0) (Rel 0.4) False []]]]
+goatFrontLeftLeg = setRoot $
+    manf "leg" [BF_Left, BF_Front] (relV3 (0.05) goatBodyLegVert goatBodyLegWidth) (Rel 0.3)
+        [manf "knee" [BF_Left, BF_Front] (relV3 (-0.05) (-goatLeg/2.0) 0) (Rel 0.8)
+            [manf "ankle" [BF_Left, BF_Front] (relV3 (0.05) (-goatLeg/2.0) 0) (Rel 0.8)
+                [manf "toe" [BF_Left, BF_Front] (relV3 (-0.1) 0 0) (Rel 0.4) []]]]
 
 -- | back leg!
 goatBackLeftLeg =
-    AnimalNode (EnumBone "leg" 2 Same) (relV3 (-0.05) goatBodyLegVert goatBodyLegWidth) (Rel 0.38) True
-        [AnimalNode (EnumBone "knee" 2 Same) (relV3 (-0.05) (-goatLeg/2.0) 0) (Rel 0.8) False
-            [AnimalNode (EnumBone "ankle" 2 Same) (relV3 (0.05) (-goatLeg/2.0) 0) (Rel 0.8) False
-                [AnimalNode (EnumBone "toe" 2 Same) (relV3 (-0.1) 0 0) (Rel 0.4) False []]]]
+    manf "leg" [BF_Left, BF_Back] (relV3 (-0.05) goatBodyLegVert goatBodyLegWidth) (Rel 0.38)
+        [manf "knee" [BF_Left, BF_Back] (relV3 (-0.05) (-goatLeg/2.0) 0) (Rel 0.8)
+            [manf "ankle" [BF_Left, BF_Back] (relV3 (0.05) (-goatLeg/2.0) 0) (Rel 0.8)
+                [manf "toe" [BF_Left, BF_Back] (relV3 (-0.1) 0 0) (Rel 0.4) []]]]
 
 -- | goat!
-goat =
-    AnimalNode (Bone "root") (relV3 0 0 0) (Abs 0.2) True
-        [AnimalNode (Bone "neck") (relV3 (-0.07) (0.3) 0) (Rel 0.75) False
-            [AnimalNode (Bone "head") (relV3 (-0.07) (0.04) 0) (Rel 1.2) False []]
+goat = setRoot $
+    mans "root" (relV3 0 0 0) (Abs 0.2)
+        [mans "neck" (relV3 (-0.07) (0.3) 0) (Rel 0.75)
+            [mans "head" (relV3 (-0.07) (0.04) 0) (Rel 1.2) []]
         ,goatFrontLeftLeg
-        ,(flipAnimalNode ReflZ 1 goatFrontLeftLeg)
-        ,AnimalNode (Bone "body") (relV3 (0.35) (-0.02) 0) (Rel 0.95) False
-            [AnimalNode (Bone "body2") (relV3 (0.35) (0.02) 0) (Rel 1.05) False
-                [AnimalNode (Bone "tailbone") (relV3 0 (0.2) 0) (Rel 0.2) True
-                    [AnimalNode (Bone "tailend") (relV3 (0.1) (-0.02) 0) (Rel 1.0) False []]
+        ,(flipAnimalNode ReflZ (defTransFlag ReflZ) goatFrontLeftLeg)
+        ,mans "body" (relV3 (0.35) (-0.02) 0) (Rel 0.95)
+            [mans "body2" (relV3 (0.35) (0.02) 0) (Rel 1.05)
+                [setRoot $ mans "tailbone" (relV3 0 (0.2) 0) (Rel 0.2)
+                    [mans "tailend" (relV3 (0.1) (-0.02) 0) (Rel 1.0) []]
                 ,goatBackLeftLeg
-                ,(flipAnimalNode ReflZ 3 goatBackLeftLeg)
+                ,(flipAnimalNode ReflZ (defTransFlag ReflZ) goatBackLeftLeg)
                 ]
             ]
         ]
 
 -- | your basic worm
-worm =
-    AnimalNode (Bone "0") (relV3 0 0 0) (Abs 0.1) True
-        [AnimalNode (Bone "1") (relV3 1 0 0) (Rel 1) False
-            [AnimalNode (Bone "2") (relV3 0 1 0) (Rel 1) False
-                [AnimalNode (Bone "3") (relV3 1 0 0) (Rel 1) False
-                    [AnimalNode (Bone "4") (relV3 0 1 0) (Rel 1) False []]]]]
+worm = setRoot $
+    mans "0" (relV3 0 0 0) (Abs 0.1)
+        [mans "1" (relV3 1 0 0) (Rel 1)
+            [mans "2" (relV3 0 1 0) (Rel 1)
+                [mans "3" (relV3 1 0 0) (Rel 1)
+                    [mans "4" (relV3 0 1 0) (Rel 1) []]]]]
 
 -- | flippable worm
 flipWorm =
-    AnimalNode (EnumBone "1" 0 Same) (relV3 1 0 0) (Rel 1.1) False
-        [AnimalNode (EnumBone "2" 0 Same) (relV3 0 0 1) (Rel 1.1) False
-            [AnimalNode (EnumBone "3" 0 Same) (relV3 1 0 0) (Rel 1.1) False
-                [AnimalNode (EnumBone "3" 0 Same) (relV3 0 0 1) (Rel 1.1) False []]]]
+    mans "1" (relV3 1 0 0) (Rel 1.1)
+        [mans "2" (relV3 0 0 1) (Rel 1.1)
+            [mans "3" (relV3 1 0 0) (Rel 1.1)
+                [mans "3" (relV3 0 0 1) (Rel 1.1) []]]]
 
+-- TODO just flip `worm` and delete `flipWorm`
 -- | worm made from flipping a flippable worm
-worm2 = AnimalNode (Bone "root") (relV3 0 0 0) (Abs 0.2) True
+worm2 = setRoot $ mans "root" (relV3 0 0 0) (Abs 0.2)
     [flipWorm
-    , flipAnimalNode ReflX 2 flipWorm
+    , flipAnimalNode ReflX (defTransFlag ReflX) flipWorm
     ]
 
 -- | write the example skeletons

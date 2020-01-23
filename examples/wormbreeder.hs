@@ -7,16 +7,16 @@ this example uses AnimalClub.Animals.Worm to breed a worm targetting some idea f
 --{-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 --{-# OPTIONS_GHC -fno-warn-unused-top-binds #-}
 
-import ExamplesLib.Worm
+import           ExamplesLib.Worm
 
-import AnimalClub.Animals
-import AnimalClub.Genetics
-import AnimalClub.Skellygen
-import AnimalClub.Skellygen.Math.Mesh
+import           AnimalClub.Animals
+import           AnimalClub.Genetics
+import           AnimalClub.Skellygen
+import           AnimalClub.Skellygen.Math.Mesh
 
-import Text.Printf (printf)
-import           Data.List                       (unfoldr)
-import System.Random
+import           Data.List                      (unfoldr)
+import           System.Random
+import           Text.Printf                    (printf)
 
 
 --import qualified Debug.Trace as Debug
@@ -34,13 +34,15 @@ main = do
     printf "litter: %i, selection: %i, generations: %i \n" litterSize selectionSize generations :: IO ()
     gen1 <- getStdGen
     let
+        baseWorm = worm segs
+        wormBones = makeBoneIdList baseWorm
         genome = (wormGenome segs dnaPerSeg)
         (_, gen2) = next gen1
         original = makeRandDNA gen1 (segs * dnaPerSeg)
         unfoldWormF (dnas, g) = Just $ (next_dnas, acc) where
-            acc@(next_dnas, _) = breedAndSelectWormPool (testWorm segs) genome mutationChance g (litterSize,selectionSize) dnas
+            acc@(next_dnas, _) = breedAndSelectWormPool (testWorm segs) (wormBones, genome) mutationChance g (litterSize,selectionSize) dnas
         bestWorms = last $ take generations $ unfoldr unfoldWormF ([original], gen2)
         bestWorm = last bestWorms
-        bestWormProps = generateAnimalProperties $ evalGenome genome bestWorm
-        skelly = animalNodeToSkellyNodeWithProps bestWormProps (worm segs)
+        bestWormProps = generateAnimalProperties wormBones $ evalGenome genome bestWorm
+        skelly = animalNodeToSkellyNodeWithProps bestWormProps (baseWorm)
     writeFile "wigglyworm.obj" . meshToObj . generateMesh $ skelly

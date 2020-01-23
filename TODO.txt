@@ -1,37 +1,34 @@
--- new bone and and skellyfunc stuff
-data BoneFlags = Front | Back | Left | Right | Top | Bottom | CustomS T.Text | CustomI Int deriving (Eq,Show)
-data NewBone = NewBone T.Text [BoneFlags] deriving (Eq,Show)
 
--- | a function for matching BoneNames
-type BoneMatcher = NewBoneName -> Bool
 
--- | bone matchers are applied in ascending order its priority
-type PrioritizedBoneMatcher = (Int,BoneMatcher)
+sftBoneId :: BoneId -> BoneMethod (ctor only) -> SkellyFuncType
+sftBoneMatcher :: BoneMatcher -> BoneMethod (ctor only) -> SkellyFuncType
 
-boneMatcher :: NewBone -> BoneMatcher
-boneMatcher b b' = b == b'
+data SkellyFuncInternal a where {
+  sfBoneId :: BoneId -> a -> SkellyFuncInternal a
+  sfBoneMatcher :: BoneMatcher -> a -> SkellyFuncInternal a
+}
 
-singleBoneMatcher :: T.Text -> BoneMatcher
-singleBoneMatcher name (NewBone name' []) = name == name'
 
-boneSetMatcher :: T.Text -> BoneMatcher
-boneSetMatcher name (NewBone name' _) = name == name'
+types of things we want:
+
+set a single bone
+set a matched set of bones
+pick BoneMethod without needing to supply arguments
 
 
 
-type FlagTrans = BoneTrans -> [Flag] -> [Flag]
 
-defTransFlag :: FlagTrans
-defTransFlag _ [] = []
-defTransFlag ReflZ (Left:xs) = (Right:defTransFlag ReflZ xs)
-
-flipAnimalNode :: BoneTrans -> FlagTrans -> AnimalNode -> AnimalNode
-
+::ISSUES::
+-with new matcher design, it's impossible to create bones that don't exist :(
+-seems pretty silly that I have to use a matcher on a single bone (and search through all entries in map). Maybe there should be an exception case for single bones...
+-from definition standpoint, you can always just use helper wrapper functions I guess...
+-or maybe matcher takes an `M.Map BoneId a` and returns [(BoneId,a)] :D better for performance I guess
 
 ::TMRW::
 -refactor BoneName
 
 ::TODO::
+-go through some modules and rename things so that they don't have their modules as prefix
 DONE-make separate testing library for matrix.linear
 -make TRS Float a type synonym
 -wtf are you using LHS coordinates for? Switch to RHS if possible or make it agnostic

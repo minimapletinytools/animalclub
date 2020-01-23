@@ -36,19 +36,20 @@ import           Linear.Vector
 -- | these define static properties that make up the base SkellyNode
 -- internal, converted from AnimalNode
 data AnimalNode' = AnimalNode' {
-    _name'      :: BoneName, -- ^ name
-    _trsAbs'    :: TRS.TRS Float, -- ^ absolute
-    _trs'       :: TRS.TRS Float, -- ^ rel to parent
-    _thickness' :: Float, -- ^ rel to _trans
-    _isRoot'    :: Bool,
-    _children'  :: [AnimalNode']
+    -- TODO rename this field
+    _name'        :: BoneWT -- ^ name
+    , _trsAbs'    :: TRS.TRS Float -- ^ absolute
+    , _trs'       :: TRS.TRS Float -- ^ rel to parent
+    , _thickness' :: Float -- ^rel to _trans
+    , _isRoot'    :: Bool
+    , _children'  :: [AnimalNode']
 }
 
 makeLenses ''AnimalNode'
 
 -- | sometimes helpful for root node cases
 dummyAnimalNode' :: AnimalNode'
-dummyAnimalNode' = AnimalNode' (Bone "") TRS.identity TRS.identity 1 True []
+dummyAnimalNode' = AnimalNode' (BoneWT (BoneId "" []) Same) TRS.identity TRS.identity 1 True []
 
 -- | convert AnimalNode to internal format FIRST PASS
 -- this simply maps
@@ -114,7 +115,7 @@ _toAnimalNode'' props pn cn = outan where
     p_abs_rot_inv = QH.inverse p_abs_rot
     c_rel_trs = _trs' cn
     c_pos = TRS._trans c_rel_trs
-    prop = lookupBone' (toBoneName' $ _name' cn) props
+    prop = getAnimalProperty (toBoneId $ _name' cn) props
 
     -- compute new distance
     -- multiplicative distance
@@ -161,10 +162,10 @@ reduceBoneTransAnimalNode' ::
 reduceBoneTransAnimalNode' p c = c_new where
     -- apply BoneTrans to c
     p_abs_trs = _trsAbs' p
-    c_rel_trs_new = btf $ _trs' c where
-        btf = case _name' c of
-            EnumBone _ _ bt -> applyBoneTrans bt
-            _               -> id
+    BoneWT _ bt = _name' c
+    btf = applyBoneTrans bt
+    c_rel_trs_new = btf $ _trs' c
+
 
     -- TODO copy toAnimalNode'' recursive call, it's cleaner IMO maybe not..
     -- just make it consistent...
@@ -177,8 +178,8 @@ reduceBoneTransAnimalNode' p c = c_new where
     c_new'' = set children' (map (recomputeAbsTransAnimalNode' c_new') (_children' c_new')) c_new'
     -- for performance, don't bother doing anything in the Same case
     c_new''' = case _name' c of
-        EnumBone _ _ Same -> c
-        _                 -> c_new''
+        BoneWT _ Same -> c
+        _             -> c_new''
 
     -- then recursively reduce all children
     c_new = set children' (map (reduceBoneTransAnimalNode' c_new''') (_children' c_new''')) c_new'''
@@ -204,11 +205,11 @@ toAnimalNode' props n = nodes where
 -- | convert AnimalNode' to SkellyNode
 -- specifically, adds skinning info from AnimalProperty to the AnimalNode
 toSkellygen' ::
-    Map.Map BoneName' AnimalProperty
+    AnimalPropertyMap
     -> AnimalNode' -- ^ current node
     -> SN.SkellyNode -- ^ skellygen node for current node
 toSkellygen' props cn =  outsn where
-    prop = lookupBone' (toBoneName' (_name' cn)) props
+    prop = getAnimalProperty (toBoneId (_name' cn)) props
     cn_rel_trs = _trs' cn
     skellyChildren = map (toSkellygen' props) (_children' cn)
     outsn = SN.SkellyNode {
