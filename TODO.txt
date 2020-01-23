@@ -1,32 +1,3 @@
-
-
-sftBoneId :: BoneId -> BoneMethod (ctor only) -> SkellyFuncType
-sftBoneMatcher :: BoneMatcher -> BoneMethod (ctor only) -> SkellyFuncType
-
-data SkellyFuncInternal a where {
-  sfBoneId :: BoneId -> a -> SkellyFuncInternal a
-  sfBoneMatcher :: BoneMatcher -> a -> SkellyFuncInternal a
-}
-
-
-types of things we want:
-
-set a single bone
-set a matched set of bones
-pick BoneMethod without needing to supply arguments
-
-
-
-
-::ISSUES::
--with new matcher design, it's impossible to create bones that don't exist :(
--seems pretty silly that I have to use a matcher on a single bone (and search through all entries in map). Maybe there should be an exception case for single bones...
--from definition standpoint, you can always just use helper wrapper functions I guess...
--or maybe matcher takes an `M.Map BoneId a` and returns [(BoneId,a)] :D better for performance I guess
-
-::TMRW::
--refactor BoneName
-
 ::TODO::
 -go through some modules and rename things so that they don't have their modules as prefix
 DONE-make separate testing library for matrix.linear
@@ -36,12 +7,11 @@ DONE-make separate testing library for matrix.linear
 -refactor
   -rename AnimalNode' to AnimalNodeInternal
   DONE-expand skellyfunc to host all possibilities
-  -make AnimalNode/BoneName/BoneTrans stuff have better indexing
+  DONE-make AnimalNode/BoneName/BoneTrans stuff have better indexing
     -`Bone T.Text [Tags]`
     -add a comment explaining how reflecting bones in AnimalNode works
       -the current implementation is weird, come up with something better
   -add clear documentation to how skellygen skeleton hierarchy stuff works
--review skellygen and see if you want to redesign cuz it's weird af
 -math
   -finish invTRS
   -finish lookAt function, and make its interface less weird
@@ -52,3 +22,4 @@ DONE-make separate testing library for matrix.linear
   -try breeding to maximize volume and see what happens
   -try breeding to maximize bending joints and see what happens
 -finish exporting genetics stuff to C++
+DONE-review skellygen and see if you want to redesign cuz it's weird af

@@ -42,7 +42,7 @@ showT = T.pack . show
 
 wormNode 0 = mans (showT 0) (Rel $ V3 0.5 0 0) (Rel 1) []
 wormNode n = mans (showT n) (Rel $ V3 0.5 0 0) (Rel 1) [wormNode (n-1)]
-worm segs = setRoot $ mans (showT (segs-1)) (Rel 0) (Abs 0.1) [wormNode (segs-1)]
+worm segs = asRoot $ mans (showT (segs-1)) (Rel 0) (Abs 0.1) [wormNode (segs-1)]
 
 wormGenome' :: (RandomGen g) => Int -> Int -> Genotype g [AnimalExp] ()
 wormGenome' segs dnaPerSeg = do forM_ [0..(segs-1)] wormSeg where

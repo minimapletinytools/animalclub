@@ -12,7 +12,7 @@ Stability   : experimental
 -}
 
 module AnimalClub.Animals.Animal (
-    setRoot,
+    asRoot,
     mans, manf, manbt,
     AnimalExp(..),
     parseSkellyFuncs,
@@ -39,8 +39,8 @@ import           GHC.Generics                           (Generic)
 --import Debug.Trace (trace)
 
 -- | set the AnimalNode as the root node
-setRoot :: AnimalNode -> AnimalNode
-setRoot an = an { _isRoot = True }
+asRoot :: AnimalNode -> AnimalNode
+asRoot an = an { _isRoot = True }
 
 -- | helper method for making AnimalNode
 mans ::
