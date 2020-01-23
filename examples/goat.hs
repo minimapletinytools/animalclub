@@ -65,7 +65,6 @@ goatPropertyList =
 
 main :: IO ()
 main = do
-
     printf "Breeding goats...\n" :: IO ()
     gen <- getStdGen
     let

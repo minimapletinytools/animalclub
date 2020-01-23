@@ -13,7 +13,8 @@ provides example AnimalClub.Skellygen skeletons
 {-# OPTIONS_GHC -fno-warn-unused-top-binds #-}
 
 module ExamplesLib.Skeletons (
-    goat
+    goat,
+    writeExampleObjs
 ) where
 
 import           AnimalClub.Animals
@@ -95,6 +96,7 @@ worm2 = setRoot $ mans "root" (relV3 0 0 0) (Abs 0.2)
     ]
 
 -- | write the example skeletons
-main = do
+writeExampleObjs = do
     writeFile "goat.obj" . meshToObj . generateMesh . animalNodeToSkellyNode $ goat
-    writeFile "worm.obj" . meshToObj . generateMesh . animalNodeToSkellyNode $ worm2
+    writeFile "worm.obj" . meshToObj . generateMesh . animalNodeToSkellyNode $ worm
+    writeFile "worm2.obj" . meshToObj . generateMesh . animalNodeToSkellyNode $ worm2
