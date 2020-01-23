@@ -89,6 +89,7 @@ toBoneId (BoneWT bid _) = bid
 -- | a function for matching BoneNames
 type BoneMatcher = BoneId -> Bool
 
+-- TODO delete why would you use this when you could just use WithBoneId
 -- | creates a matcher for a very specific bone
 idMatcher :: BoneId -> BoneMatcher
 idMatcher bid bid' = bid == bid'
@@ -115,10 +116,13 @@ defTransFlag _ []                 = []
 defTransFlag Same x               = x
 defTransFlag ReflZ (BF_Left:xs)   = BF_Right:defTransFlag ReflZ xs
 defTransFlag ReflZ (BF_Right:xs)  = BF_Left:defTransFlag ReflZ xs
+defTransFlag ReflZ (x:xs)  = x:defTransFlag ReflZ xs
 defTransFlag ReflX (BF_Front:xs)  = BF_Back:defTransFlag ReflX xs
 defTransFlag ReflX (BF_Front:xs)  = BF_Back:defTransFlag ReflX xs
-defTransFlag ReflZ (BF_Top:xs)    = BF_Bottom:defTransFlag ReflZ xs
-defTransFlag ReflZ (BF_Bottom:xs) = BF_Top:defTransFlag ReflZ xs
+defTransFlag ReflX (x:xs)  = x:defTransFlag ReflX xs
+defTransFlag ReflY (BF_Top:xs)    = BF_Bottom:defTransFlag ReflZ xs
+defTransFlag ReflY (BF_Bottom:xs) = BF_Top:defTransFlag ReflZ xs
+defTransFlag ReflY (x:xs) = x:defTransFlag ReflZ xs
 defTransFlag (ArbTrans _) _       = error "don't do this"
 
 

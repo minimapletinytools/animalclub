@@ -49,7 +49,7 @@ goatFrontLeftLeg = setRoot $
                 [manf "toe" [BF_Left, BF_Front] (relV3 (-0.1) 0 0) (Rel 0.4) []]]]
 
 -- | back leg!
-goatBackLeftLeg =
+goatBackLeftLeg = setRoot $
     manf "leg" [BF_Left, BF_Back] (relV3 (-0.05) goatBodyLegVert goatBodyLegWidth) (Rel 0.38)
         [manf "knee" [BF_Left, BF_Back] (relV3 (-0.05) (-goatLeg/2.0) 0) (Rel 0.8)
             [manf "ankle" [BF_Left, BF_Back] (relV3 (0.05) (-goatLeg/2.0) 0) (Rel 0.8)
