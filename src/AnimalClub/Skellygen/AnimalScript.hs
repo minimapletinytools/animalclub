@@ -52,14 +52,15 @@ makeLenses ''AnimalNode'
 dummyAnimalNode' :: AnimalNode'
 dummyAnimalNode' = AnimalNode' (BoneId "" []) Same TRS.identity TRS.identity 1 True []
 
--- | convert AnimalNode to internal format FIRST PASS
--- this simply maps
--- this does note apply the BoneTrans in the BoneName yet
-_toAnimalNode' ::
+-- | converts AnimalNode to internal format superficially
+-- i.e. this takes care of converting the '_pos' parameter into the internal '_trs'' and '_trsAbs''
+-- as well as converting '_thickness' to the internal relative '_thickness'' format
+-- N.B. this does not apply the BoneTrans yet
+applyFirstPass ::
     AnimalNode' -- ^ parent Node
     -> AnimalNode -- ^ node to convert
     -> AnimalNode' -- ^ output
-_toAnimalNode' pn' cn = outan' where
+applyFirstPass pn' cn = outan' where
     p_abs_trs = _trsAbs' pn'
     p_abs_rot = TRS._rot p_abs_trs
     p_abs_rot_inv = QH.inverse p_abs_rot
@@ -72,7 +73,7 @@ _toAnimalNode' pn' cn = outan' where
         -- Abs a -> TRS.transformV3 (TRS.invTRS p_abs_trs) a -- I have no idea if invTRS works or not
         Abs _ -> error "Absolute positions currently not supported"
 
-    -- TODO process non-existant orientation parameter in AnimalNode
+    -- FUTURE process non-existant orientation parameter in AnimalNode
     -- TODO instead of using defaultUp, this should use up vector from parent rotation
     -- convert absolute rotation to rotation relative to parent
     c_rot = QH.lookAtDefaultUp c_pos
@@ -90,28 +91,28 @@ _toAnimalNode' pn' cn = outan' where
             Rel a -> a * _thickness' pn'
             Abs a -> a,
         _isRoot' = _isRoot cn,
-        _children' = map (_toAnimalNode' outan') (_children cn)
+        _children' = map (applyFirstPass outan') (_children cn)
     }
 
-recomputeAbsTransAnimalNode' ::
+-- | this updates the '_trsAbs'' parameter of all children after parent node was updated
+updateAbsTrans ::
     AnimalNode' -- ^ parent node with changed transformation
     -> AnimalNode' -- ^ child node to recompute
     -> AnimalNode' -- ^ recomputed node
-recomputeAbsTransAnimalNode' p c = newc where
+updateAbsTrans p c = newc where
     newc' = set trsAbs' (_trsAbs' p >*> _trs' c) c
-    newc = set children' (map (recomputeAbsTransAnimalNode' newc) (_children' c)) newc'
+    newc = set children' (map (updateAbsTrans newc) (_children' c)) newc'
 
--- | convert AnimalNode to internal format first pass
--- this function assumes the AnimalNode is in desired base positions
--- then modifies it based on attachOrientation/Distance
--- very inefficient as it needs to recompute the absolute transform of all children everytime it updates a node
--- i.e. o(n^2)
-_toAnimalNode'' ::
+-- | applies 'AnimalPropertyMap'
+-- this function assumes the AnimalNode is in its starting positions
+-- then modifies it based on properties in the given 'AnimalPropertyMap'
+-- this is very inefficient as it needs to recompute the absolute transform of all children everytime it updates any node i.e. o(n^2)
+applyAnimalPropertyMap ::
     AnimalPropertyMap
     -> AnimalNode' -- ^ parent Node
     -> AnimalNode' -- ^ node to convert
     -> AnimalNode' -- ^ output
-_toAnimalNode'' props pn cn = outan where
+applyAnimalPropertyMap props pn cn = outan where
     p_abs_trs = _trsAbs' pn
     p_abs_rot = TRS._rot p_abs_trs
     p_abs_rot_inv = QH.inverse p_abs_rot
@@ -140,7 +141,7 @@ _toAnimalNode'' props pn cn = outan where
 
     -- TODO at least switch to parMap
     -- inefficient recursion in recursion to update abs trans
-    updatedChildren = map (recomputeAbsTransAnimalNode' outan) (_children' cn)
+    updatedChildren = map (updateAbsTrans outan) (_children' cn)
     --updatedChildren = (_children' cn)
 
     --Debug.trace (show (_name cn) ++ ": " ++ show (p_abs_trs >*> c_trs))
@@ -153,22 +154,23 @@ _toAnimalNode'' props pn cn = outan where
         -- new stuff
         _trs' = c_trs_new,
         _trsAbs' = p_abs_trs >*> c_trs_new,
-        _children' = map (_toAnimalNode'' props outan) updatedChildren
+        _children' = map (applyAnimalPropertyMap props outan) updatedChildren
     }
 
-
-
-reduceBoneTransAnimalNode' ::
+-- | 'AnimalNode' conversion FINAL PASS
+-- updates 'AnimalNode'' using the '_boneTrans'' inside it
+-- N.B. there's nothing inside of 'AnimalNode'' tracking whether 'BoneTrans'' has been applied or not
+-- do not call this function twice!
+reduceBoneTrans ::
     AnimalNode' -- ^ parent node, only necessary because we recompute absTrs for everything
     -> AnimalNode' -- ^ child node being reduced
     -> AnimalNode'
-reduceBoneTransAnimalNode' p c = c_new where
+reduceBoneTrans p c = c_new where
     -- apply BoneTrans to c
     p_abs_trs = _trsAbs' p
     bt = _boneTrans' c
     btf = applyBoneTrans bt
     c_rel_trs_new = btf $ _trs' c
-
 
     -- TODO copy toAnimalNode'' recursive call, it's cleaner IMO maybe not..
     -- just make it consistent...
@@ -178,14 +180,14 @@ reduceBoneTransAnimalNode' p c = c_new where
     -- first set abs and rel trs for current node
     c_new' = set trsAbs' (p_abs_trs >*> c_rel_trs_new) $ set trs' c_rel_trs_new c
     -- then recompute abstrs in children
-    c_new'' = set children' (map (recomputeAbsTransAnimalNode' c_new') (_children' c_new')) c_new'
+    c_new'' = set children' (map (updateAbsTrans c_new') (_children' c_new')) c_new'
     -- for performance, don't bother doing anything in the Same case
     c_new''' = case _boneTrans' c of
         Same -> c
         _             -> c_new''
 
     -- then recursively reduce all children
-    c_new = set children' (map (reduceBoneTransAnimalNode' c_new''') (_children' c_new''')) c_new'''
+    c_new = set children' (map (reduceBoneTrans c_new''') (_children' c_new''')) c_new'''
 
 
 -- | convert input AnimalNode to AnimalNode' internal format
@@ -199,22 +201,22 @@ toAnimalNode' ::
     -> AnimalNode' -- ^ output
 toAnimalNode' props n = nodes where
     -- first pass, convert AnimalNode to AnimalNode' without any BoneTrans
-    nodes' = _toAnimalNode' dummyAnimalNode' n
+    nodes' = applyFirstPass dummyAnimalNode' n
     -- second pass, update attachOrientation/Distance
-    nodes'' = _toAnimalNode'' props dummyAnimalNode' nodes'
+    nodes'' = applyAnimalPropertyMap props dummyAnimalNode' nodes'
     -- third pass, apply BoneTrans
-    nodes = reduceBoneTransAnimalNode' dummyAnimalNode' nodes''
+    nodes = reduceBoneTrans dummyAnimalNode' nodes''
 
 -- | convert AnimalNode' to SkellyNode
 -- specifically, adds skinning info from AnimalProperty to the AnimalNode
-toSkellygen' ::
+toSkellyNode ::
     AnimalPropertyMap
     -> AnimalNode' -- ^ current node
     -> SN.SkellyNode -- ^ skellygen node for current node
-toSkellygen' props cn =  outsn where
+toSkellyNode props cn =  outsn where
     prop = getAnimalProperty (_name' cn) props
     cn_rel_trs = _trs' cn
-    skellyChildren = map (toSkellygen' props) (_children' cn)
+    skellyChildren = map (toSkellyNode props) (_children' cn)
     outsn = SN.SkellyNode {
         SN._snDebugName = show (_name' cn),
         SN._snIsRoot = _isRoot' cn,
@@ -235,4 +237,4 @@ animalNodeToSkellyNodeWithProps ::
     AnimalPropertyMap
     -> AnimalNode -- ^ root AnimalNode'
     -> SN.SkellyNode -- ^ root SkellygenNode
-animalNodeToSkellyNodeWithProps props an = toSkellygen' props (toAnimalNode' props an)
+animalNodeToSkellyNodeWithProps props an = toSkellyNode props (toAnimalNode' props an)
