@@ -6,7 +6,9 @@ module AnimalClub.Skellygen.Math.Mesh (
     Mesh(..),
     emptyMesh,
     meshToObj,
-    transformMesh
+    transformMesh,
+    transformMeshM44
+
 ) where
 
 import qualified AnimalClub.Skellygen.Math.TRS as TRS
@@ -18,6 +20,8 @@ import           GHC.Generics                  (Generic)
 import           Data.Monoid                   (Monoid, mappend)
 import           Data.Semigroup                (Semigroup, (<>))
 
+import qualified AnimalClub.Skellygen.Math.TRS as TRS
+import qualified Linear.Matrix                 as M
 import           Linear.V3
 
 
@@ -58,3 +62,8 @@ meshToObj (Mesh m) = execWriter $ do
 transformMesh :: TRS.TRS Float -> Mesh -> Mesh
 transformMesh trs (Mesh (verts, inds)) =  Mesh (map mapfn verts, inds) where
     mapfn = TRS.transformV3 trs
+
+-- TODO rewrite this using M44
+transformMeshM44 :: M.M44 Float -> Mesh -> Mesh
+transformMeshM44 trs (Mesh (verts, inds)) =  Mesh (map mapfn verts, inds) where
+    mapfn = TRS.mul_M44_V3 trs

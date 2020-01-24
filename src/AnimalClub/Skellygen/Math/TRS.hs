@@ -27,6 +27,8 @@ module AnimalClub.Skellygen.Math.TRS
   , makeScale
 
   , toM44
+  , mul_M44_V3
+
   , transformV3
   , transformV4
 
@@ -109,12 +111,18 @@ fromTRS (TRS t r s) =
 toM44 :: (RealFloat a) => TRS a -> M.M44 a
 toM44 = fromTRS
 
+mul_M44_V3 :: (RealFloat a) => M.M44 a -> V3 a -> V3 a
+mul_M44_V3 m v =  normalizePoint $ m M.!* (point v)
+
+
+-- TODO rename to mul_TRS_V3
 transformV3 :: (RealFloat a) => TRS a -> V3 a -> V3 a
 --transformV3 (TRS pt pr ps) ct = pt ^+^ (pr `rotate` (ps M.!* ct))
 transformV3 trs (V3 x y z) = V3 x' y' z' where V4 x' y' z' _ = transformV4 trs (V4 x y z 1)
 
 transformV4 :: (RealFloat a) => TRS a -> V4 a -> V4 a
 transformV4 trs v = fromTRS trs M.!* v
+
 
 --_componentDiv :: (RealFloat a) => V3 a -> V3 a -> V3 a
 --_componentDiv (V3 ax ay az) (V3 bx by bz) = V3 (ax / bx) (ay / by) (az / bz)
@@ -170,5 +178,3 @@ invTRS (TRS t r s) = TRS t' r' s' where
   invs = M.inv33 s
   s' = matr M.!*! invs M.!*! matr'
   t' = invs M.!* (matr' M.!* (-t))
-
---invTRS (TRS t r s) = undefined

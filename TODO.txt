@@ -3,6 +3,7 @@
 -fix missing-home-module warning
 -fix or change the isRoot parameter in AnimalNode
 -math
+  -organize Skellygen/Math ugg
   -finish invTRS
   -finish lookAt function, and make its interface less weird
   -it seems like the S component could have all sorts of stuff going on in it (not just shears)

@@ -13,6 +13,7 @@ module AnimalClub.Skellygen.Skellygen
 import           Control.DeepSeq
 import           GHC.Generics                           (Generic)
 import           Lens.Micro.Platform
+import qualified Linear.Matrix                          as M
 import           Linear.Metric
 import qualified Linear.Quaternion                      as Q
 import           Linear.V3
@@ -32,7 +33,7 @@ data SkellyNode = SkellyNode
     _snDebugName   :: String
     , _snIsRoot    :: Bool
     , _snChildren  :: [SkellyNode]
-    , _snTrs       :: TRS.TRS Float -- ^ in parent space
+    , _snTrs       :: TRS.TRS Float -- ^ relative to parent
     , _snThickness :: Float -- ^ base physical size of joint.
     } deriving (Show, Generic, NFData)
 
@@ -88,23 +89,23 @@ generateSingleMeshLocal pos ct pt =
 
 _generateMesh ::
     -- TODO change to M44
-    TRS.TRS Float -- ^ parent ABS transform
+    M.M44 Float -- ^ parent ABS transform
     -> Float -- ^ parent thickness
     -> SkellyNode -- ^ node to generate
     -> Mesh -- ^ output mesh
-_generateMesh p_snTrs p_thick skn = selfMesh `mappend` mconcat cmeshes
+_generateMesh p_snM44 p_thick skn = selfMesh `mappend` mconcat cmeshes
   where
     thick = _snThickness skn
     reltrs = _snTrs skn
     --selfMesh = Debug.trace ("skn: " ++ (show (_snDebugName skn)) ++ " p: " ++ show (TRS._trans p_snTrs) ++ " c: " ++ show (TRS._trans reltrs)) $
     --selfMesh = Debug.trace ("sknabs: " ++ show abstrs ++ " p: " ++ show (TRS._rot p_snTrs) ++ " c: " ++ show (TRS._rot reltrs)) $
     selfMesh =
-        if _snIsRoot skn then emptyMesh else transformMesh p_snTrs $ generateSingleMeshLocal reltrs thick p_thick
+        if _snIsRoot skn then emptyMesh else transformMeshM44 p_snM44 $ generateSingleMeshLocal reltrs thick p_thick
     -- TODO change this to M44 multiplication
-    abstrs = p_snTrs >*> reltrs
-    cmeshes = map (_generateMesh abstrs thick) (_snChildren skn)
+    absM44 = p_snM44 M.!*! TRS.toM44 reltrs
+    cmeshes = map (_generateMesh absM44 thick) (_snChildren skn)
 
 generateMesh ::
        SkellyNode -- ^ input top level parent node
     -> Mesh -- ^ output mesh
-generateMesh skn = _generateMesh TRS.identity 1.0 skn
+generateMesh skn = _generateMesh M.identity 1.0 skn

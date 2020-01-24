@@ -13,19 +13,21 @@ module AnimalClub.Skellygen.Math.Quaternion
     ( identity
     , inverse
     , toM33
+    , toM44
     , fromTo
     , fromEulerXYZ
         --lookAt, -- BUGS
     , lookAtDefaultUp -- BUGS
     ) where
 
+import           Lens.Micro.Platform (set)
 import           Linear.Conjugate
 import           Linear.Epsilon
+import qualified Linear.Matrix       as M
 import           Linear.Metric
 import           Linear.Quaternion
 import           Linear.V3
---import Lens.Micro.Platform
-import qualified Linear.Matrix     as M
+import           Linear.V4
 
 -- |
 inverse :: (Conjugate a, RealFloat a) => Quaternion a -> Quaternion a
@@ -46,6 +48,10 @@ toM33 q = V3
   (q `rotate` V3 1 0 0)
   (q `rotate` V3 0 1 0)
   (q `rotate` V3 0 0 1)
+
+
+toM44 :: (RealFloat a, Conjugate a) => Quaternion a -> M.M44 a
+toM44 q = set (_w . _w) 1 (M.m33_to_m44 $ toM33 q)
 
 _orthogonal :: (Num a, Ord a) => V3 a -> V3 a
 _orthogonal v@(V3 x y z) = cross v other
