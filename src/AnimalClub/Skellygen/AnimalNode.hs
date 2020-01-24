@@ -153,10 +153,15 @@ applyBoneTrans (ArbTrans f) = f
 -- TODO consider getting rid of AbsOrRel, too complicated..
 -- | these define static properties that make up the base SkellyNode
 -- user friendly version that is limited in what can be expressed
--- basically, as a bunch of connected points in space
+--
+-- the representation is as a bunch of connected points in space
 -- orientations are automatically determined based on parent position (see comments in AnimalScript)
 -- positions and thickness can be specified as absolute or relative for convenience I guess
 -- (albeit this makes things more complicated so consider switching to everything in Abs coordinates
+--
+-- finally, the contained 'BoneTrans' applies a transformation after all other transformations are done
+-- this allows us to create animals with symmetrical parts and only defining the transformation on one part
+--
 data AnimalNode = AnimalNode {
     -- TODO separate out BoneId and BoneTrans
     _name      :: BoneId, -- ^ name and transformation if relevant

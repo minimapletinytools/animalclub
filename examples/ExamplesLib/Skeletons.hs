@@ -88,7 +88,6 @@ flipWorm =
             [mans "3" (relV3 1 0 0) (Rel 1.1)
                 [mans "3" (relV3 0 0 1) (Rel 1.1) []]]]
 
--- TODO just flip `worm` and delete `flipWorm`
 -- | worm made from flipping a flippable worm
 worm2 = asRoot $ mans "root" (relV3 0 0 0) (Abs 0.2)
     [flipWorm

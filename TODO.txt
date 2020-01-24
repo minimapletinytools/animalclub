@@ -1,14 +1,7 @@
 ::TODO::
+-do constraint parameterization of Float (so we can switch to Double)
 -fix missing-home-module warning
--make TRS Float a type synonym
--refactor
-  -rename AnimalNode' to AnimalNodeInternal
-  DONE-expand skellyfunc to host all possibilities
-  DONE-make AnimalNode/BoneName/BoneTrans stuff have better indexing
-    -`Bone T.Text [Tags]`
-    -add a comment explaining how reflecting bones in AnimalNode works
-      -the current implementation is weird, come up with something better
-  -add clear documentation to how skellygen skeleton hierarchy stuff works
+-fix or change the isRoot parameter in AnimalNode
 -math
   -finish invTRS
   -finish lookAt function, and make its interface less weird
@@ -19,6 +12,15 @@
   -try breeding to maximize volume and see what happens
   -try breeding to maximize bending joints and see what happens
 -finish exporting genetics stuff to C++
+
+DONE-refactor
+  IGNORE-rename AnimalNode' to AnimalNodeInternal
+  DONE-expand skellyfunc to host all possibilities
+  DONE-make AnimalNode/BoneName/BoneTrans stuff have better indexing
+    -`Bone T.Text [Tags]`
+    -add a comment explaining how reflecting bones in AnimalNode works
+      -the current implementation is weird, come up with something better
+DONE-add clear documentation to how skellygen/AnimalNode skeleton hierarchy stuff works
 IGNORE-go through some modules and rename things so that they don't have their modules as prefix
 DONE-make separate testing library for matrix.linear
 DONE-wtf are you using LHS coordinates for? Switch to RHS if possible or make it agnostic
