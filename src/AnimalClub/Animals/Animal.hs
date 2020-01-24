@@ -5,16 +5,6 @@ Copyright   : (c) Peter Lu, 2018
 License     : GPL-3
 Maintainer  : chippermonky@email.com
 Stability   : experimental
-
-
-basic program flow for creating animals:
-
-1. create a tree of 'AnimalNode's using 'BoneId's to define initial skeleton for your animal
-  - use 'BoneTrans' to create symmetry in your definition
-2. extract list of 'BoneId's from AnimalNode using 'makeBoneIdList'
-3. generate a list of 'SkellyFunc's referencing bones in step 2.
-4. convert lists from step 2. and 3. into 'AnimalPropertyMap' using 'generateAnimalProperties'
-5. apply properties from step 4. to initial skeleton in step 1. using 'animalNodeToSkellyNodeWithProps'
 -}
 
 
@@ -78,9 +68,8 @@ manbt ::
 manbt n f bt p t c = AnimalNode (BoneWT (BoneId n f) bt) p t False c
 
 
-
--- TODO fix the SkellyFunc part, all internal stuff should be type safe :O
--- TODO is it possible to parmeterize AnimalExp to allow users to pass in their own data types
+-- TODO add something like ExpSkellyFuncPrioritized
+-- FUTURE is it possible to parmeterize AnimalExp to allow users to pass in their own data types
 -- e.g. 'ExpUser T.Text a' or something like that... (ideally a list of types...)
 -- | various output expression of an animal genotype
 data AnimalExp =
@@ -98,10 +87,11 @@ parseSkellyFuncs = catMaybes . fmap (\case
 tellSkellyFunc :: (Monad m) => SkellyFunc -> GenotypeT g [AnimalExp] m ()
 tellSkellyFunc sf = tell [ExpSkellyFunc sf]
 
+-- | generates 'AnimalPropertyMap' from list of 'BoneId's and 'AnimalExp's
 generateAnimalProperties ::
     [BoneId] -- ^ list of all bones
     -> [AnimalExp] -- ^ list of properties
-    -> AnimalPropertyMap -- ^ output accumulated map of properties. EnumBone' property will override AllBone' property
+    -> AnimalPropertyMap -- ^ output accumulated map of properties.
 generateAnimalProperties bids = generateAnimalProperties_ bids . map (\sf -> PrioritizedSkellyFunc (0,sf)) . parseSkellyFuncs
 
 

@@ -6,7 +6,7 @@ License     : GPL-3
 Maintainer  : chippermonky@email.com
 Stability   : experimental
 
-Includes all modules exposed by genetics
+TODO add comment explaining how genetics works
 -}
 
 module AnimalClub.Genetics (

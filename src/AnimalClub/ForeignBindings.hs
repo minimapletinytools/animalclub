@@ -6,7 +6,8 @@ License     : GPL-3
 Maintainer  : chippermonky@email.com
 Stability   : experimental
 
-TODO
+This module exports a bunch of methods in AnimalClub via FFI
+
 -}
 
 {-# LANGUAGE CPP                      #-}
@@ -25,8 +26,6 @@ import           Foreign.ForeignPtr
 import           System.Random
 
 
--- TODO move this into Genetics
--- TODO change this back to CChar
 breed_hs ::
   CInt -- ^ random seed
   -> Ptr CChar -- ^ DNA bytes 1

@@ -36,35 +36,27 @@ import           System.Random
 --import Debug.Trace (trace)
 
 
+-- TODO figure out what this stuff is and finish it
 data DepFunc = Linear Float | Mutate Float
-
 data ATree = ATree ((Either T.Text SkellyFunc, AutoGeneMethod), [(DepFunc, ATree)])
 
 
-
-
-
-
-
-
-
-
+-- | defines parameters for automatically creating genes
 data AutoGeneMethod =
     Normal (Float, Float) Int -- ^ normal distribution: (min, max) num_outputs
     deriving (Generic, NFData)
-
 
 -- | returns number of floats this genotype creates
 autoGeneCount :: AutoGeneMethod -> Int
 autoGeneCount (Normal _ x) = x
 
 -- | returns relative amount of DNA this genotype should take up
--- note, this is NOT the same as how many float values need to be produced
+-- note, this is NOT the same as how many float values need to be produced, but it was convenient
 autoGeneSize :: AutoGeneMethod -> Int
 autoGeneSize (Normal _ x) = x
 
 -- FUTURE make it so that number of params are enforced at type level in (SkellyFunc, AutoGeneMethod)
--- | automatically create genome from given properties
+-- | automatically create genome from given lists of properties
 -- this version does no overlap. All properties are independent
 makeGenomeFromPropertiesSimple ::
     Int -- ^ DNA length (vector length / 4)
