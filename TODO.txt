@@ -1,10 +1,6 @@
 ::TODO::
 -fix missing-home-module warning
--go through some modules and rename things so that they don't have their modules as prefix
-DONE-make separate testing library for matrix.linear
 -make TRS Float a type synonym
--wtf are you using LHS coordinates for? Switch to RHS if possible or make it agnostic
--add comment explaining default animal orientation assumptions
 -refactor
   -rename AnimalNode' to AnimalNodeInternal
   DONE-expand skellyfunc to host all possibilities
@@ -23,4 +19,8 @@ DONE-make separate testing library for matrix.linear
   -try breeding to maximize volume and see what happens
   -try breeding to maximize bending joints and see what happens
 -finish exporting genetics stuff to C++
+IGNORE-go through some modules and rename things so that they don't have their modules as prefix
+DONE-make separate testing library for matrix.linear
+DONE-wtf are you using LHS coordinates for? Switch to RHS if possible or make it agnostic
+IGNORE-add comment explaining default animal orientation assumptions
 DONE-review skellygen and see if you want to redesign cuz it's weird af
