@@ -122,17 +122,18 @@ transformV4 trs v = fromTRS trs M.!* v
 -- TODO enable latex formatter 😱
 -- proof this is correct:
 -- assuming T R S is closed under multiplication (prove by representing as 4x4 homogenous matrix)
--- w.t.s $$T * R * S = (T1 * R1 * S1) * (T2 * R2 * S2)$$
--- since $T * v = TRS * v$ where $$v$$ is a vector
--- we have $$T = T1 * (R1 * S1 * T2)$$
--- by examining matrix decomposition of a homogenous matrix where the first 3 entires of the bottom row are 0
+-- w.t.s $$T*R*S = (T1*R1*S1) * (T2*R2*S2)$$
+-- since $T*v = TRS*v$ where $$v=[0,0,0,1]$$ is a point at the origin (in R3)
+-- and this entirely determines $T$
+-- we have $$T = T1 * (R1*S1*T2)$$
+-- by examining matrix decomposition of a homogenous M44 (i.e. the first 3 entires of the bottom row are 0)
 -- we get that in general the rotation and scale components as represented as M33 are not affected by the translation component
--- in particular $$m33(RST) = m33(TRS)$$ where $$m33$$ is the upper left 3x3 submatrix
--- thus we have $$RS = R1*S1*R2*S2$$
--- taking $$R = R1*R2$$ (1)
+-- in particular $$m33(R*S*T) = m33(T*R*S)$$ where $$m33$$ is the upper left 3x3 submatrix
+-- thus we have $$R*S = R1*S1*R2*S2$$
+-- by taking $$R = R1*R2$$
 -- we multiply both sides by $$invR = invR2*invR1$$ to get
 -- $$S = invR2*S1*R2*S2$$
--- it remains to show that $$S$$ has no rotation components in it.
+-- our proof is complete once we show that $$S$$ has no rotation components in it.
 -- questions:
 --  (1) can we further decompose $$S = Sh * S'$$ where $$Sh$$ is a shear matrix and $$S'$$ is a diagonal scale matirx?
 instance (Conjugate a, RealFloat a) => Hierarchical (TRS a) where
@@ -142,8 +143,16 @@ instance (Conjugate a, RealFloat a) => Hierarchical (TRS a) where
       (pr * cr)
       (fromRotation (QH.inverse cr) M.!*! ps M.!*! fromRotation cr M.!*! cs)
 
--- TODO this is probably wrong
+-- TODO not sure if math is correct
 -- | inverts TRS (WIP)
+-- $$ (T*R*S)^{-1} = S^{-1}*R^{-1}*T^{-1}$$
+-- given that $$ m33(S^{-1}*R^{-1}*T^{-1}) = m33(T^{-1}*S^{-1}*R^{-1}) $$
+-- $$ R'*S' = S^{-1}*R^{-1} $$
+-- take $$ R' = R^{-1} $$
+-- then $$ S' = R*S^{-1}*R^{-1} $$
+-- must show $$S'$$ has no rotation component in it
+-- $$ T'R'S' = T'R^{-1}*R*S^{-1}*R^{-1} = T'S^{-1}*R^{-1} = S^{-1}*R^{-1}*T^{-1} $$
+-- thus $$ T' =  S^{-1}*R^{-1}*T^{-1}*R*S $$
 invTRS :: TRS a -> TRS a
 invTRS _ = undefined
 --invTRS (TRS t r s) = undefined

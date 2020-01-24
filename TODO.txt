@@ -12,7 +12,10 @@
   -try breeding to maximize volume and see what happens
   -try breeding to maximize bending joints and see what happens
 -finish exporting genetics stuff to C++
-
+-refactor
+  -consider deleting Hierarchical
+  -move goat.hs:goatHelper into Builder.hs
+  -consider moving parts of Builder.hs into Genetics
 DONE-refactor
   IGNORE-rename AnimalNode' to AnimalNodeInternal
   DONE-expand skellyfunc to host all possibilities

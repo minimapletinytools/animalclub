@@ -55,6 +55,7 @@ _orthogonal v@(V3 x y z) = cross v other
 
 -- | assumes neutral look is toward (V3 1 0 0) with up towards (V3 0 1 0) as neutral position
 -- TODO finish
+-- TODO wtf is tis interface...
 lookAt ::
        (RealFloat a, Epsilon a)
     => V3 a -- ^ up vector
@@ -69,6 +70,7 @@ lookAt _ _ d = q2 * q
     q2 = identity -- TODO finish this function is a pain...
     q = fromTo (V3 1 0 0) d
 
+-- TODO rename this
 lookAtDefaultUp ::
        (RealFloat a, Epsilon a)
     => V3 a -- ^ direction to look at
