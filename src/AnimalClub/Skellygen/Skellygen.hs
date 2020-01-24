@@ -11,20 +11,19 @@ module AnimalClub.Skellygen.Skellygen
     ) where
 
 import           Control.DeepSeq
-import           GHC.Generics                           (Generic)
+import           GHC.Generics                         (Generic)
 import           Lens.Micro.Platform
-import qualified Linear.Matrix                          as M
+import qualified Linear.Matrix                        as M
 import           Linear.Metric
-import qualified Linear.Quaternion                      as Q
+import qualified Linear.Quaternion                    as Q
 import           Linear.V3
 import           Linear.Vector
 
-import           AnimalClub.Skellygen.Math.Hierarchical
 import           AnimalClub.Skellygen.Math.Mesh
-import qualified AnimalClub.Skellygen.Math.Quaternion   as QH
-import qualified AnimalClub.Skellygen.Math.TRS          as TRS
+import qualified AnimalClub.Skellygen.Math.Quaternion as Q
+import qualified AnimalClub.Skellygen.Math.TRS        as TRS
 
-import qualified Debug.Trace                            as Debug
+import qualified Debug.Trace                          as Debug
 
 -- |
 -- prefixed names due to unfortunate naming conflict with AnimalNode
@@ -38,7 +37,7 @@ data SkellyNode = SkellyNode
     } deriving (Show, Generic, NFData)
 
 --dummyParent :: SkellyNode
---dummyParent = SkellyNode True [] TRS.identity QH.identity 0.0 1.0
+--dummyParent = SkellyNode True [] TRS.identity Q.identity 0.0 1.0
 makeLenses ''SkellyNode
 
 data BoxSkinParameters = BoxSkinParameters
@@ -70,8 +69,8 @@ generateSingleMeshLocal pos ct pt =
     start = start' --  - ex *^ normalized
     end = end' -- + ey *^ normalized
     -- TODO normalAxis should use the up direction of pos
-    --normalAxis = Debug.trace (show $ QH.fromTo (V3 0 1 0) normalized) $ Q.rotate (QH.fromTo (V3 0 1 0) normalized)
-    normalAxis = Q.rotate (QH.fromTo (V3 0 1 0) normalized)
+    --normalAxis = Debug.trace (show $ Q.fromTo (V3 0 1 0) normalized) $ Q.rotate (Q.fromTo (V3 0 1 0) normalized)
+    normalAxis = Q.rotate (Q.fromTo (V3 0 1 0) normalized)
     startPoints = map mapfn [i * pi / 2.0 | i <- [0 .. 3]]
       where
         mapfn a =

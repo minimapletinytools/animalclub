@@ -19,7 +19,6 @@ module ExamplesLib.Skeletons (
 
 import           AnimalClub.Animals
 import           AnimalClub.Skellygen
-import           AnimalClub.Skellygen.Math.Hierarchical
 import           AnimalClub.Skellygen.Math.Mesh
 import           Linear.V3
 

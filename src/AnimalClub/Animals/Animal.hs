@@ -21,14 +21,13 @@ module AnimalClub.Animals.Animal (
 
 import           AnimalClub.Genetics
 import           AnimalClub.Skellygen
-import           AnimalClub.Skellygen.Math.Hierarchical
-import           Linear.V3                              (V3)
+import           Linear.V3            (V3)
 
-import qualified Data.ByteString.Lazy                   as B
-import           Data.Maybe                             (catMaybes)
-import qualified Data.Text                              as T
+import qualified Data.ByteString.Lazy as B
+import           Data.Maybe           (catMaybes)
+import qualified Data.Text            as T
 
-import           Control.Monad.Writer                   (tell)
+import           Control.Monad.Writer (tell)
 
 --import Control.Exception (assert)
 --import Debug.Trace (trace)

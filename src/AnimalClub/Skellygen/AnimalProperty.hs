@@ -17,29 +17,28 @@ module AnimalClub.Skellygen.AnimalProperty (
     orientation, distance, skinParams,
     AnimalPropertyMap,
     makeStartingAnimalPropertyMap,
-    
+
     getAnimalProperty,
     generateAnimalProperties_
 ) where
 
 import           Control.DeepSeq
-import           Control.Exception                      (assert)
-import qualified Data.List                              as L
-import qualified Data.Map                               as M
-import           Data.Maybe                             (fromMaybe)
-import qualified Data.Text                              as T
-import           GHC.Generics                           (Generic)
+import           Control.Exception                    (assert)
+import qualified Data.List                            as L
+import qualified Data.Map                             as M
+import           Data.Maybe                           (fromMaybe)
+import qualified Data.Text                            as T
+import           GHC.Generics                         (Generic)
 import           Lens.Micro.Platform
 
 import           Linear.V3
 
 import           AnimalClub.Skellygen.AnimalNode
-import           AnimalClub.Skellygen.Math.Hierarchical
-import qualified AnimalClub.Skellygen.Math.Quaternion   as QH
-import qualified AnimalClub.Skellygen.Math.TRS          as TRS
+import qualified AnimalClub.Skellygen.Math.Quaternion as Q
+import qualified AnimalClub.Skellygen.Math.TRS        as TRS
 
 
-import qualified Debug.Trace                            as Debug
+import qualified Debug.Trace                          as Debug
 --import Prelude hiding (read)
 --import qualified Prelude (read)
 --read x = Prelude.read $ Debug.trace x x
@@ -66,7 +65,7 @@ defLength :: BoneMethod
 defLength = Length 1
 
 defOrientation :: BoneMethod
-defOrientation = Orientation QH.identity
+defOrientation = Orientation Q.identity
 
 defColor :: BoneMethod
 defColor = Color ()
@@ -90,7 +89,7 @@ newtype PrioritizedSkellyFunc = PrioritizedSkellyFunc{ unPrioritizedSkellyFunc :
 addValuesToBoneMethod :: BoneMethod -> [Float] -> BoneMethod
 addValuesToBoneMethod m vals = case m of
   Orientation x ->
-    Orientation $ x `inherit` QH.fromEulerXYZ (V3 (vals !! 0) (vals !! 1) (vals !! 2))
+    Orientation $ x * Q.fromEulerXYZ (V3 (vals !! 0) (vals !! 1) (vals !! 2))
   Length x ->
     Length $ x * (vals !! 0)
   Thickness x ->
@@ -120,7 +119,7 @@ makeLenses ''AnimalProperty
 -- | the identity AnimalProperty
 defaultAnimalProperty :: AnimalProperty
 defaultAnimalProperty = AnimalProperty {
-    _orientation = QH.identity,
+    _orientation = Q.identity,
     _distance = 1,
     _skinParams = 1
 }
@@ -154,11 +153,11 @@ generateAnimalPropertiesInternal_ props psfs = foldl addProp props sorted_psfs w
     -- apply the current SkellyFunc to all matched bones
     mapfn _ oldProp = case method of
       Orientation x ->
-          over orientation (inherit x) oldProp
+          over orientation (x*) oldProp
       Length x ->
-          over distance (*x) oldProp
+          over distance (x*) oldProp
       Thickness x ->
-          over skinParams (*x) oldProp
+          over skinParams (x*) oldProp
       -- TODO
       Color _ -> oldProp
     changedPropMap = M.mapWithKey mapfn matched

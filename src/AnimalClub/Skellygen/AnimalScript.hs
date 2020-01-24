@@ -10,25 +10,24 @@ module AnimalClub.Skellygen.AnimalScript (
     animalNodeToSkellyNodeWithProps
 ) where
 
-import qualified Data.Map                               as Map
-import           Lens.Micro.Platform                    (makeLenses, set)
+import qualified Data.Map                             as Map
+import           Lens.Micro.Platform                  (makeLenses, set)
 --import qualified Data.Text as T
 
-import           Control.Exception.Base                 (assert)
+import           Control.Exception.Base               (assert)
 
-import qualified Debug.Trace                            as Debug
+import qualified Debug.Trace                          as Debug
 
 import           AnimalClub.Skellygen.AnimalNode
 import           AnimalClub.Skellygen.AnimalProperty
-import           AnimalClub.Skellygen.Math.Hierarchical
-import qualified AnimalClub.Skellygen.Math.Quaternion   as Q
-import qualified AnimalClub.Skellygen.Math.TRS          as TRS
-import qualified AnimalClub.Skellygen.Skellygen         as SN
+import qualified AnimalClub.Skellygen.Math.Quaternion as Q
+import qualified AnimalClub.Skellygen.Math.TRS        as TRS
+import qualified AnimalClub.Skellygen.Skellygen       as SN
 
 
-import qualified Linear.Matrix                          as M
+import qualified Linear.Matrix                        as M
 import           Linear.Metric
-import           Linear.Quaternion                      as Q
+import           Linear.Quaternion                    as Q
 import           Linear.V3
 import           Linear.Vector
 
@@ -137,10 +136,7 @@ applyAnimalPropertyMap props pn cn = outan where
     --orient = Q.fromEulerXYZ (V3 0.0 (pi/6) 0.0)
     orient = _orientation prop
 
-    -- TODO originally we only did rotation component, not sure what this new version looks like
-    --c_rel_pos'' = TRS.mul_M44_V3 (p_abs_m44 M.!*! Q.toM44 orient M.!*! p_abs_m44_inv) c_rel_pos'
     c_rel_pos'' = Q.rotate orient c_rel_pos'
-    --c_rel_pos'' =  c_rel_pos'
 
     -- update with new distance and rotation
     c_rel_trs_new = set TRS.rot (Q.lookAtDefaultUp c_rel_pos'') (set TRS.trans c_rel_pos'' c_rel_trs)

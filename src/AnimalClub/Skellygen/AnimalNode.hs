@@ -19,6 +19,8 @@ Stability   : experimental
 -- AnimalNode.hs
 
 module AnimalClub.Skellygen.AnimalNode (
+    AbsOrRel(..),
+
     BoneFlag(..),
     BoneId(..),
 
@@ -41,17 +43,24 @@ module AnimalClub.Skellygen.AnimalNode (
 ) where
 
 import           Control.DeepSeq
-import qualified Data.List                              as L
-import qualified Data.Text                              as T
-import           GHC.Generics                           (Generic)
-import           Lens.Micro.Platform                    (makeLenses, set)
+import qualified Data.List                     as L
+import qualified Data.Text                     as T
+import           GHC.Generics                  (Generic)
+import           Lens.Micro.Platform           (makeLenses, set)
 
 --import qualified Debug.Trace as Debug
 
-import           AnimalClub.Skellygen.Math.Hierarchical
-import qualified AnimalClub.Skellygen.Math.TRS          as TRS
+import qualified AnimalClub.Skellygen.Math.TRS as TRS
 
 import           Linear.V3
+
+
+-- | indicates whether to treat the contained object as relative or absolute to its parent
+data AbsOrRel a = Abs a | Rel a deriving (Functor, Show)
+
+unAbsOrRel :: AbsOrRel a -> a
+unAbsOrRel (Abs a) = a
+unAbsOrRel (Rel a) = a
 
 -- | flag bones to distinguish them
 -- some built-in flags are provided for common use cases
@@ -129,16 +138,12 @@ composeBoneTrans ReflY ReflY = Same
 composeBoneTrans ReflZ ReflZ = Same
 composeBoneTrans x y         = ArbTrans $ applyBoneTrans x . applyBoneTrans y
 
--- BoneTrans are not really 'Hierarchical', this is mainly for syntactic convenience
-instance Hierarchical BoneTrans where
-    inherit = composeBoneTrans
-
 -- | applies BoneTrans to a TRS
 applyBoneTrans :: BoneTrans -> TRS.TRS Float -> TRS.TRS Float
 applyBoneTrans Same = id
-applyBoneTrans ReflX = inherit (set TRS.scale (TRS.makeScale $ V3 (-1) 1 1) TRS.identity)
-applyBoneTrans ReflY = inherit (set TRS.scale (TRS.makeScale $ V3 1 (-1) 1) TRS.identity)
-applyBoneTrans ReflZ = inherit (set TRS.scale (TRS.makeScale $ V3 1 1 (-1)) TRS.identity)
+applyBoneTrans ReflX = TRS.potatoMul (set TRS.scale (TRS.makeScale $ V3 (-1) 1 1) TRS.identity)
+applyBoneTrans ReflY = TRS.potatoMul (set TRS.scale (TRS.makeScale $ V3 1 (-1) 1) TRS.identity)
+applyBoneTrans ReflZ = TRS.potatoMul (set TRS.scale (TRS.makeScale $ V3 1 1 (-1)) TRS.identity)
 applyBoneTrans (ArbTrans f) = f
 
 

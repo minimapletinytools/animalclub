@@ -4,12 +4,15 @@
 -fix or change the isRoot parameter in AnimalNode
 -math
   -organize Skellygen/Math ugg
-  -finish invTRS
   -finish lookAt function, and make its interface less weird
-  -it seems like the S component could have all sorts of stuff going on in it (not just shears)
+  IGNORE/FAIL-finish invTRS
+  DONE-it seems like the S component could have all sorts of stuff going on in it (not just shears)
     -confirm
     -update comments
     -see if this breaks our inherit and invTRS functions
+-BoneTrans refactor
+  -TRS should always have a pure scale component (V3 instead of M33)
+  -applyBoneTrans modifies TRS directly
 -basic test cases
 -finish goat breeding app MVP
   -just randomly breed and see what happens?
@@ -18,7 +21,7 @@
   -try breeding to maximize bending joints and see what happens
 -finish exporting genetics stuff to C++
 -refactor
-  -consider deleting Hierarchical
+  DONE-consider deleting Hierarchical
   -move goat.hs:goatHelper into Builder.hs
   -consider moving parts of Builder.hs into Genetics
 DONE-refactor

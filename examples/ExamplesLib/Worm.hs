@@ -22,20 +22,19 @@ module ExamplesLib.Worm (
 import           AnimalClub.Animals
 import           AnimalClub.Genetics
 import           AnimalClub.Skellygen
-import           AnimalClub.Skellygen.Math.Hierarchical
-import qualified AnimalClub.Skellygen.Math.Quaternion   as QH
+import qualified AnimalClub.Skellygen.Math.Quaternion as Q
 
-import qualified Linear.Metric                          as Metric
+import qualified Linear.Metric                        as Metric
 import           Linear.V3
 
-import           Control.Monad                          (forM_)
-import           Data.List                              (mapAccumL, sortBy)
-import qualified Data.Map                               as Map
-import           Data.Ord                               (comparing)
-import qualified Data.Text                              as T
+import           Control.Monad                        (forM_)
+import           Data.List                            (mapAccumL, sortBy)
+import qualified Data.Map                             as Map
+import           Data.Ord                             (comparing)
+import qualified Data.Text                            as T
 import           System.Random
 
-import qualified Debug.Trace                            as Debug
+import qualified Debug.Trace                          as Debug
 
 showT :: (Show a) => a -> T.Text
 showT = T.pack . show
@@ -77,8 +76,8 @@ testWorm ::
 testWorm segs props = score where
     --desiredThick i =  (fromIntegral i / fromIntegral segs) * 3 + 0.5
     desiredThick i =  (cos ((fromIntegral i / fromIntegral segs) * pi * 2 * 2)*3 + 1.2)
-    --desiredOrient _ = QH.fromEulerXYZ (V3 (pi/20) (pi/3) 0.0)
-    desiredOrient _ = QH.fromEulerXYZ (V3 0 (pi/6) 0)
+    --desiredOrient _ = Q.fromEulerXYZ (V3 (pi/20) (pi/3) 0.0)
+    desiredOrient _ = Q.fromEulerXYZ (V3 0 (pi/6) 0)
     name i = BoneId (showT i) []
     -- find the segment in the worm's AnimalPropertyMap
     prop i = Map.findWithDefault (error $ "could not find " ++ show (name i)) (name i) props
