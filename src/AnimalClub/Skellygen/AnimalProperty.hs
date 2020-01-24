@@ -7,13 +7,17 @@
 module AnimalClub.Skellygen.AnimalProperty (
     BoneMethod(..),
     defThickness, defLength, defOrientation, defColor,
+
     SkellyFunc(..),
     PrioritizedSkellyFunc(..),
+
     addValuesToBoneMethod, addValuesToSkellyFunc,
+
     AnimalProperty(..),
+    orientation, distance, skinParams,
     AnimalPropertyMap,
     makeStartingAnimalPropertyMap,
-    orientation, distance, skinParams,
+    
     getAnimalProperty,
     generateAnimalProperties_
 ) where

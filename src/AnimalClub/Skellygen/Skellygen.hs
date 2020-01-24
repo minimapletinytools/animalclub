@@ -25,7 +25,7 @@ import qualified AnimalClub.Skellygen.Math.TRS as TRS
 import qualified Debug.Trace as Debug
 
 -- |
--- prefixed names due to unfortunate naminig conflict with AnimalNode
+-- prefixed names due to unfortunate naming conflict with AnimalNode
 data SkellyNode = SkellyNode
     {
     _snDebugName :: String
