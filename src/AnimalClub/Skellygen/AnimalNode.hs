@@ -6,16 +6,8 @@ License     : GPL-3
 Maintainer  : chippermonky@email.com
 Stability   : experimental
 
-basic program flow for creating animals:
-
-1. create a list of 'BoneId's
-2. create a tree of 'AnimalNode's using 'BoneId's to define initial skeleton for your animal
-  - use 'BoneTrans' to create symmetry in your definition
-3. create a map of 'BoneMatcher's to 'AnimalProperty's
-4. pass into skellygen to generate skeleton
-
-
 -}
+
 --{-# OPTIONS_GHC -fno-warn-unused-top-binds #-}
 --{-# OPTIONS_GHC -fno-warn-unused-imports #-}
 
@@ -41,15 +33,12 @@ module AnimalClub.Skellygen.AnimalNode (
     FlagTrans,
     defTransFlag,
 
-
-
     BoneTrans(..),
     composeBoneTrans,
     applyBoneTrans,
 
     AnimalNode(..),
     makeBoneIdList,
-
     flipAnimalNode,
 ) where
 
@@ -65,12 +54,14 @@ import           AnimalClub.Skellygen.Math.Hierarchical
 import qualified AnimalClub.Skellygen.Math.TRS          as TRS
 
 import           Linear.V3
---import Linear.Quaternion as Q
 
 -- | flag bones to distinguish them
 -- some built-in flags are provided for common use cases
-data BoneFlag = BF_Front | BF_Back | BF_Left | BF_Right | BF_Top | BF_Bottom | BF_CustomS T.Text | BF_CustomI Int deriving (Eq, Ord, Show)
-
+data BoneFlag =
+  BF_Front | BF_Back | BF_Left | BF_Right | BF_Top | BF_Bottom
+  | BF_CustomS T.Text | BF_CustomI Int
+  deriving
+    (Eq, Ord, Show)
 
 -- | BoneId is an identifier for a given bone
 -- the name is a basic non-unique identifier
@@ -83,8 +74,6 @@ data BoneWT = BoneWT BoneId BoneTrans deriving (Show)
 
 toBoneId :: BoneWT -> BoneId
 toBoneId (BoneWT bid _) = bid
-
-
 
 -- | a function for matching BoneNames
 type BoneMatcher = BoneId -> Bool
@@ -106,11 +95,10 @@ flagMatcher bfs (BoneId _ bfs') = length (L.intersect bfs bfs') == length bfs
 nameFlagMatcher :: T.Text -> [BoneFlag] -> BoneMatcher
 nameFlagMatcher name bfs bid = nameMatcher name bid && flagMatcher bfs bid
 
--- TODO consider just changing this to `[BoneFlags]->[BoneFlags]` to avoid the problem in the comment of defTransFlag
 type FlagTrans = [BoneFlag] -> [BoneFlag]
 
--- | this flag transformer automatically translate built-in BoneFlags in a sensible way
--- does not work with ArbTrans, don't do it!
+-- | this flag transformer automatically translate built-in 'BoneFlag's in the sensible way
+-- does not work with 'ArbTrans', don't do it!
 defTransFlag :: BoneTrans -> FlagTrans
 defTransFlag _ []                 = []
 defTransFlag Same x               = x
@@ -127,9 +115,9 @@ defTransFlag (ArbTrans _) _       = error "don't do this"
 
 
 -- | user friendly representation of a Bone transformation
--- BoneTrans applies a transformation relative to identity TRS
+-- applies a transformation relative to identity TRS
 -- the transformation effects all children
--- so, for example, if you have two legs, you only need to add ReflX at the hips
+-- e.g. if you have two legs, you only need to add ReflX at the hips
 -- BoneTrans is applied to _trs'/_pos of AnimalNode'/AnimalNode respectively
 -- and by extension it also affects _orientation of AnimalProperty
 data BoneTrans = Same | ReflX | ReflY | ReflZ | ArbTrans (TRS.TRS Float -> TRS.TRS Float)
@@ -189,23 +177,15 @@ data AnimalNode = AnimalNode {
     -- _nodeOrientation :: NodeOrientation
 }
 
+makeLenses ''AnimalNode
+
 foldAnimalNode :: (a -> AnimalNode -> a) -> a -> AnimalNode -> a
 foldAnimalNode f acc an = foldl (foldAnimalNode f) (f acc an) (_children an)
-
 
 -- | extracts all BoneIds from AnimalNode tree
 makeBoneIdList :: AnimalNode -> [BoneId]
 makeBoneIdList = foldAnimalNode (\bids an ->  bid (_name an):bids) [] where
   bid (BoneWT bid' _) = bid'
-
-makeLenses ''AnimalNode
-
--- TODO helpers for constructing AnimalNode
---defAnimalNode = AnimalNode {}
--- makeAnimalNode :: ... -> AnimalNode
-
-
-
 
 -- | flip an AnimalNode, the children of the flipped parent will inherit the flipped parent's new transform
 -- but their relative transforms do not change

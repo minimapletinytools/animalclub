@@ -1,4 +1,5 @@
 ::TODO::
+-fix missing-home-module warning
 -go through some modules and rename things so that they don't have their modules as prefix
 DONE-make separate testing library for matrix.linear
 -make TRS Float a type synonym
