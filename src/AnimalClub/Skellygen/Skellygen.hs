@@ -1,37 +1,38 @@
 {-# OPTIONS_GHC -fno-warn-unused-top-binds #-}
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
 
+{-# LANGUAGE DeriveAnyClass  #-}
+{-# LANGUAGE DeriveGeneric   #-}
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
 
 module AnimalClub.Skellygen.Skellygen
     ( SkellyNode(..)
     , generateMesh
     ) where
 
-import Lens.Micro.Platform
-import Control.DeepSeq
-import GHC.Generics (Generic)
-import Linear.Metric
-import qualified Linear.Quaternion as Q
-import Linear.V3
-import Linear.Vector
+import           Control.DeepSeq
+import           GHC.Generics                           (Generic)
+import           Lens.Micro.Platform
+import           Linear.Metric
+import qualified Linear.Quaternion                      as Q
+import           Linear.V3
+import           Linear.Vector
 
-import AnimalClub.Skellygen.Math.Hierarchical
-import AnimalClub.Skellygen.Math.Mesh
-import qualified AnimalClub.Skellygen.Math.Quaternion as QH
-import qualified AnimalClub.Skellygen.Math.TRS as TRS
+import           AnimalClub.Skellygen.Math.Hierarchical
+import           AnimalClub.Skellygen.Math.Mesh
+import qualified AnimalClub.Skellygen.Math.Quaternion   as QH
+import qualified AnimalClub.Skellygen.Math.TRS          as TRS
 
-import qualified Debug.Trace as Debug
+import qualified Debug.Trace                            as Debug
 
 -- |
 -- prefixed names due to unfortunate naming conflict with AnimalNode
 data SkellyNode = SkellyNode
     {
-    _snDebugName :: String
-    , _snIsRoot :: Bool
-    , _snChildren :: [SkellyNode]
-    , _snTrs :: TRS.TRS Float -- ^ in parent space
+    _snDebugName   :: String
+    , _snIsRoot    :: Bool
+    , _snChildren  :: [SkellyNode]
+    , _snTrs       :: TRS.TRS Float -- ^ in parent space
     , _snThickness :: Float -- ^ base physical size of joint.
     } deriving (Show, Generic, NFData)
 
@@ -41,7 +42,7 @@ makeLenses ''SkellyNode
 
 data BoxSkinParameters = BoxSkinParameters
     { extension :: (Float, Float) --how much box sticks out of each end (parent, node)
-    , boxSize :: (Float, Float) --size of box at each joint (parent, node)
+    , boxSize   :: (Float, Float) --size of box at each joint (parent, node)
     } deriving (Show)
 
 defaultBoxParam :: BoxSkinParameters
@@ -50,9 +51,7 @@ defaultBoxParam = BoxSkinParameters (0.005, 0.005) (0.005, 0.005)
 _normalize :: (RealFloat a) => V3 a -> V3 a
 _normalize v = (1 / norm v) *^ v
 
--- TODO it's better to write this function where it takes a
--- thickness square at the origin facing neutral and apply
--- the transformation to it
+-- TODO it's better to write this function where it takes a thickness square at the origin facing neutral and apply the transformation to it
 generateSingleMeshLocal ::
        TRS.TRS Float -- ^ input node transform
     -> Float -- ^ input thickness
@@ -88,7 +87,8 @@ generateSingleMeshLocal pos ct pt =
     caps = [0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4]
 
 _generateMesh ::
-       TRS.TRS Float -- ^ parent ABS transform
+    -- TODO change to M44
+    TRS.TRS Float -- ^ parent ABS transform
     -> Float -- ^ parent thickness
     -> SkellyNode -- ^ node to generate
     -> Mesh -- ^ output mesh
@@ -100,6 +100,7 @@ _generateMesh p_snTrs p_thick skn = selfMesh `mappend` mconcat cmeshes
     --selfMesh = Debug.trace ("sknabs: " ++ show abstrs ++ " p: " ++ show (TRS._rot p_snTrs) ++ " c: " ++ show (TRS._rot reltrs)) $
     selfMesh =
         if _snIsRoot skn then emptyMesh else transformMesh p_snTrs $ generateSingleMeshLocal reltrs thick p_thick
+    -- TODO change this to M44 multiplication
     abstrs = p_snTrs >*> reltrs
     cmeshes = map (_generateMesh abstrs thick) (_snChildren skn)
 

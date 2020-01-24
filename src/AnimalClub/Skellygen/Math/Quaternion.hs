@@ -12,6 +12,7 @@ Stability   : experimental
 module AnimalClub.Skellygen.Math.Quaternion
     ( identity
     , inverse
+    , toM33
     , fromTo
     , fromEulerXYZ
         --lookAt, -- BUGS
@@ -24,7 +25,7 @@ import           Linear.Metric
 import           Linear.Quaternion
 import           Linear.V3
 --import Lens.Micro.Platform
---import Linear.Matrix as M
+import qualified Linear.Matrix     as M
 
 -- |
 inverse :: (Conjugate a, RealFloat a) => Quaternion a -> Quaternion a
@@ -35,8 +36,16 @@ inverse = conjugate
 --	v3part = invns *^ (V3 x' y' z')
 --	invns = 1.0 / (v `dot` v)
 --	v@(V4 w' x' y' z') = V4 w (-x) (-y) (-z)
+
 identity :: (Num a) => Quaternion a
 identity = Quaternion 1 (V3 0 0 0)
+
+-- TODO Test
+toM33 :: (RealFloat a, Conjugate a) => Quaternion a -> M.M33 a
+toM33 q = V3
+  (q `rotate` V3 1 0 0)
+  (q `rotate` V3 0 1 0)
+  (q `rotate` V3 0 0 1)
 
 _orthogonal :: (Num a, Ord a) => V3 a -> V3 a
 _orthogonal v@(V3 x y z) = cross v other

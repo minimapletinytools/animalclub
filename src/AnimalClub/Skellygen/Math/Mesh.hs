@@ -1,4 +1,5 @@
-{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric  #-}
 
 
 module AnimalClub.Skellygen.Math.Mesh (
@@ -10,14 +11,14 @@ module AnimalClub.Skellygen.Math.Mesh (
 
 import qualified AnimalClub.Skellygen.Math.TRS as TRS
 
-import Control.DeepSeq
-import GHC.Generics (Generic)
-import Control.Monad.Writer.Lazy (Writer, tell, execWriter)
+import           Control.DeepSeq
+import           Control.Monad.Writer.Lazy     (Writer, execWriter, tell)
+import           GHC.Generics                  (Generic)
 
-import           Data.Monoid            (Monoid, mappend)
-import             Data.Semigroup (Semigroup, (<>))
+import           Data.Monoid                   (Monoid, mappend)
+import           Data.Semigroup                (Semigroup, (<>))
 
-import Linear.V3
+import           Linear.V3
 
 
 
@@ -53,6 +54,7 @@ meshToObj (Mesh m) = execWriter $ do
     mapM_ tellV3 $ fst m
     mapM_ (\x -> tell $ "f " ++ foldr (\y acc -> acc ++ " " ++ show (y+1)) "" x ++ "\n") . group 3 . snd $ m
 
+-- TODO rewrite this using M44
 transformMesh :: TRS.TRS Float -> Mesh -> Mesh
 transformMesh trs (Mesh (verts, inds)) =  Mesh (map mapfn verts, inds) where
     mapfn = TRS.transformV3 trs

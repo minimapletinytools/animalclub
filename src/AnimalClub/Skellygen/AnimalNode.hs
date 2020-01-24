@@ -95,13 +95,13 @@ defTransFlag _ []                 = []
 defTransFlag Same x               = x
 defTransFlag ReflZ (BF_Left:xs)   = BF_Right:defTransFlag ReflZ xs
 defTransFlag ReflZ (BF_Right:xs)  = BF_Left:defTransFlag ReflZ xs
-defTransFlag ReflZ (x:xs)  = x:defTransFlag ReflZ xs
+defTransFlag ReflZ (x:xs)         = x:defTransFlag ReflZ xs
 defTransFlag ReflX (BF_Front:xs)  = BF_Back:defTransFlag ReflX xs
 defTransFlag ReflX (BF_Front:xs)  = BF_Back:defTransFlag ReflX xs
-defTransFlag ReflX (x:xs)  = x:defTransFlag ReflX xs
+defTransFlag ReflX (x:xs)         = x:defTransFlag ReflX xs
 defTransFlag ReflY (BF_Top:xs)    = BF_Bottom:defTransFlag ReflZ xs
 defTransFlag ReflY (BF_Bottom:xs) = BF_Top:defTransFlag ReflZ xs
-defTransFlag ReflY (x:xs) = x:defTransFlag ReflZ xs
+defTransFlag ReflY (x:xs)         = x:defTransFlag ReflZ xs
 defTransFlag (ArbTrans _) _       = error "don't do this"
 
 
@@ -139,15 +139,13 @@ applyBoneTrans Same = id
 applyBoneTrans ReflX = inherit (set TRS.scale (TRS.makeScale $ V3 (-1) 1 1) TRS.identity)
 applyBoneTrans ReflY = inherit (set TRS.scale (TRS.makeScale $ V3 1 (-1) 1) TRS.identity)
 applyBoneTrans ReflZ = inherit (set TRS.scale (TRS.makeScale $ V3 1 1 (-1)) TRS.identity)
--- just for testing
---applyBoneTrans ReflZ = (>*>) (set TRS.trans (V3 0 0 1) TRS.identity)
 applyBoneTrans (ArbTrans f) = f
 
 
 -- TODO add optional orientation parameter
 -- direction is always looking down bone, orientation determines rotation along that bone
 -- except in null bone cases, in which case, I guess you need a second direction parameter :\
--- make it optional so it shoudl look like
+-- make it optional so it should look like
 --data NodeOrientation = Default | Up (V3 Float) | Full (Quaternion Float)
 
 -- TODO consider getting rid of AbsOrRel, too complicated..
@@ -170,7 +168,6 @@ data AnimalNode = AnimalNode {
     _thickness :: AbsOrRel Float, -- ^ base thickness, relative to parent thickness if rel
     _isRoot    :: Bool,
     _children  :: [AnimalNode]
-    -- TODO some orientation parameter (right now orientation is determined based on parent position)
     -- _nodeOrientation :: NodeOrientation
 }
 

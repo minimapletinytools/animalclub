@@ -131,6 +131,8 @@ applyAnimalPropertyMap props pn cn = outan where
     --orient = QH.fromEulerXYZ (V3 (pi/6) 0.0 0.0)
     --orient = QH.fromEulerXYZ (V3 0.0 (pi/6) 0.0)
     orient = _orientation prop
+
+    -- TODO
     --c_pos'' = Debug.trace (show (_name' cn) ++ show orient) $ Q.rotate (p_abs_rot >*> orient >*> p_abs_rot_inv) c_pos'
     c_pos'' = Q.rotate (p_abs_rot >*> orient >*> p_abs_rot_inv) c_pos'
 
@@ -183,7 +185,7 @@ reduceBoneTrans p c = c_new where
     -- for performance, don't bother doing anything in the Same case
     c_new''' = case _boneTrans' c of
         Same -> c
-        _             -> c_new''
+        _    -> c_new''
 
     -- then recursively reduce all children
     c_new = set children' (map (reduceBoneTrans c_new''') (_children' c_new''')) c_new'''

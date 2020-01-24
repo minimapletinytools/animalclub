@@ -5,6 +5,10 @@
 -math
   -finish invTRS
   -finish lookAt function, and make its interface less weird
+  -it seems like the S component could have all sorts of stuff going on in it (not just shears)
+    -confirm
+    -update comments
+    -see if this breaks our inherit and invTRS functions
 -basic test cases
 -finish goat breeding app MVP
   -just randomly breed and see what happens?

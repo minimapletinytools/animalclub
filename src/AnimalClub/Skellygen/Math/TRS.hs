@@ -25,9 +25,12 @@ module AnimalClub.Skellygen.Math.TRS
   , axisX, axisY, axisZ
   , up
   , makeScale
-  --, invTRS probably wrong, test
+
+  , toM44
   , transformV3
   , transformV4
+
+
   , invTRS
   ) where
 
@@ -103,6 +106,9 @@ fromTRS (TRS t r s) =
     fromTranslation t M.!*! m33_to_homogenous_m44 (fromRotation r M.!*! s)
     --M.mkTransformationMat (fromRotation r M.!*! s) t
 
+toM44 :: (RealFloat a) => TRS a -> M.M44 a
+toM44 = fromTRS
+
 transformV3 :: (RealFloat a) => TRS a -> V3 a -> V3 a
 --transformV3 (TRS pt pr ps) ct = pt ^+^ (pr `rotate` (ps M.!* ct))
 transformV3 trs (V3 x y z) = V3 x' y' z' where V4 x' y' z' _ = transformV4 trs (V4 x y z 1)
@@ -117,6 +123,7 @@ transformV4 trs v = fromTRS trs M.!* v
 --_componentMul (V3 ax ay az) (V3 bx by bz) = V3 (ax * bx) (ay * by) (az * bz)
 
 -- |
+-- TODO this is wrong :(((( DELETE
 -- inherit P C returns P * C, i.e. C in the frame of P
 --
 -- TODO enable latex formatter 😱
@@ -143,7 +150,8 @@ instance (Conjugate a, RealFloat a) => Hierarchical (TRS a) where
       (pr * cr)
       (fromRotation (QH.inverse cr) M.!*! ps M.!*! fromRotation cr M.!*! cs)
 
--- TODO not sure if math is correct
+
+-- TODO this is wrong DELETE
 -- | inverts TRS (WIP)
 -- $$ (T*R*S)^{-1} = S^{-1}*R^{-1}*T^{-1}$$
 -- given that $$ m33(S^{-1}*R^{-1}*T^{-1}) = m33(T^{-1}*S^{-1}*R^{-1}) $$
@@ -154,6 +162,13 @@ instance (Conjugate a, RealFloat a) => Hierarchical (TRS a) where
 -- $$ T'R'S' = T'R^{-1}*R*S^{-1}*R^{-1} = T'S^{-1}*R^{-1} = S^{-1}*R^{-1}*T^{-1} $$
 -- thus $$ T' =  S^{-1}*R^{-1}*T^{-1}*R*S $$
 -- must show that $$T'$$ is still a translation
-invTRS :: TRS a -> TRS a
-invTRS _ = undefined
+invTRS :: (RealFloat a, Conjugate a) => TRS a -> TRS a
+invTRS (TRS t r s) = TRS t' r' s' where
+  r' = QH.inverse r
+  matr = QH.toM33 r
+  matr' = QH.toM33 r'
+  invs = M.inv33 s
+  s' = matr M.!*! invs M.!*! matr'
+  t' = invs M.!* (matr' M.!* (-t))
+
 --invTRS (TRS t r s) = undefined

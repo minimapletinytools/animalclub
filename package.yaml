@@ -82,6 +82,7 @@ library:
     - AnimalClub.Skellygen.Math.Hierarchical
     - AnimalClub.Skellygen.Math.Mesh
     - AnimalClub.Skellygen.Math.Quaternion
+    - AnimalClub.Skellygen.Math.TRS
     # Animal
     - AnimalClub.Animals
 
