@@ -37,7 +37,8 @@ import           Linear.Vector
 -- internal, converted from AnimalNode
 data AnimalNode' = AnimalNode' {
     -- TODO rename this field
-    _name'        :: BoneWT -- ^ name
+    _name'        :: BoneId -- ^ name
+    , _boneTrans' :: BoneTrans
     , _trsAbs'    :: TRS.TRS Float -- ^ absolute
     , _trs'       :: TRS.TRS Float -- ^ rel to parent
     , _thickness' :: Float -- ^rel to _trans
@@ -49,7 +50,7 @@ makeLenses ''AnimalNode'
 
 -- | sometimes helpful for root node cases
 dummyAnimalNode' :: AnimalNode'
-dummyAnimalNode' = AnimalNode' (BoneWT (BoneId "" []) Same) TRS.identity TRS.identity 1 True []
+dummyAnimalNode' = AnimalNode' (BoneId "" []) Same TRS.identity TRS.identity 1 True []
 
 -- | convert AnimalNode to internal format FIRST PASS
 -- this simply maps
@@ -82,6 +83,7 @@ _toAnimalNode' pn' cn = outan' where
     --Debug.trace (show (_name cn) ++ ": " ++ show (p_abs_trs >*> c_trs))
     outan' = AnimalNode' {
         _name' = _name cn,
+        _boneTrans' = _boneTrans cn,
         _trsAbs' = p_abs_trs >*> c_trs,
         _trs' = c_trs,
         _thickness' = case _thickness cn of
@@ -115,7 +117,7 @@ _toAnimalNode'' props pn cn = outan where
     p_abs_rot_inv = QH.inverse p_abs_rot
     c_rel_trs = _trs' cn
     c_pos = TRS._trans c_rel_trs
-    prop = getAnimalProperty (toBoneId $ _name' cn) props
+    prop = getAnimalProperty (_name' cn) props
 
     -- compute new distance
     -- multiplicative distance
@@ -145,6 +147,7 @@ _toAnimalNode'' props pn cn = outan where
     outan = AnimalNode' {
         -- same as before
         _name' = _name' cn,
+        _boneTrans' = _boneTrans' cn,
         _thickness' = _thickness' cn,
         _isRoot' = _isRoot' cn,
         -- new stuff
@@ -162,7 +165,7 @@ reduceBoneTransAnimalNode' ::
 reduceBoneTransAnimalNode' p c = c_new where
     -- apply BoneTrans to c
     p_abs_trs = _trsAbs' p
-    BoneWT _ bt = _name' c
+    bt = _boneTrans' c
     btf = applyBoneTrans bt
     c_rel_trs_new = btf $ _trs' c
 
@@ -177,8 +180,8 @@ reduceBoneTransAnimalNode' p c = c_new where
     -- then recompute abstrs in children
     c_new'' = set children' (map (recomputeAbsTransAnimalNode' c_new') (_children' c_new')) c_new'
     -- for performance, don't bother doing anything in the Same case
-    c_new''' = case _name' c of
-        BoneWT _ Same -> c
+    c_new''' = case _boneTrans' c of
+        Same -> c
         _             -> c_new''
 
     -- then recursively reduce all children
@@ -209,7 +212,7 @@ toSkellygen' ::
     -> AnimalNode' -- ^ current node
     -> SN.SkellyNode -- ^ skellygen node for current node
 toSkellygen' props cn =  outsn where
-    prop = getAnimalProperty (toBoneId (_name' cn)) props
+    prop = getAnimalProperty (_name' cn) props
     cn_rel_trs = _trs' cn
     skellyChildren = map (toSkellygen' props) (_children' cn)
     outsn = SN.SkellyNode {

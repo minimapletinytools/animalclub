@@ -21,8 +21,6 @@ Stability   : experimental
 module AnimalClub.Skellygen.AnimalNode (
     BoneFlag(..),
     BoneId(..),
-    BoneWT(..),
-    toBoneId,
 
     BoneMatcher,
     idMatcher,
@@ -67,13 +65,6 @@ data BoneFlag =
 -- the name is a basic non-unique identifier
 -- BoneFlags help distinguish non-unique named bones
 data BoneId = BoneId T.Text [BoneFlag] deriving (Eq, Ord, Show)
-
--- | BoneWT is a BoneId with BoneTrans
--- BoneTrans applies a translation to the bone (which will be inherited by its children). This is useful for creating symmetry
-data BoneWT = BoneWT BoneId BoneTrans deriving (Show)
-
-toBoneId :: BoneWT -> BoneId
-toBoneId (BoneWT bid _) = bid
 
 -- | a function for matching BoneNames
 type BoneMatcher = BoneId -> Bool
@@ -168,7 +159,8 @@ applyBoneTrans (ArbTrans f) = f
 -- (albeit this makes things more complicated so consider switching to everything in Abs coordinates
 data AnimalNode = AnimalNode {
     -- TODO separate out BoneId and BoneTrans
-    _name      :: BoneWT, -- ^ name and transformation if relevant
+    _name      :: BoneId, -- ^ name and transformation if relevant
+    _boneTrans :: BoneTrans,
     _pos       :: AbsOrRel (V3 Float), -- ^ position, relative to parent if rel, 'BoneTrans' in 'BoneName' is applied to this
     _thickness :: AbsOrRel Float, -- ^ base thickness, relative to parent thickness if rel
     _isRoot    :: Bool,
@@ -184,8 +176,7 @@ foldAnimalNode f acc an = foldl (foldAnimalNode f) (f acc an) (_children an)
 
 -- | extracts all BoneIds from AnimalNode tree
 makeBoneIdList :: AnimalNode -> [BoneId]
-makeBoneIdList = foldAnimalNode (\bids an ->  bid (_name an):bids) [] where
-  bid (BoneWT bid' _) = bid'
+makeBoneIdList = foldAnimalNode (\bids an ->  _name an:bids) []
 
 -- | flip an AnimalNode, the children of the flipped parent will inherit the flipped parent's new transform
 -- but their relative transforms do not change
@@ -200,8 +191,6 @@ flipAnimalNode ::
   -> FlagTrans -- ^ how to modify the flags of the Bone (and all its children)
   -> AnimalNode -- ^ the node we want to apply the BoneTrans to
   -> AnimalNode -- ^ the node with BoneTrans applied to it
-flipAnimalNode bt ft an = set children newChildren $ set name newName an where
-  BoneWT (BoneId boneName boneFlags) bt' = _name an
-  newName = BoneWT (BoneId boneName (ft boneFlags)) (composeBoneTrans bt bt')
-  -- modify the BoneFlags of all children
+flipAnimalNode bt ft an = set children newChildren $ set boneTrans newBoneTrans an where
+  newBoneTrans = composeBoneTrans bt (_boneTrans an)
   newChildren = map (flipAnimalNode Same ft) (_children an)

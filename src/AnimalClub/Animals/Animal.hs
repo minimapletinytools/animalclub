@@ -65,7 +65,7 @@ manbt ::
   -> AbsOrRel Float -- ^ thickness
   -> [AnimalNode] -- ^ children
   -> AnimalNode
-manbt n f bt p t c = AnimalNode (BoneWT (BoneId n f) bt) p t False c
+manbt n f bt p t c = AnimalNode (BoneId n f) bt p t False c
 
 
 -- TODO add something like ExpSkellyFuncPrioritized
