@@ -153,6 +153,7 @@ instance (Conjugate a, RealFloat a) => Hierarchical (TRS a) where
 -- must show $$S'$$ has no rotation component in it
 -- $$ T'R'S' = T'R^{-1}*R*S^{-1}*R^{-1} = T'S^{-1}*R^{-1} = S^{-1}*R^{-1}*T^{-1} $$
 -- thus $$ T' =  S^{-1}*R^{-1}*T^{-1}*R*S $$
+-- must show that $$T'$$ is still a translation
 invTRS :: TRS a -> TRS a
 invTRS _ = undefined
 --invTRS (TRS t r s) = undefined
