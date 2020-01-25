@@ -29,8 +29,8 @@ module AnimalClub.Skellygen.Math.TRS
   , toM44
   , mul_M44_V3
 
-  , transformV3
-  , transformV4
+  , mul_TRS_V3
+  , mul_TRS_V4
 
   , potatoMul
 
@@ -80,13 +80,15 @@ axisZ :: (Num a) => V3 a
 axisZ = V3 0 0 1
 
 up :: (RealFloat a) => TRS a -> V3 a
-up trs = transformV3 trs axisY
+up trs = mul_TRS_V3 trs axisY
 
 identity :: (Num a) => TRS a
 identity = TRS (V3 0 0 0) Q.identity M.identity
 
 makeScale :: (Num a) => V3 a -> M.M33 a
 makeScale (V3 x y z) = V3 (V3 x 0 0) (V3 0 y 0) (V3 0 0 z)
+
+
 
 m33_to_homogenous_m44 :: (Num a) => M.M33 a -> M.M44 a
 m33_to_homogenous_m44 (V3 (V3 a b c) (V3 d e f) (V3 g h i)) =
@@ -108,20 +110,21 @@ fromTRS (TRS t r s) =
     fromTranslation t M.!*! m33_to_homogenous_m44 (fromRotation r M.!*! s)
     --M.mkTransformationMat (fromRotation r M.!*! s) t
 
-toM44 :: (RealFloat a) => TRS a -> M.M44 a
-toM44 = fromTRS
-
 mul_M44_V3 :: (RealFloat a) => M.M44 a -> V3 a -> V3 a
 mul_M44_V3 m v =  normalizePoint $ m M.!* (point v)
 
 
--- TODO rename to mul_TRS_V3
-transformV3 :: (RealFloat a) => TRS a -> V3 a -> V3 a
---transformV3 (TRS pt pr ps) ct = pt ^+^ (pr `rotate` (ps M.!* ct))
-transformV3 trs (V3 x y z) = V3 x' y' z' where V4 x' y' z' _ = transformV4 trs (V4 x y z 1)
+toM44 :: (RealFloat a) => TRS a -> M.M44 a
+toM44 = fromTRS
 
-transformV4 :: (RealFloat a) => TRS a -> V4 a -> V4 a
-transformV4 trs v = fromTRS trs M.!* v
+
+mul_TRS_V3 :: (RealFloat a) => TRS a -> V3 a -> V3 a
+mul_TRS_V3 trs (V3 x y z) = V3 x' y' z' where V4 x' y' z' _ = mul_TRS_V4 trs (V4 x y z 1)
+-- TODO test this by testing both implementations have the same result
+--mul_TRS_V3 (TRS pt pr ps) ct = pt ^+^ (pr `rotate` (ps M.!* ct))
+
+mul_TRS_V4 :: (RealFloat a) => TRS a -> V4 a -> V4 a
+mul_TRS_V4 trs v = fromTRS trs M.!* v
 
 
 --_componentDiv :: (RealFloat a) => V3 a -> V3 a -> V3 a

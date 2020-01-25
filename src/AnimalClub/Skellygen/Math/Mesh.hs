@@ -61,7 +61,7 @@ meshToObj (Mesh m) = execWriter $ do
 -- TODO rewrite this using M44
 transformMesh :: TRS.TRS Float -> Mesh -> Mesh
 transformMesh trs (Mesh (verts, inds)) =  Mesh (map mapfn verts, inds) where
-    mapfn = TRS.transformV3 trs
+    mapfn = TRS.mul_TRS_V3 trs
 
 -- TODO rewrite this using M44
 transformMeshM44 :: M.M44 Float -> Mesh -> Mesh
