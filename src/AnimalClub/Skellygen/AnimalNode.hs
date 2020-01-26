@@ -50,7 +50,7 @@ import           Lens.Micro.Platform           (makeLenses, set)
 
 --import qualified Debug.Trace as Debug
 
-import qualified AnimalClub.Skellygen.Math.TRS as TRS
+import qualified AnimalClub.Skellygen.TRS as TRS
 
 import           Linear.V3
 
@@ -141,9 +141,9 @@ composeBoneTrans x y         = ArbTrans $ applyBoneTrans x . applyBoneTrans y
 -- | applies BoneTrans to a TRS
 applyBoneTrans :: (TRS.TRSFloating a) => BoneTrans a -> TRS.TRS a -> TRS.TRS a
 applyBoneTrans Same = id
-applyBoneTrans ReflX = TRS.potatoMul (set TRS.scale (TRS.makeScale $ V3 (-1) 1 1) TRS.identity)
-applyBoneTrans ReflY = TRS.potatoMul (set TRS.scale (TRS.makeScale $ V3 1 (-1) 1) TRS.identity)
-applyBoneTrans ReflZ = TRS.potatoMul (set TRS.scale (TRS.makeScale $ V3 1 1 (-1)) TRS.identity)
+applyBoneTrans ReflX = TRS.potatoMul (set TRS.scale (TRS.conv_V3_Scale $ V3 (-1) 1 1) TRS.identity)
+applyBoneTrans ReflY = TRS.potatoMul (set TRS.scale (TRS.conv_V3_Scale $ V3 1 (-1) 1) TRS.identity)
+applyBoneTrans ReflZ = TRS.potatoMul (set TRS.scale (TRS.conv_V3_Scale $ V3 1 1 (-1)) TRS.identity)
 applyBoneTrans (ArbTrans f) = f
 
 

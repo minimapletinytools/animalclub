@@ -19,7 +19,7 @@ module ExamplesLib.Skeletons (
 
 import           AnimalClub.Animals
 import           AnimalClub.Skellygen
-import           AnimalClub.Skellygen.Math.Mesh
+import           AnimalClub.Skellygen.Mesh
 import           Linear.V3
 
 -- | whatever helper

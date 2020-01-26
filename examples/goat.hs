@@ -14,8 +14,8 @@ import           ExamplesLib.Skeletons
 import           AnimalClub.Animals
 import           AnimalClub.Genetics
 import           AnimalClub.Skellygen
-import qualified AnimalClub.Skellygen.Math.TRS as TRS
-import           AnimalClub.Skellygen.Math.Mesh
+import qualified AnimalClub.Skellygen.TRS as TRS
+import           AnimalClub.Skellygen.Mesh
 
 import           System.Random
 import           Text.Printf                    (printf)

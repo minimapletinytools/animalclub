@@ -23,22 +23,22 @@ module AnimalClub.Skellygen.AnimalProperty (
 ) where
 
 import           Control.DeepSeq
-import           Control.Exception                    (assert)
-import qualified Data.List                            as L
-import qualified Data.Map                             as M
-import           Data.Maybe                           (fromMaybe)
-import qualified Data.Text                            as T
-import           GHC.Generics                         (Generic)
+import           Control.Exception               (assert)
+import qualified Data.List                       as L
+import qualified Data.Map                        as M
+import           Data.Maybe                      (fromMaybe)
+import qualified Data.Text                       as T
+import           GHC.Generics                    (Generic)
 import           Lens.Micro.Platform
 
 import           Linear.V3
 
 import           AnimalClub.Skellygen.AnimalNode
-import qualified AnimalClub.Skellygen.Math.Quaternion as Q
-import qualified AnimalClub.Skellygen.Math.TRS        as TRS
+
+import qualified AnimalClub.Skellygen.TRS        as TRS
 
 
-import qualified Debug.Trace                          as Debug
+import qualified Debug.Trace                     as Debug
 --import Prelude hiding (read)
 --import qualified Prelude (read)
 --read x = Prelude.read $ Debug.trace x x
@@ -65,7 +65,7 @@ defLength :: (TRS.TRSFloating a) => BoneMethod a
 defLength = Length 1
 
 defOrientation :: (TRS.TRSFloating a) => BoneMethod a
-defOrientation = Orientation Q.identity
+defOrientation = Orientation TRS.rotationIdentity
 
 defColor :: BoneMethod a
 defColor = Color ()
@@ -89,7 +89,7 @@ newtype PrioritizedSkellyFunc a = PrioritizedSkellyFunc{ unPrioritizedSkellyFunc
 addValuesToBoneMethod :: (TRS.TRSFloating a) => BoneMethod a -> [a] -> BoneMethod a
 addValuesToBoneMethod m vals = case m of
   Orientation x ->
-    Orientation $ x * Q.fromEulerXYZ (V3 (vals !! 0) (vals !! 1) (vals !! 2))
+    Orientation $ x * TRS.fromEulerXYZ (V3 (vals !! 0) (vals !! 1) (vals !! 2))
   Length x ->
     Length $ x * (vals !! 0)
   Thickness x ->
@@ -119,7 +119,7 @@ makeLenses ''AnimalProperty
 -- | the identity AnimalProperty
 defaultAnimalProperty :: (TRS.TRSFloating a) => AnimalProperty a
 defaultAnimalProperty = AnimalProperty {
-    _orientation = Q.identity,
+    _orientation = TRS.rotationIdentity,
     _distance = 1,
     _skinParams = 1
 }

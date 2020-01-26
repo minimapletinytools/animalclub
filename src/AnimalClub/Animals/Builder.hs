@@ -23,7 +23,7 @@ module AnimalClub.Animals.Builder (
 import           AnimalClub.Animals.Animal
 import           AnimalClub.Genetics
 import           AnimalClub.Skellygen
-import     qualified      AnimalClub.Skellygen.Math.TRS as TRS
+import qualified AnimalClub.Skellygen.TRS  as TRS
 
 import           Control.DeepSeq
 import           Control.Monad

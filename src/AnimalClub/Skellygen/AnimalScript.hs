@@ -10,24 +10,24 @@ module AnimalClub.Skellygen.AnimalScript (
     animalNodeToSkellyNodeWithProps
 ) where
 
-import qualified Data.Map                             as Map
-import           Lens.Micro.Platform                  (makeLenses, set)
+import qualified Data.Map                            as Map
+import           Lens.Micro.Platform                 (makeLenses, set)
 --import qualified Data.Text as T
 
-import           Control.Exception.Base               (assert)
+import           Control.Exception.Base              (assert)
 
-import qualified Debug.Trace                          as Debug
+import qualified Debug.Trace                         as Debug
 
 import           AnimalClub.Skellygen.AnimalNode
 import           AnimalClub.Skellygen.AnimalProperty
-import qualified AnimalClub.Skellygen.Math.Quaternion as Q
-import qualified AnimalClub.Skellygen.Math.TRS        as TRS
-import qualified AnimalClub.Skellygen.Skellygen       as SN
+
+import qualified AnimalClub.Skellygen.Skellygen      as SN
+import qualified AnimalClub.Skellygen.TRS            as TRS
 
 
-import qualified Linear.Matrix                        as M
+import qualified Linear.Matrix                       as M
 import           Linear.Metric
-import           Linear.Quaternion                    as Q
+import           Linear.Quaternion                   (rotate)
 import           Linear.V3
 import           Linear.Vector
 
@@ -64,7 +64,7 @@ applyFirstPass pn' cn = outan' where
     p_abs_m44 = _m44Abs' pn'
     p_abs_m44_inv = M.inv44 p_abs_m44
     --p_abs_rot = TRS._rot p_abs_m44
-    --p_abs_rot_inv = Q.inverse p_abs_rot
+    --p_abs_rot_inv = TRS.rotationInverse p_abs_rot
 
     c_rel_pos = case _pos cn of
         -- N.B. Originally I had it was only modified by the rotation component but this seems to work fine
@@ -77,15 +77,15 @@ applyFirstPass pn' cn = outan' where
     -- FUTURE process non-existant orientation parameter in AnimalNode
     -- TODO instead of using defaultUp, this should use up vector from parent rotation
     -- convert absolute rotation to rotation relative to parent
-    c_rel_rot = Q.lookAtDefaultUp c_rel_pos
+    c_rel_rot = TRS.lookAtDefaultUp c_rel_pos
 
     -- put it all together for the final relative trs of the current child node
-    c_trs = TRS.TRS c_rel_pos c_rel_rot (TRS.makeScale $ V3 1 1 1)
+    c_trs = TRS.TRS c_rel_pos c_rel_rot (TRS.conv_V3_Scale $ V3 1 1 1)
 
     outan' = AnimalNode' {
         _name' = _name cn,
         _boneTrans' = _boneTrans cn,
-        _m44Abs' = p_abs_m44 M.!*! TRS.toM44 c_trs,
+        _m44Abs' = p_abs_m44 M.!*! TRS.conv_TRS_M44 c_trs,
         _trs' = c_trs,
         _thickness' = case _thickness cn of
             Rel a -> a * _thickness' pn'
@@ -101,7 +101,7 @@ update_m44Abs ::
     -> AnimalNode' a -- ^ child node to recompute
     -> AnimalNode' a -- ^ recomputed node
 update_m44Abs p c = newc where
-    newc' = set m44Abs' (_m44Abs' p M.!*! TRS.toM44 (_trs' c)) c
+    newc' = set m44Abs' (_m44Abs' p M.!*! TRS.conv_TRS_M44 (_trs' c)) c
     newc = set children' (map (update_m44Abs newc) (_children' c)) newc'
 
 -- | applies 'AnimalPropertyMap'
@@ -119,7 +119,7 @@ applyAnimalPropertyMap props pn cn = outan where
     p_abs_m44_inv = M.inv44 p_abs_m44
 
     --p_abs_rot = TRS._rot p_abs_trs
-    --p_abs_rot_inv = Q.inverse p_abs_rot
+    --p_abs_rot_inv = TRS.rotationInverse p_abs_rot
 
     c_rel_trs = _trs' cn
     c_rel_pos = TRS._trans c_rel_trs
@@ -135,14 +135,14 @@ applyAnimalPropertyMap props pn cn = outan where
     --    c_rel_pos ^* ((bDist + _distance prop) / bDist)
 
     -- compute new rotation
-    --orient = Q.fromEulerXYZ (V3 (pi/6) 0.0 0.0)
-    --orient = Q.fromEulerXYZ (V3 0.0 (pi/6) 0.0)
+    --orient = TRS.fromEulerXYZ (V3 (pi/6) 0.0 0.0)
+    --orient = TRS.fromEulerXYZ (V3 0.0 (pi/6) 0.0)
     orient = _orientation prop
 
-    c_rel_pos'' = Q.rotate orient c_rel_pos'
+    c_rel_pos'' = rotate orient c_rel_pos'
 
     -- update with new distance and rotation
-    c_rel_trs_new = set TRS.rot (Q.lookAtDefaultUp c_rel_pos'') (set TRS.trans c_rel_pos'' c_rel_trs)
+    c_rel_trs_new = set TRS.rot (TRS.lookAtDefaultUp c_rel_pos'') (set TRS.trans c_rel_pos'' c_rel_trs)
 
     -- TODO at least switch to parMap
     -- inefficient recursion in recursion to update abs trans
@@ -158,7 +158,7 @@ applyAnimalPropertyMap props pn cn = outan where
         _isRoot' = _isRoot' cn,
         -- new stuff
         _trs' = c_rel_trs_new,
-        _m44Abs' = p_abs_m44 M.!*! TRS.toM44 c_rel_trs_new,
+        _m44Abs' = p_abs_m44 M.!*! TRS.conv_TRS_M44 c_rel_trs_new,
         _children' = map (applyAnimalPropertyMap props outan) updatedChildren
     }
 
@@ -185,7 +185,7 @@ reduceBoneTrans p c = c_new where
     -- update absTrs in all nodes
     -- N.B, this step is not necessary as we currently aren't using absTrs after this point, but we still do it to future proof our data
     -- first set abs and rel trs for current node
-    c_new' = set m44Abs' (p_abs_m44 M.!*! TRS.toM44 c_rel_trs_new) $ set trs' c_rel_trs_new c
+    c_new' = set m44Abs' (p_abs_m44 M.!*! TRS.conv_TRS_M44 c_rel_trs_new) $ set trs' c_rel_trs_new c
     -- then recompute abstrs in children
     c_new'' = set children' (map (update_m44Abs c_new') (_children' c_new')) c_new'
     -- for performance, don't bother doing anything in the Same case

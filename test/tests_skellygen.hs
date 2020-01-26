@@ -1,15 +1,14 @@
 --{-# OPTIONS_GHC -fno-warn-orphans #-}
 import           AnimalClub.Skellygen
-import           AnimalClub.Skellygen.Math.Quaternion as Q
-import           AnimalClub.Skellygen.Math.TRS
+import           AnimalClub.Skellygen.TRS
 import           Test.Hspec
 import           Test.QuickCheck
 import           Test.QuickCheck.Modifiers
 
 import           Linear.Arbitrary
 import           Linear.Epsilon
-import qualified Linear.Matrix                        as M
-import           Linear.Metric                        as Metric
+import qualified Linear.Matrix             as M
+import           Linear.Metric             as Metric
 
 import           Debug.Trace
 --prop_TRS
@@ -56,7 +55,7 @@ instance (Arbitrary a, Epsilon a, Floating a) => Arbitrary (TRS a) where
 prop_invTRS :: TRS Double -> Bool
 prop_invTRS trs = pass where
   help@(TRS t r s) = (trs `inherit` invTRS trs)
-  pass = trace (show help) $ nearZero t && nearZero (Metric.distance r Q.identity) && nearZero (s - M.identity)
+  pass = trace (show help) $ nearZero t && nearZero (Metric.distance r TRS.rotationIdentity) && nearZero (s - M.identity)
 -}
 
 main :: IO ()

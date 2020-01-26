@@ -12,7 +12,7 @@ import           ExamplesLib.Worm
 import           AnimalClub.Animals
 import           AnimalClub.Genetics
 import           AnimalClub.Skellygen
-import           AnimalClub.Skellygen.Math.Mesh
+import           AnimalClub.Skellygen.Mesh
 
 import           Data.List                      (unfoldr)
 import           System.Random

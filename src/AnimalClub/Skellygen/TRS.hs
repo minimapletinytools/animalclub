@@ -8,49 +8,59 @@ Stability   : experimental
 
 -}
 
-{-# LANGUAGE ConstraintKinds   #-}
+{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE DeriveAnyClass  #-}
 {-# LANGUAGE DeriveGeneric   #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 
-module AnimalClub.Skellygen.Math.TRS
+module AnimalClub.Skellygen.TRS
   (
   TRSFloating
+
   , Translation
   , Rotation
   , Scale
+  , conv_V3_Scale
+
   , TRS(..)
-  , trans
-  , rot
-  , scale
+  , trans, rot, scale
   , identity
-  , axisX, axisY, axisZ
-  , up
-  , makeScale
 
-  , toM44
-  , mul_M44_V3
 
+  , conv_TRS_M44
   , mul_TRS_V3
   , mul_TRS_V4
-
   , potatoMul
+
+  , mul_M44_V3
+
+
+  -- rotation stuff
+  , rotationIdentity
+  , rotationInverse
+  , conv_Rotation_M33
+  , conv_Rotation_M44
+  , fromTo
+  , fromEulerXYZ
+  --lookAt, -- BUGS
+  , lookAtDefaultUp -- BUGS
 
   ) where
 
-import qualified AnimalClub.Skellygen.Math.Quaternion as Q
+
 
 import           Control.DeepSeq
-import           GHC.Generics                         (Generic)
+import           GHC.Generics        (Generic)
 import           Lens.Micro.Platform
 import           Linear.Conjugate
-import qualified Linear.Matrix                        as M
+import           Linear.Epsilon
+import qualified Linear.Matrix       as M
+import           Linear.Metric
 import           Linear.Quaternion
 import           Linear.V3
 import           Linear.V4
 import           Linear.Vector
-import           Linear.Epsilon
 
 type TRSFloating a = (Conjugate a, RealFloat a, Epsilon a)
 
@@ -76,6 +86,8 @@ makeLenses ''TRS
 --data TRShS a = TRShS (V3 a) (Quaternion a) (M.M33 a) (V3 a)
 --data LocalTRS a = LocalTRS (V3 a) (Quaternion a) (V3 a)
 
+
+{-
 axisX :: (Num a) => V3 a
 axisX = V3 1 0 0
 
@@ -87,12 +99,13 @@ axisZ = V3 0 0 1
 
 up :: (RealFloat a) => TRS a -> V3 a
 up trs = mul_TRS_V3 trs axisY
+-}
 
 identity :: (Num a) => TRS a
-identity = TRS (V3 0 0 0) Q.identity M.identity
+identity = TRS (V3 0 0 0) rotationIdentity M.identity
 
-makeScale :: (Num a) => V3 a -> M.M33 a
-makeScale (V3 x y z) = V3 (V3 x 0 0) (V3 0 y 0) (V3 0 0 z)
+conv_V3_Scale :: (Num a) => V3 a -> M.M33 a
+conv_V3_Scale (V3 x y z) = V3 (V3 x 0 0) (V3 0 y 0) (V3 0 0 z)
 
 
 
@@ -107,22 +120,12 @@ fromTranslation :: (RealFloat a) => Translation a -> M.M44 a
 fromTranslation (V3 x y z) =
   V4 (V4 1 0 0 x) (V4 0 1 0 y) (V4 0 0 1 z) (V4 0 0 0 1)
 
-fromRotation :: (Num a) => Rotation a -> M.M33 a
-fromRotation = M.fromQuaternion
-
-fromTRS :: (RealFloat a) => TRS a -> M.M44 a
-fromTRS (TRS t r s) =
-    --m33_to_homogenous_m44 (fromScale s) M.!*! m33_to_homogenous_m44 (fromRotation r) M.!*! fromTranslation t
-    fromTranslation t M.!*! m33_to_homogenous_m44 (fromRotation r M.!*! s)
-    --M.mkTransformationMat (fromRotation r M.!*! s) t
 
 mul_M44_V3 :: (RealFloat a) => M.M44 a -> V3 a -> V3 a
 mul_M44_V3 m v =  normalizePoint $ m M.!* (point v)
 
-
-toM44 :: (RealFloat a) => TRS a -> M.M44 a
-toM44 = fromTRS
-
+conv_TRS_M44 :: (RealFloat a) => TRS a -> M.M44 a
+conv_TRS_M44 (TRS t r s) = fromTranslation t M.!*! m33_to_homogenous_m44 (conv_Rotation_M33 r M.!*! s)
 
 mul_TRS_V3 :: (RealFloat a) => TRS a -> V3 a -> V3 a
 mul_TRS_V3 trs (V3 x y z) = V3 x' y' z' where V4 x' y' z' _ = mul_TRS_V4 trs (V4 x y z 1)
@@ -130,7 +133,7 @@ mul_TRS_V3 trs (V3 x y z) = V3 x' y' z' where V4 x' y' z' _ = mul_TRS_V4 trs (V4
 --mul_TRS_V3 (TRS pt pr ps) ct = pt ^+^ (pr `rotate` (ps M.!* ct))
 
 mul_TRS_V4 :: (RealFloat a) => TRS a -> V4 a -> V4 a
-mul_TRS_V4 trs v = fromTRS trs M.!* v
+mul_TRS_V4 trs v = conv_TRS_M44 trs M.!* v
 
 
 --_componentDiv :: (RealFloat a) => V3 a -> V3 a -> V3 a
@@ -160,4 +163,90 @@ potatoMul (TRS pt pr ps) (TRS ct cr cs) =
   TRS
     (pt ^+^ (pr `rotate` (ps M.!* ct)))
     (pr * cr)
-    (fromRotation (Q.inverse cr) M.!*! ps M.!*! fromRotation cr M.!*! cs)
+    (conv_Rotation_M33 (rotationInverse cr) M.!*! ps M.!*! conv_Rotation_M33 cr M.!*! cs)
+
+
+
+
+
+-- |
+rotationInverse :: (Conjugate a, RealFloat a) => Quaternion a -> Quaternion a
+rotationInverse = conjugate
+
+--invert (Quaternion w (V3 x y z)) = Quaternion wpart v3part where
+--	wpart = invns * w'
+--	v3part = invns *^ (V3 x' y' z')
+--	invns = 1.0 / (v `dot` v)
+--	v@(V4 w' x' y' z') = V4 w (-x) (-y) (-z)
+
+rotationIdentity :: (Num a) => Quaternion a
+rotationIdentity = Quaternion 1 (V3 0 0 0)
+
+-- TODO Test
+conv_Rotation_M33 :: (Num a) => Quaternion a -> M.M33 a
+conv_Rotation_M33 = M.fromQuaternion
+
+
+conv_Rotation_M44 :: (RealFloat a, Conjugate a) => Quaternion a -> M.M44 a
+conv_Rotation_M44 q = set (_w . _w) 1 (M.m33_to_m44 $ conv_Rotation_M33 q)
+
+_orthogonal :: (Num a, Ord a) => V3 a -> V3 a
+_orthogonal v@(V3 x y z) = cross v other
+  where
+    other =
+        if abs x < abs y
+            then if abs x < abs z
+                     then V3 1 0 0
+                     else V3 0 0 1
+            else if abs y < abs z
+                     then V3 0 1 0
+                     else V3 0 0 1
+
+--_radiansBetween :: (Metric f) => f a -> f a -> a
+--_radiansBetween a b = undefined -- acos $ (a `dot` b) / (norm a * norm b)
+
+-- | assumes neutral look is toward (V3 1 0 0) with up towards (V3 0 1 0) as neutral position
+-- TODO finish
+-- TODO wtf is tis interface...
+lookAt ::
+       (RealFloat a, Epsilon a)
+    => V3 a -- ^ up vector
+    -> V3 a -- ^ fallback up vector
+    -> V3 a -- ^ direction to look at
+    -> Quaternion a -- ^ output
+lookAt _ _ d = q2 * q
+        --zup = V3 0 1 0
+        --up = if nearZero (d-u) then fu else u
+        --q2 = axisAngle d (_radiansBetween d up)
+  where
+    q2 = rotationIdentity -- TODO finish this function is a pain...
+    q = fromTo (V3 1 0 0) d
+
+-- TODO rename this
+lookAtDefaultUp ::
+       (RealFloat a, Epsilon a)
+    => V3 a -- ^ direction to look at
+    -> Quaternion a -- ^ output
+lookAtDefaultUp = lookAt (V3 0 1 0) (V3 1 0 0)
+
+-- | from -> to -> rotation
+fromTo :: (RealFloat a, Epsilon a) => V3 a -> V3 a -> Quaternion a
+fromTo fromv tov =
+    if nearZero (u + v)
+        then fallback
+        else if nearZero (u - v)
+                 then rotationIdentity
+                 else output
+  where
+    u = normalize fromv
+    v = normalize tov
+    half = normalize (u + v)
+    fallback = Quaternion 0 (normalize $ _orthogonal u)
+    output = Quaternion (dot u half) (cross u half)
+
+-- FUTURE make fancy version that is fromEuler :: XYZ -> V3 a -> Quternion a
+-- | x y z rotation order
+fromEulerXYZ :: (RealFloat a, Epsilon a) => V3 a -> Quaternion a
+fromEulerXYZ (V3 x y z) =
+    (axisAngle (V3 0 0 1) z) * (axisAngle (V3 0 1 0) y) *
+    (axisAngle (V3 1 0 0) x)

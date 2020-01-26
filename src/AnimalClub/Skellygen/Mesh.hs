@@ -2,7 +2,7 @@
 {-# LANGUAGE DeriveGeneric  #-}
 
 
-module AnimalClub.Skellygen.Math.Mesh (
+module AnimalClub.Skellygen.Mesh (
     Mesh(..),
     emptyMesh,
     meshToObj,
@@ -11,7 +11,7 @@ module AnimalClub.Skellygen.Math.Mesh (
 
 ) where
 
-import qualified AnimalClub.Skellygen.Math.TRS as TRS
+import qualified AnimalClub.Skellygen.TRS as TRS
 
 import           Control.DeepSeq
 import           Control.Monad.Writer.Lazy     (Writer, execWriter, tell)
@@ -20,7 +20,7 @@ import           GHC.Generics                  (Generic)
 import           Data.Monoid                   (Monoid, mappend)
 import           Data.Semigroup                (Semigroup, (<>))
 
-import qualified AnimalClub.Skellygen.Math.TRS as TRS
+import qualified AnimalClub.Skellygen.TRS as TRS
 import qualified Linear.Matrix                 as M
 import           Linear.V3
 

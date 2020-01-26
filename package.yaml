@@ -79,9 +79,8 @@ library:
     - AnimalClub.Genetics.GenotypePar
     # Skellygen
     - AnimalClub.Skellygen
-    - AnimalClub.Skellygen.Math.Mesh
-    - AnimalClub.Skellygen.Math.Quaternion
-    - AnimalClub.Skellygen.Math.TRS
+    - AnimalClub.Skellygen.Mesh
+    - AnimalClub.Skellygen.TRS
     # Animal
     - AnimalClub.Animals
 
