@@ -21,14 +21,14 @@ module AnimalClub.Animals.Animal (
 
 import           AnimalClub.Genetics
 import           AnimalClub.Skellygen
-import         qualified  AnimalClub.Skellygen.TRS as TRS
-import           Linear.V3            (V3)
+import           AnimalClub.Skellygen.TRS
+import           Linear.V3                (V3)
 
-import qualified Data.ByteString.Lazy as B
-import           Data.Maybe           (catMaybes)
-import qualified Data.Text            as T
+import qualified Data.ByteString.Lazy     as B
+import           Data.Maybe               (catMaybes)
+import qualified Data.Text                as T
 
-import           Control.Monad.Writer (tell)
+import           Control.Monad.Writer     (tell)
 
 --import Control.Exception (assert)
 --import Debug.Trace (trace)
@@ -92,7 +92,7 @@ tellSkellyFunc sf = tell [ExpSkellyFunc sf]
 
 -- | generates 'AnimalPropertyMap' from list of 'BoneId's and 'AnimalExp's
 generateAnimalProperties ::
-    (TRS.TRSFloating a)
+    (TRSFloating a)
     => [BoneId] -- ^ list of all bones
     -> [AnimalExp a] -- ^ list of properties
     -> AnimalPropertyMap a-- ^ output accumulated map of properties.

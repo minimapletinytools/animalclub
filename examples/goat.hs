@@ -14,11 +14,11 @@ import           ExamplesLib.Skeletons
 import           AnimalClub.Animals
 import           AnimalClub.Genetics
 import           AnimalClub.Skellygen
-import qualified AnimalClub.Skellygen.TRS as TRS
 import           AnimalClub.Skellygen.Mesh
+import           AnimalClub.Skellygen.TRS
 
 import           System.Random
-import           Text.Printf                    (printf)
+import           Text.Printf               (printf)
 
 
 
@@ -37,7 +37,7 @@ gdThick = (0, 2) :: (Float, Float)
 
 
 goatHelper ::
-  (TRS.TRSFloating a)
+  (TRSFloating a)
   => (BoneMethod a -> SkellyFunc a)
   -> ((a,a),(a,a),(a,a))
   -> [(SkellyFunc a, AutoGeneMethod a)]

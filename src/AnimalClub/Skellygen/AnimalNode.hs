@@ -43,14 +43,14 @@ module AnimalClub.Skellygen.AnimalNode (
 ) where
 
 import           Control.DeepSeq
-import qualified Data.List                     as L
-import qualified Data.Text                     as T
-import           GHC.Generics                  (Generic)
-import           Lens.Micro.Platform           (makeLenses, set)
+import qualified Data.List                as L
+import qualified Data.Text                as T
+import           GHC.Generics             (Generic)
+import           Lens.Micro.Platform      (makeLenses, set)
 
 --import qualified Debug.Trace as Debug
 
-import qualified AnimalClub.Skellygen.TRS as TRS
+import           AnimalClub.Skellygen.TRS
 
 import           Linear.V3
 
@@ -120,7 +120,7 @@ defTransFlag (ArbTrans _) _       = error "don't do this"
 -- e.g. if you have two legs, you only need to add ReflX at the hips
 -- BoneTrans is applied to _trs'/_pos of AnimalNode'/AnimalNode respectively
 -- and by extension it also affects _orientation of AnimalProperty
-data BoneTrans a = Same | ReflX | ReflY | ReflZ | ArbTrans (TRS.TRS a -> TRS.TRS a)
+data BoneTrans a = Same | ReflX | ReflY | ReflZ | ArbTrans (TRS a -> TRS a)
 
 instance Show (BoneTrans a) where
     show Same         = "Same"
@@ -130,7 +130,7 @@ instance Show (BoneTrans a) where
     show (ArbTrans _) = "ArbTrans"
 
 -- | combine two BoneTrans together
-composeBoneTrans :: (TRS.TRSFloating a) => BoneTrans a -> BoneTrans a -> BoneTrans a
+composeBoneTrans :: (TRSFloating a) => BoneTrans a -> BoneTrans a -> BoneTrans a
 composeBoneTrans Same x      = x
 composeBoneTrans x Same      = x
 composeBoneTrans ReflX ReflX = Same
@@ -139,11 +139,11 @@ composeBoneTrans ReflZ ReflZ = Same
 composeBoneTrans x y         = ArbTrans $ applyBoneTrans x . applyBoneTrans y
 
 -- | applies BoneTrans to a TRS
-applyBoneTrans :: (TRS.TRSFloating a) => BoneTrans a -> TRS.TRS a -> TRS.TRS a
+applyBoneTrans :: (TRSFloating a) => BoneTrans a -> TRS a -> TRS a
 applyBoneTrans Same = id
-applyBoneTrans ReflX = TRS.potatoMul (set TRS.scale (TRS.conv_V3_Scale $ V3 (-1) 1 1) TRS.identity)
-applyBoneTrans ReflY = TRS.potatoMul (set TRS.scale (TRS.conv_V3_Scale $ V3 1 (-1) 1) TRS.identity)
-applyBoneTrans ReflZ = TRS.potatoMul (set TRS.scale (TRS.conv_V3_Scale $ V3 1 1 (-1)) TRS.identity)
+applyBoneTrans ReflX = potatoMul (set scale (conv_V3_Scale $ V3 (-1) 1 1) identity)
+applyBoneTrans ReflY = potatoMul (set scale (conv_V3_Scale $ V3 1 (-1) 1) identity)
+applyBoneTrans ReflZ = potatoMul (set scale (conv_V3_Scale $ V3 1 1 (-1)) identity)
 applyBoneTrans (ArbTrans f) = f
 
 
@@ -194,7 +194,7 @@ makeBoneIdList = foldAnimalNode (\bids an ->  _name an:bids) []
 -- flipAnimalNodeFancy :: BoneTrans -> [Int] -> AnimalNode -> AnimalNode
 --
 flipAnimalNode ::
-  (TRS.TRSFloating a)
+  (TRSFloating a)
   => BoneTrans a -- ^ the BoneTrans we want to apply
   -> FlagTrans -- ^ how to modify the flags of the Bone (and all its children)
   -> AnimalNode a -- ^ the node we want to apply the BoneTrans to

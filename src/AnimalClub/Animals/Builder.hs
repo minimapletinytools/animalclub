@@ -23,7 +23,7 @@ module AnimalClub.Animals.Builder (
 import           AnimalClub.Animals.Animal
 import           AnimalClub.Genetics
 import           AnimalClub.Skellygen
-import qualified AnimalClub.Skellygen.TRS  as TRS
+import           AnimalClub.Skellygen.TRS
 
 import           Control.DeepSeq
 import           Control.Monad
@@ -60,7 +60,7 @@ autoGeneSize (Normal _ x) = x
 -- | automatically create genome from given lists of properties
 -- this version does no overlap. All properties are independent
 makeGenomeFromPropertiesSimple ::
-    (TRS.TRSFloating a)
+    (TRSFloating a)
     => Int -- ^ DNA length (vector length / 4)
     -> [(T.Text, AutoGeneMethod a)] -- ^ other properties
     -> [(SkellyFunc a, AutoGeneMethod a)] -- ^ skellygen properties, values in SkellyFunc are used as starting values

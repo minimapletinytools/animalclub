@@ -22,7 +22,7 @@ module ExamplesLib.Worm (
 import           AnimalClub.Animals
 import           AnimalClub.Genetics
 import           AnimalClub.Skellygen
-import qualified AnimalClub.Skellygen.TRS as TRS
+import           AnimalClub.Skellygen.TRS
 
 
 import qualified Linear.Metric            as Metric
@@ -77,8 +77,8 @@ testWorm ::
 testWorm segs props = score where
     --desiredThick i =  (fromIntegral i / fromIntegral segs) * 3 + 0.5
     desiredThick i =  (cos ((fromIntegral i / fromIntegral segs) * pi * 2 * 2)*3 + 1.2)
-    --desiredOrient _ = TRS.fromEulerXYZ (V3 (pi/20) (pi/3) 0.0)
-    desiredOrient _ = TRS.fromEulerXYZ (V3 0 (pi/6) 0)
+    --desiredOrient _ = fromEulerXYZ (V3 (pi/20) (pi/3) 0.0)
+    desiredOrient _ = fromEulerXYZ (V3 0 (pi/6) 0)
     name i = BoneId (showT i) []
     -- find the segment in the worm's AnimalPropertyMap
     prop i = Map.findWithDefault (error $ "could not find " ++ show (name i)) (name i) props

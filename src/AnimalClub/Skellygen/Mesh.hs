@@ -11,17 +11,17 @@ module AnimalClub.Skellygen.Mesh (
 
 ) where
 
-import qualified AnimalClub.Skellygen.TRS as TRS
+import qualified AnimalClub.Skellygen.TRS  as TRS
 
 import           Control.DeepSeq
-import           Control.Monad.Writer.Lazy     (Writer, execWriter, tell)
-import           GHC.Generics                  (Generic)
+import           Control.Monad.Writer.Lazy (Writer, execWriter, tell)
+import           GHC.Generics              (Generic)
 
-import           Data.Monoid                   (Monoid, mappend)
-import           Data.Semigroup                (Semigroup, (<>))
+import           Data.Monoid               (Monoid, mappend)
+import           Data.Semigroup            (Semigroup, (<>))
 
-import qualified AnimalClub.Skellygen.TRS as TRS
-import qualified Linear.Matrix                 as M
+import           AnimalClub.Skellygen.TRS
+import qualified Linear.Matrix             as M
 import           Linear.V3
 
 
@@ -59,11 +59,11 @@ meshToObj (Mesh m) = execWriter $ do
     mapM_ (\x -> tell $ "f " ++ foldr (\y acc -> acc ++ " " ++ show (y+1)) "" x ++ "\n") . group 3 . snd $ m
 
 -- TODO rewrite this using M44
-transformMesh :: (TRS.TRSFloating a) => TRS.TRS a -> Mesh a -> Mesh a
+transformMesh :: (TRSFloating a) => TRS a -> Mesh a -> Mesh a
 transformMesh trs (Mesh (verts, inds)) =  Mesh (map mapfn verts, inds) where
-    mapfn = TRS.mul_TRS_V3 trs
+    mapfn = mul_TRS_V3 trs
 
 -- TODO rewrite this using M44
-transformMeshM44 :: (TRS.TRSFloating a) => M.M44 a -> Mesh a -> Mesh a
+transformMeshM44 :: (TRSFloating a) => M.M44 a -> Mesh a -> Mesh a
 transformMeshM44 trs (Mesh (verts, inds)) =  Mesh (map mapfn verts, inds) where
-    mapfn = TRS.mul_M44_V3 trs
+    mapfn = mul_M44_V3 trs
