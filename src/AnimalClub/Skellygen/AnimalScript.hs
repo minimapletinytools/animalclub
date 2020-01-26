@@ -42,7 +42,7 @@ data AnimalNode' a = AnimalNode' {
 makeLenses ''AnimalNode'
 
 -- | sometimes helpful for root node cases
-dummyAnimalNode' :: (TRSFloating a) => AnimalNode' a
+dummyAnimalNode' :: (AnimalFloat a) => AnimalNode' a
 dummyAnimalNode' = AnimalNode' (BoneId "" []) Same identity identityTRS 1 True []
 
 -- | converts AnimalNode to internal format superficially
@@ -50,7 +50,7 @@ dummyAnimalNode' = AnimalNode' (BoneId "" []) Same identity identityTRS 1 True [
 -- as well as converting '_thickness' to the internal relative '_thickness'' format
 -- N.B. this does not apply the BoneTrans yet
 applyFirstPass ::
-    (TRSFloating a)
+    (AnimalFloat a)
     => AnimalNode' a -- ^ parent Node
     -> AnimalNode a -- ^ node to convert
     -> AnimalNode' a -- ^ output
@@ -90,7 +90,7 @@ applyFirstPass pn' cn = outan' where
 
 -- | this updates the '_trsAbs'' parameter of all children after parent node was updated
 update_m44Abs ::
-    (TRSFloating a)
+    (AnimalFloat a)
     => AnimalNode' a -- ^ parent node with changed transformation
     -> AnimalNode' a -- ^ child node to recompute
     -> AnimalNode' a -- ^ recomputed node
@@ -103,7 +103,7 @@ update_m44Abs p c = newc where
 -- then modifies it based on properties in the given 'AnimalPropertyMap'
 -- this is very inefficient as it needs to recompute the absolute transform of all children everytime it updates any node i.e. o(n^2)
 applyAnimalPropertyMap ::
-    (TRSFloating a)
+    (AnimalFloat a)
     => AnimalPropertyMap a
     -> AnimalNode' a -- ^ parent Node
     -> AnimalNode' a -- ^ node to convert
@@ -161,7 +161,7 @@ applyAnimalPropertyMap props pn cn = outan where
 -- N.B. there's nothing inside of 'AnimalNode'' tracking whether 'BoneTrans'' has been applied or not
 -- do not call this function twice!
 reduceBoneTrans ::
-    (TRSFloating a)
+    (AnimalFloat a)
     => AnimalNode' a -- ^ parent node, only necessary because we recompute absTrs for everything
     -> AnimalNode' a -- ^ child node being reduced
     -> AnimalNode' a
@@ -197,7 +197,7 @@ reduceBoneTrans p c = c_new where
 -- but you can make this work in a single pass if you make a new class like
 -- AnimalNodeBloated that holds all the intermediate information
 toAnimalNode' ::
-    (TRSFloating a)
+    (AnimalFloat a)
     => AnimalPropertyMap a
     -> AnimalNode a -- ^ top node
     -> AnimalNode' a -- ^ output
@@ -212,7 +212,7 @@ toAnimalNode' props n = nodes where
 -- | convert AnimalNode' to SkellyNode
 -- specifically, adds skinning info from AnimalProperty to the AnimalNode
 toSkellyNode ::
-    (TRSFloating a)
+    (AnimalFloat a)
     => AnimalPropertyMap a
     -> AnimalNode' a -- ^ current node
     -> SN.SkellyNode a -- ^ skellygen node for current node
@@ -232,13 +232,13 @@ toSkellyNode props cn =  outsn where
 
 -- | convert Animal Node to Skellygen
 animalNodeToSkellyNode ::
-    (TRSFloating a)
+    (AnimalFloat a)
     => AnimalNode a -- ^ root AnimalNode'
     -> SN.SkellyNode a -- ^ root SkellygenNode
 animalNodeToSkellyNode = animalNodeToSkellyNodeWithProps Map.empty
 
 animalNodeToSkellyNodeWithProps ::
-    (TRSFloating a)
+    (AnimalFloat a)
     => AnimalPropertyMap a
     -> AnimalNode a -- ^ root AnimalNode'
     -> SN.SkellyNode a -- ^ root SkellygenNode

@@ -16,7 +16,7 @@ Stability   : experimental
 
 module AnimalClub.Skellygen.TRS
   (
-  TRSFloating
+  AnimalFloat
 
   -- TRS components
   , Translation
@@ -59,7 +59,8 @@ import           Lens.Micro.Platform
 import           Linear.Conjugate
 import           Linear.Epsilon
 
-type TRSFloating a = (Conjugate a, RealFloat a, Epsilon a)
+-- | constraint kind needed for math operations to work properly (just use Float or Double in practice)
+type AnimalFloat a = (Conjugate a, RealFloat a, Epsilon a)
 
 -- TODO you can probably get rid of these
 type Translation a = V3 a
@@ -155,7 +156,7 @@ mul_TRS_V4 trs v = conv_TRS_M44 trs !* v
 -- we multiply both sides by $$invR = invR2*invR1$$ to get
 -- $$S = invR2*S1*R2*S2$$
 -- $$S$$ will not be a diagonal matrix in general
-potatoMul :: (TRSFloating a) => TRS a -> TRS a -> TRS a
+potatoMul :: (AnimalFloat a) => TRS a -> TRS a -> TRS a
 potatoMul (TRS pt pr ps) (TRS ct cr cs) =
   TRS
     (pt ^+^ (pr `rotate` (ps !* ct)))

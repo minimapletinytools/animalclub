@@ -37,7 +37,7 @@ gdThick = (0, 2) :: (Float, Float)
 
 
 goatHelper ::
-  (TRSFloating a)
+  (AnimalFloat a)
   => (BoneMethod a -> SkellyFunc a)
   -> ((a,a),(a,a),(a,a))
   -> [(SkellyFunc a, AutoGeneMethod a)]

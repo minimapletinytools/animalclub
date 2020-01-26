@@ -60,7 +60,7 @@ autoGeneSize (Normal _ x) = x
 -- | automatically create genome from given lists of properties
 -- this version does no overlap. All properties are independent
 makeGenomeFromPropertiesSimple ::
-    (TRSFloating a)
+    (AnimalFloat a)
     => Int -- ^ DNA length (vector length / 4)
     -> [(T.Text, AutoGeneMethod a)] -- ^ other properties
     -> [(SkellyFunc a, AutoGeneMethod a)] -- ^ skellygen properties, values in SkellyFunc are used as starting values

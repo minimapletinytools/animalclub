@@ -40,15 +40,15 @@ data BoxSkinParameters a = BoxSkinParameters
     , boxSize   :: (a, a) --size of box at each joint (parent, node)
     } deriving (Show)
 
-defaultBoxParam :: (TRSFloating a) => BoxSkinParameters a
+defaultBoxParam :: (AnimalFloat a) => BoxSkinParameters a
 defaultBoxParam = BoxSkinParameters (0.005, 0.005) (0.005, 0.005)
 
-_normalize :: (TRSFloating a) => V3 a -> V3 a
+_normalize :: (AnimalFloat a) => V3 a -> V3 a
 _normalize v = (1 / norm v) *^ v
 
 -- TODO it's better to write this function where it takes a thickness square at the origin facing neutral and apply the transformation to it
 generateSingleMeshLocal ::
-    (TRSFloating a)
+    (AnimalFloat a)
     => TRS a -- ^ input node transform
     -> a -- ^ input thickness
     -> a -- ^ node parent thickness
@@ -79,7 +79,7 @@ generateSingleMeshLocal pos ct pt =
     caps = [0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4]
 
 _generateMesh ::
-    (TRSFloating a)
+    (AnimalFloat a)
     => M44 a -- ^ parent ABS transform
     -> a -- ^ parent thickness
     -> SkellyNode a -- ^ node to generate
@@ -97,7 +97,7 @@ _generateMesh p_snM44 p_thick skn = selfMesh `mappend` mconcat cmeshes
     cmeshes = map (_generateMesh absM44 thick) (_snChildren skn)
 
 generateMesh ::
-    (TRSFloating a)
+    (AnimalFloat a)
     => SkellyNode a -- ^ input top level parent node
     -> Mesh a -- ^ output mesh
 generateMesh skn = _generateMesh identity 1.0 skn

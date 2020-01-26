@@ -130,7 +130,7 @@ instance Show (BoneTrans a) where
     show (ArbTrans _) = "ArbTrans"
 
 -- | combine two BoneTrans together
-composeBoneTrans :: (TRSFloating a) => BoneTrans a -> BoneTrans a -> BoneTrans a
+composeBoneTrans :: (AnimalFloat a) => BoneTrans a -> BoneTrans a -> BoneTrans a
 composeBoneTrans Same x      = x
 composeBoneTrans x Same      = x
 composeBoneTrans ReflX ReflX = Same
@@ -139,7 +139,7 @@ composeBoneTrans ReflZ ReflZ = Same
 composeBoneTrans x y         = ArbTrans $ applyBoneTrans x . applyBoneTrans y
 
 -- | applies BoneTrans to a TRS
-applyBoneTrans :: (TRSFloating a) => BoneTrans a -> TRS a -> TRS a
+applyBoneTrans :: (AnimalFloat a) => BoneTrans a -> TRS a -> TRS a
 applyBoneTrans Same = id
 applyBoneTrans ReflX = potatoMul (set scale (conv_V3_Scale $ V3 (-1) 1 1) identityTRS)
 applyBoneTrans ReflY = potatoMul (set scale (conv_V3_Scale $ V3 1 (-1) 1) identityTRS)
@@ -194,7 +194,7 @@ makeBoneIdList = foldAnimalNode (\bids an ->  _name an:bids) []
 -- flipAnimalNodeFancy :: BoneTrans -> [Int] -> AnimalNode -> AnimalNode
 --
 flipAnimalNode ::
-  (TRSFloating a)
+  (AnimalFloat a)
   => BoneTrans a -- ^ the BoneTrans we want to apply
   -> FlagTrans -- ^ how to modify the flags of the Bone (and all its children)
   -> AnimalNode a -- ^ the node we want to apply the BoneTrans to

@@ -56,13 +56,13 @@ data BoneMethod a = Thickness a  |  Length a | Orientation (Rotation a) | Color 
 
 
 -- | default (identity) bone methods
-defThickness :: (TRSFloating a) => BoneMethod a
+defThickness :: (AnimalFloat a) => BoneMethod a
 defThickness = Thickness 1
 
-defLength :: (TRSFloating a) => BoneMethod a
+defLength :: (AnimalFloat a) => BoneMethod a
 defLength = Length 1
 
-defOrientation :: (TRSFloating a) => BoneMethod a
+defOrientation :: (AnimalFloat a) => BoneMethod a
 defOrientation = Orientation identityRotation
 
 defColor :: BoneMethod a
@@ -84,7 +84,7 @@ newtype PrioritizedSkellyFunc a = PrioritizedSkellyFunc{ unPrioritizedSkellyFunc
 
 -- | adds values to parameters in BoneMethod_
 -- N.B this does no error checking on length of list being passed in
-addValuesToBoneMethod :: (TRSFloating a) => BoneMethod a -> [a] -> BoneMethod a
+addValuesToBoneMethod :: (AnimalFloat a) => BoneMethod a -> [a] -> BoneMethod a
 addValuesToBoneMethod m vals = case m of
   Orientation x ->
     Orientation $ x * fromEulerXYZ (V3 (vals !! 0) (vals !! 1) (vals !! 2))
@@ -96,7 +96,7 @@ addValuesToBoneMethod m vals = case m of
 
 -- | adds values to parameters in BoneMethod inside SkellyFunc
 -- N.B this does no error checking on length of list being passed in
-addValuesToSkellyFunc :: (TRSFloating a) => SkellyFunc a -> [a] -> SkellyFunc a
+addValuesToSkellyFunc :: (AnimalFloat a) => SkellyFunc a -> [a] -> SkellyFunc a
 addValuesToSkellyFunc (WithBoneId bid m) vals = WithBoneId bid (addValuesToBoneMethod m vals)
 addValuesToSkellyFunc (WithBoneMatcher matcher m) vals = WithBoneMatcher matcher (addValuesToBoneMethod m vals)
 
@@ -115,7 +115,7 @@ makeLenses ''AnimalProperty
 
 -- TODO rename to identityTRSAnimalProperty
 -- | the identityTRS AnimalProperty
-defaultAnimalProperty :: (TRSFloating a) => AnimalProperty a
+defaultAnimalProperty :: (AnimalFloat a) => AnimalProperty a
 defaultAnimalProperty = AnimalProperty {
     _orientation = identityRotation,
     _distance = 1,
@@ -127,14 +127,14 @@ defaultAnimalProperty = AnimalProperty {
 type AnimalPropertyMap a = M.Map BoneId (AnimalProperty a)
 
 -- | makes AnimalPropertyMap with all BoneIds as keys and gives them the identityTRS property
-makeStartingAnimalPropertyMap :: (TRSFloating a) => [BoneId] -> AnimalPropertyMap a
+makeStartingAnimalPropertyMap :: (AnimalFloat a) => [BoneId] -> AnimalPropertyMap a
 makeStartingAnimalPropertyMap = M.fromList . map (\bid -> (bid,defaultAnimalProperty))
 
 
 
 -- |
 generateAnimalPropertiesInternal_ ::
-  (TRSFloating a)
+  (AnimalFloat a)
   => AnimalPropertyMap a -- ^ accumulating map of properties.
   -> [PrioritizedSkellyFunc a] -- ^ list of properties
   -> AnimalPropertyMap a -- ^ output map list of properties
@@ -143,7 +143,7 @@ generateAnimalPropertiesInternal_ props psfs = foldl addProp props sorted_psfs w
   sorted_psfs = L.sortOn (fst . unPrioritizedSkellyFunc) psfs
 
   -- add a property to the map
-  addProp :: (TRSFloating a) => AnimalPropertyMap a -> PrioritizedSkellyFunc a -> AnimalPropertyMap a
+  addProp :: (AnimalFloat a) => AnimalPropertyMap a -> PrioritizedSkellyFunc a -> AnimalPropertyMap a
   addProp accProp (PrioritizedSkellyFunc (_,sf)) = r where
     (matched, method) = case sf of
       WithBoneId bid method -> (fromMaybe M.empty $ accProp M.!? bid >>= \a -> return (M.singleton bid a), method)
@@ -168,12 +168,12 @@ generateAnimalPropertiesInternal_ props psfs = foldl addProp props sorted_psfs w
 
 -- If we were really awesome, we could clean out all the BoneIds that are untouched (and thus have defaultAnimalProperty) for performance but whatever
 generateAnimalProperties_ ::
-    (TRSFloating a)
+    (AnimalFloat a)
     => [BoneId] -- ^ list of all bones (will be given default property in the map)
     -> [PrioritizedSkellyFunc a] -- ^ list of all SkellyFunc
     -> AnimalPropertyMap a -- ^ output accumulated map of properties. EnumBone' property will override AllBone' property
 generateAnimalProperties_ bids = generateAnimalPropertiesInternal_ (makeStartingAnimalPropertyMap bids)
 
 -- | property access helpers
-getAnimalProperty :: (TRSFloating a) => BoneId -> AnimalPropertyMap a -> AnimalProperty a
+getAnimalProperty :: (AnimalFloat a) => BoneId -> AnimalPropertyMap a -> AnimalProperty a
 getAnimalProperty boneId props = M.findWithDefault defaultAnimalProperty boneId props

@@ -92,7 +92,7 @@ tellSkellyFunc sf = tell [ExpSkellyFunc sf]
 
 -- | generates 'AnimalPropertyMap' from list of 'BoneId's and 'AnimalExp's
 generateAnimalProperties ::
-    (TRSFloating a)
+    (AnimalFloat a)
     => [BoneId] -- ^ list of all bones
     -> [AnimalExp a] -- ^ list of properties
     -> AnimalPropertyMap a-- ^ output accumulated map of properties.

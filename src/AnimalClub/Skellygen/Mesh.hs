@@ -58,11 +58,11 @@ meshToObj (Mesh m) = execWriter $ do
     mapM_ (\x -> tell $ "f " ++ foldr (\y acc -> acc ++ " " ++ show (y+1)) "" x ++ "\n") . group 3 . snd $ m
 
 -- TODO rewrite this using M44
-transformMesh :: (TRSFloating a) => TRS a -> Mesh a -> Mesh a
+transformMesh :: (AnimalFloat a) => TRS a -> Mesh a -> Mesh a
 transformMesh trs (Mesh (verts, inds)) =  Mesh (map mapfn verts, inds) where
     mapfn = mul_TRS_V3 trs
 
 -- TODO rewrite this using M44
-transformMeshM44 :: (TRSFloating a) => M44 a -> Mesh a -> Mesh a
+transformMeshM44 :: (AnimalFloat a) => M44 a -> Mesh a -> Mesh a
 transformMeshM44 trs (Mesh (verts, inds)) =  Mesh (map mapfn verts, inds) where
     mapfn = mul_M44_V3 trs
