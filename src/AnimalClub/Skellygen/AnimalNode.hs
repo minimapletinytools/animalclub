@@ -157,7 +157,10 @@ applyBoneTrans (ArbTrans f) = f
 -- | these define static properties that make up the base SkellyNode
 -- user friendly version that is limited in what can be expressed
 --
--- the representation is as a bunch of connected points in space
+-- each Node is a "limb" between the node's position and its parent
+-- if it is the top level node, it's parent assumes origin position
+-- if it is a phantom node, it won't have an associated mesh but otherwise is the same
+--
 -- orientations are automatically determined based on parent position (see comments in AnimalScript)
 -- positions and thickness can be specified as absolute or relative for convenience I guess
 -- (albeit this makes things more complicated so consider switching to everything in Abs coordinates
@@ -166,12 +169,11 @@ applyBoneTrans (ArbTrans f) = f
 -- this allows us to create animals with symmetrical parts and only defining the transformation on one part
 --
 data AnimalNode a = AnimalNode {
-    -- TODO separate out BoneId and BoneTrans
     _name      :: BoneId, -- ^ name and transformation if relevant
     _boneTrans :: BoneTrans a,
     _pos       :: AbsOrRel (V3 a), -- ^ position, relative to parent if rel, 'BoneTrans' in 'BoneName' is applied to this
     _thickness :: AbsOrRel a, -- ^ base thickness, relative to parent thickness if rel
-    _isPhantom    :: Bool,
+    _isPhantom    :: Bool, -- ^ if this is true, this node will be invisible (won't create a mesh)
     _children  :: [AnimalNode a]
     -- _nodeOrientation :: NodeOrientation
 }
