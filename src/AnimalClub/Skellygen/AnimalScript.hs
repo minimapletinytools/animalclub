@@ -21,15 +21,9 @@ import qualified Debug.Trace                         as Debug
 import           AnimalClub.Skellygen.AnimalNode
 import           AnimalClub.Skellygen.AnimalProperty
 
+import           AnimalClub.Skellygen.Linear
 import qualified AnimalClub.Skellygen.Skellygen      as SN
 import           AnimalClub.Skellygen.TRS
-
-
-import qualified Linear.Matrix                       as M
-import           Linear.Metric
-import           Linear.Quaternion                   (rotate)
-import           Linear.V3
-import           Linear.Vector
 
 
 -- | these define static properties that make up the base SkellyNode
@@ -38,7 +32,7 @@ data AnimalNode' a = AnimalNode' {
     -- TODO rename this field
     _name'        :: BoneId -- ^ name
     , _boneTrans' :: BoneTrans a
-    , _m44Abs'    :: M.M44 a -- ^ absolute
+    , _m44Abs'    :: M44 a -- ^ absolute
     , _trs'       :: TRS a -- ^ rel to parent
     , _thickness' :: a -- ^rel to _trans
     , _isRoot'    :: Bool
@@ -49,7 +43,7 @@ makeLenses ''AnimalNode'
 
 -- | sometimes helpful for root node cases
 dummyAnimalNode' :: (TRSFloating a) => AnimalNode' a
-dummyAnimalNode' = AnimalNode' (BoneId "" []) Same M.identity identityTRS 1 True []
+dummyAnimalNode' = AnimalNode' (BoneId "" []) Same identity identityTRS 1 True []
 
 -- | converts AnimalNode to internal format superficially
 -- i.e. this takes care of converting the '_pos' parameter into the internal '_trs'' and '_m44Abs''
@@ -62,7 +56,7 @@ applyFirstPass ::
     -> AnimalNode' a -- ^ output
 applyFirstPass pn' cn = outan' where
     p_abs_m44 = _m44Abs' pn'
-    p_abs_m44_inv = M.inv44 p_abs_m44
+    p_abs_m44_inv = inv44 p_abs_m44
     --p_abs_rot = _rot p_abs_m44
     --p_abs_rot_inv = rotationInverse p_abs_rot
 
@@ -85,7 +79,7 @@ applyFirstPass pn' cn = outan' where
     outan' = AnimalNode' {
         _name' = _name cn,
         _boneTrans' = _boneTrans cn,
-        _m44Abs' = p_abs_m44 M.!*! conv_TRS_M44 c_trs,
+        _m44Abs' = p_abs_m44 !*! conv_TRS_M44 c_trs,
         _trs' = c_trs,
         _thickness' = case _thickness cn of
             Rel a -> a * _thickness' pn'
@@ -101,7 +95,7 @@ update_m44Abs ::
     -> AnimalNode' a -- ^ child node to recompute
     -> AnimalNode' a -- ^ recomputed node
 update_m44Abs p c = newc where
-    newc' = set m44Abs' (_m44Abs' p M.!*! conv_TRS_M44 (_trs' c)) c
+    newc' = set m44Abs' (_m44Abs' p !*! conv_TRS_M44 (_trs' c)) c
     newc = set children' (map (update_m44Abs newc) (_children' c)) newc'
 
 -- | applies 'AnimalPropertyMap'
@@ -116,7 +110,7 @@ applyAnimalPropertyMap ::
     -> AnimalNode' a -- ^ output
 applyAnimalPropertyMap props pn cn = outan where
     p_abs_m44 = _m44Abs' pn
-    p_abs_m44_inv = M.inv44 p_abs_m44
+    p_abs_m44_inv = inv44 p_abs_m44
 
     --p_abs_rot = _rot p_abs_trs
     --p_abs_rot_inv = rotationInverse p_abs_rot
@@ -158,7 +152,7 @@ applyAnimalPropertyMap props pn cn = outan where
         _isRoot' = _isRoot' cn,
         -- new stuff
         _trs' = c_rel_trs_new,
-        _m44Abs' = p_abs_m44 M.!*! conv_TRS_M44 c_rel_trs_new,
+        _m44Abs' = p_abs_m44 !*! conv_TRS_M44 c_rel_trs_new,
         _children' = map (applyAnimalPropertyMap props outan) updatedChildren
     }
 
@@ -185,7 +179,7 @@ reduceBoneTrans p c = c_new where
     -- update absTrs in all nodes
     -- N.B, this step is not necessary as we currently aren't using absTrs after this point, but we still do it to future proof our data
     -- first set abs and rel trs for current node
-    c_new' = set m44Abs' (p_abs_m44 M.!*! conv_TRS_M44 c_rel_trs_new) $ set trs' c_rel_trs_new c
+    c_new' = set m44Abs' (p_abs_m44 !*! conv_TRS_M44 c_rel_trs_new) $ set trs' c_rel_trs_new c
     -- then recompute abstrs in children
     c_new'' = set children' (map (update_m44Abs c_new') (_children' c_new')) c_new'
     -- for performance, don't bother doing anything in the Same case

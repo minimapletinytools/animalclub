@@ -21,21 +21,20 @@ module ExamplesLib.Worm (
 
 import           AnimalClub.Animals
 import           AnimalClub.Genetics
-import           AnimalClub.Skellygen
+import           AnimalClub.Skellygen        hiding (distance)
+import           AnimalClub.Skellygen.Linear
 import           AnimalClub.Skellygen.TRS
 
 
-import qualified Linear.Metric            as Metric
-import           Linear.V3
 
-import           Control.Monad            (forM_)
-import           Data.List                (mapAccumL, sortBy)
-import qualified Data.Map                 as Map
-import           Data.Ord                 (comparing)
-import qualified Data.Text                as T
+import           Control.Monad               (forM_)
+import           Data.List                   (mapAccumL, sortBy)
+import qualified Data.Map                    as Map
+import           Data.Ord                    (comparing)
+import qualified Data.Text                   as T
 import           System.Random
 
-import qualified Debug.Trace              as Debug
+import qualified Debug.Trace                 as Debug
 
 showT :: (Show a) => a -> T.Text
 showT = T.pack . show
@@ -84,7 +83,7 @@ testWorm segs props = score where
     prop i = Map.findWithDefault (error $ "could not find " ++ show (name i)) (name i) props
     thick i = _skinParams $ prop i
     orient i = _orientation $ prop i
-    off i = (thick i - desiredThick i) + 5*(Metric.distance (orient i) (desiredOrient i))
+    off i = (thick i - desiredThick i) + 5*(distance (orient i) (desiredOrient i))
     score = sqrt $ sum [off x * off x | x <- [0..(segs-1)]]
 
 -- | breedAndSelectWormPool breeds worms in a pool targetting the ideal form

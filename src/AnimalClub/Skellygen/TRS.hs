@@ -52,17 +52,12 @@ module AnimalClub.Skellygen.TRS
 
 
 
+import           AnimalClub.Skellygen.Linear
 import           Control.DeepSeq
-import           GHC.Generics        (Generic)
+import           GHC.Generics                (Generic)
 import           Lens.Micro.Platform
 import           Linear.Conjugate
 import           Linear.Epsilon
-import           Linear.Matrix
-import           Linear.Metric
-import           Linear.Quaternion
-import           Linear.V3
-import           Linear.V4
-import           Linear.Vector
 
 type TRSFloating a = (Conjugate a, RealFloat a, Epsilon a)
 

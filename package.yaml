@@ -81,6 +81,7 @@ library:
     - AnimalClub.Skellygen
     - AnimalClub.Skellygen.Mesh
     - AnimalClub.Skellygen.TRS
+    - AnimalClub.Skellygen.Linear
     # Animal
     - AnimalClub.Animals
 

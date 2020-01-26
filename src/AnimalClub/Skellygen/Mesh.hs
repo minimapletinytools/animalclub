@@ -11,18 +11,17 @@ module AnimalClub.Skellygen.Mesh (
 
 ) where
 
-import qualified AnimalClub.Skellygen.TRS  as TRS
+import qualified AnimalClub.Skellygen.TRS    as TRS
 
 import           Control.DeepSeq
-import           Control.Monad.Writer.Lazy (Writer, execWriter, tell)
-import           GHC.Generics              (Generic)
+import           Control.Monad.Writer.Lazy   (Writer, execWriter, tell)
+import           GHC.Generics                (Generic)
 
-import           Data.Monoid               (Monoid, mappend)
-import           Data.Semigroup            (Semigroup, (<>))
+import           Data.Monoid                 (Monoid, mappend)
+import           Data.Semigroup              (Semigroup, (<>))
 
+import           AnimalClub.Skellygen.Linear
 import           AnimalClub.Skellygen.TRS
-import qualified Linear.Matrix             as M
-import           Linear.V3
 
 
 
@@ -64,6 +63,6 @@ transformMesh trs (Mesh (verts, inds)) =  Mesh (map mapfn verts, inds) where
     mapfn = mul_TRS_V3 trs
 
 -- TODO rewrite this using M44
-transformMeshM44 :: (TRSFloating a) => M.M44 a -> Mesh a -> Mesh a
+transformMeshM44 :: (TRSFloating a) => M44 a -> Mesh a -> Mesh a
 transformMeshM44 trs (Mesh (verts, inds)) =  Mesh (map mapfn verts, inds) where
     mapfn = mul_M44_V3 trs

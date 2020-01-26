@@ -11,19 +11,14 @@ module AnimalClub.Skellygen.Skellygen
     ) where
 
 import           Control.DeepSeq
-import           GHC.Generics              (Generic)
+import           GHC.Generics
 import           Lens.Micro.Platform
-import qualified Linear.Matrix             as M
-import           Linear.Metric
-import           Linear.Quaternion         (rotate)
-import           Linear.V3
-import           Linear.Vector
 
-
+import           AnimalClub.Skellygen.Linear
 import           AnimalClub.Skellygen.Mesh
 import           AnimalClub.Skellygen.TRS
 
-import qualified Debug.Trace               as Debug
+import qualified Debug.Trace                 as Debug
 
 -- |
 -- prefixed names due to unfortunate naming conflict with AnimalNode
@@ -45,7 +40,7 @@ data BoxSkinParameters a = BoxSkinParameters
     , boxSize   :: (a, a) --size of box at each joint (parent, node)
     } deriving (Show)
 
-defaultBoxParam :: BoxSkinParameters Float
+defaultBoxParam :: (TRSFloating a) => BoxSkinParameters a
 defaultBoxParam = BoxSkinParameters (0.005, 0.005) (0.005, 0.005)
 
 _normalize :: (TRSFloating a) => V3 a -> V3 a
@@ -85,7 +80,7 @@ generateSingleMeshLocal pos ct pt =
 
 _generateMesh ::
     (TRSFloating a)
-    => M.M44 a -- ^ parent ABS transform
+    => M44 a -- ^ parent ABS transform
     -> a -- ^ parent thickness
     -> SkellyNode a -- ^ node to generate
     -> Mesh a -- ^ output mesh
@@ -98,11 +93,11 @@ _generateMesh p_snM44 p_thick skn = selfMesh `mappend` mconcat cmeshes
     selfMesh =
         if _snIsRoot skn then emptyMesh else transformMeshM44 p_snM44 $ generateSingleMeshLocal reltrs thick p_thick
     -- TODO change this to M44 multiplication
-    absM44 = p_snM44 M.!*! conv_TRS_M44 reltrs
+    absM44 = p_snM44 !*! conv_TRS_M44 reltrs
     cmeshes = map (_generateMesh absM44 thick) (_snChildren skn)
 
 generateMesh ::
     (TRSFloating a)
     => SkellyNode a -- ^ input top level parent node
     -> Mesh a -- ^ output mesh
-generateMesh skn = _generateMesh M.identity 1.0 skn
+generateMesh skn = _generateMesh identity 1.0 skn

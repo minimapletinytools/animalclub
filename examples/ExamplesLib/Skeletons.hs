@@ -19,8 +19,8 @@ module ExamplesLib.Skeletons (
 
 import           AnimalClub.Animals
 import           AnimalClub.Skellygen
+import           AnimalClub.Skellygen.Linear
 import           AnimalClub.Skellygen.Mesh
-import           Linear.V3
 
 -- | whatever helper
 relV3 x y z = Rel $ V3 x y z

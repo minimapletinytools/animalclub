@@ -23,18 +23,16 @@ module AnimalClub.Skellygen.AnimalProperty (
 ) where
 
 import           Control.DeepSeq
-import           Control.Exception               (assert)
+import           Control.Exception
 import qualified Data.List                       as L
 import qualified Data.Map                        as M
-import           Data.Maybe                      (fromMaybe)
+import           Data.Maybe
 import qualified Data.Text                       as T
-import           GHC.Generics                    (Generic)
+import           GHC.Generics
 import           Lens.Micro.Platform
 
-import           Linear.V3
-
 import           AnimalClub.Skellygen.AnimalNode
-
+import           AnimalClub.Skellygen.Linear     hiding (distance)
 import           AnimalClub.Skellygen.TRS
 
 
