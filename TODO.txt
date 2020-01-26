@@ -1,9 +1,7 @@
 ::TODO::
-DONE D:-do constraint parameterization of Float (so we can switch to Double)
-DONE-combine all math libraries into single Math.hs module...
+
 -switch indentation to 2 spaces
 -fix missing-home-module warning
--fix or change the isRoot parameter in AnimalNode
 -finish lookAt function, and make its interface less weird
 -basic test cases
 -finish goat breeding app MVP
@@ -18,7 +16,9 @@ DONE-combine all math libraries into single Math.hs module...
   DONE-consider deleting Hierarchical
   -move goat.hs:goatHelper into Builder.hs
   -consider moving parts of Builder.hs into Genetics
-
+DONE D:-do constraint parameterization of Float (so we can switch to Double)
+DONE-combine all math libraries into single Math.hs module...
+DONE-fix or change the isRoot parameter in AnimalNode
 DONE-math
   IGNORE-organize Skellygen/Math ugg
   IGNORE/FAIL-finish invTRS

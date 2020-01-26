@@ -171,7 +171,7 @@ data AnimalNode a = AnimalNode {
     _boneTrans :: BoneTrans a,
     _pos       :: AbsOrRel (V3 a), -- ^ position, relative to parent if rel, 'BoneTrans' in 'BoneName' is applied to this
     _thickness :: AbsOrRel a, -- ^ base thickness, relative to parent thickness if rel
-    _isRoot    :: Bool,
+    _isPhantom    :: Bool,
     _children  :: [AnimalNode a]
     -- _nodeOrientation :: NodeOrientation
 }

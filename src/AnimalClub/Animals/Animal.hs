@@ -9,7 +9,7 @@ Stability   : experimental
 
 
 module AnimalClub.Animals.Animal (
-    asRoot,
+    asPhantom,
     mans, manf, manbt,
     AnimalExp(..),
     parseSkellyFuncs,
@@ -34,8 +34,8 @@ import           Control.Monad.Writer        (tell)
 --import Debug.Trace (trace)
 
 -- | set the AnimalNode as the root node
-asRoot :: AnimalNode a -> AnimalNode a
-asRoot an = an { _isRoot = True }
+asPhantom :: AnimalNode a -> AnimalNode a
+asPhantom an = an { _isPhantom = True }
 
 -- | helper method for making AnimalNode
 mans ::

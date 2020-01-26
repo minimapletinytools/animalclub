@@ -24,7 +24,7 @@ instance (Arbitrary a) => Arbitrary (AnimalNode a) where
           _name = undefined
           , _pos = Abs pos
           , _thickness = undefined
-          , _isRoot = True
+          , _isPhantom = True
           , _children = []
         }
 

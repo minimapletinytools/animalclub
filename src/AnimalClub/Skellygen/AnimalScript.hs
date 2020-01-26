@@ -35,7 +35,7 @@ data AnimalNode' a = AnimalNode' {
     , _m44Abs'    :: M44 a -- ^ absolute
     , _trs'       :: TRS a -- ^ rel to parent
     , _thickness' :: a -- ^rel to _trans
-    , _isRoot'    :: Bool
+    , _isPhantom'    :: Bool
     , _children'  :: [AnimalNode' a]
 }
 
@@ -84,7 +84,7 @@ applyFirstPass pn' cn = outan' where
         _thickness' = case _thickness cn of
             Rel a -> a * _thickness' pn'
             Abs a -> a,
-        _isRoot' = _isRoot cn,
+        _isPhantom' = _isPhantom cn,
         _children' = map (applyFirstPass outan') (_children cn)
     }
 
@@ -149,7 +149,7 @@ applyAnimalPropertyMap props pn cn = outan where
         _name' = _name' cn,
         _boneTrans' = _boneTrans' cn,
         _thickness' = _thickness' cn,
-        _isRoot' = _isRoot' cn,
+        _isPhantom' = _isPhantom' cn,
         -- new stuff
         _trs' = c_rel_trs_new,
         _m44Abs' = p_abs_m44 !*! conv_TRS_M44 c_rel_trs_new,
@@ -222,7 +222,7 @@ toSkellyNode props cn =  outsn where
     skellyChildren = map (toSkellyNode props) (_children' cn)
     outsn = SN.SkellyNode {
         SN._snDebugName = show (_name' cn),
-        SN._snIsRoot = _isRoot' cn,
+        SN._snIsPhantom = _isPhantom' cn,
         SN._snChildren = skellyChildren,
         SN._snTrs = cn_rel_trs,
         --SN._trs = Debug.trace ("rel: " ++ show cn_rel_trs) cn_rel_trs,

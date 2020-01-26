@@ -42,14 +42,14 @@ goatBodyLegVert = -0.01  :: Float
 goatLeg = 0.6  :: Float
 
 -- | front leg!
-goatFrontRightLeg = asRoot $
+goatFrontRightLeg = asPhantom $
     manf "leg" [BF_Right, BF_Front] (relV3 (0.05) goatBodyLegVert goatBodyLegWidth) (Rel 0.3)
         [manf "knee" [BF_Right, BF_Front] (relV3 (-0.05) (-goatLeg/2.0) 0) (Rel 0.8)
             [manf "ankle" [BF_Right, BF_Front] (relV3 (0.05) (-goatLeg/2.0) 0) (Rel 0.8)
                 [manf "toe" [BF_Right, BF_Front] (relV3 (-0.1) 0 0) (Rel 0.4) []]]]
 
 -- | back leg!
-goatBackRightLeg = asRoot $
+goatBackRightLeg = asPhantom $
     manf "leg" [BF_Right, BF_Back] (relV3 (-0.05) goatBodyLegVert goatBodyLegWidth) (Rel 0.38)
         [manf "knee" [BF_Right, BF_Back] (relV3 (-0.05) (-goatLeg/2.0) 0) (Rel 0.8)
             [manf "ankle" [BF_Right, BF_Back] (relV3 (0.05) (-goatLeg/2.0) 0) (Rel 0.8)
@@ -57,7 +57,7 @@ goatBackRightLeg = asRoot $
 
 -- | goat!
 goat :: AnimalNode Float
-goat = asRoot $
+goat = asPhantom $
     mans "root" (relV3 0 0 0) (Abs 0.2)
         [mans "neck" (relV3 (-0.07) (0.3) 0) (Rel 0.75)
             [mans "head" (relV3 (-0.07) (0.04) 0) (Rel 1.2) []]
@@ -65,7 +65,7 @@ goat = asRoot $
         ,(flipAnimalNode ReflZ (defTransFlag ReflZ) goatFrontRightLeg)
         ,mans "body" (relV3 (0.35) (-0.02) 0) (Rel 0.95)
             [mans "body2" (relV3 (0.35) (0.02) 0) (Rel 1.05)
-                [asRoot $ mans "tailbone" (relV3 0 (0.2) 0) (Rel 0.2)
+                [asPhantom $ mans "tailbone" (relV3 0 (0.2) 0) (Rel 0.2)
                     [mans "tailend" (relV3 (0.1) (-0.02) 0) (Rel 1.0) []]
                 ,goatBackRightLeg
                 ,(flipAnimalNode ReflZ (defTransFlag ReflZ) goatBackRightLeg)
@@ -75,7 +75,7 @@ goat = asRoot $
 
 -- | your basic worm
 worm :: AnimalNode Float
-worm = asRoot $
+worm = asPhantom $
     mans "0" (relV3 0 0 0) (Abs 0.1)
         [mans "1" (relV3 1 0 0) (Rel 1)
             [mans "2" (relV3 0 1 0) (Rel 1)
@@ -91,7 +91,7 @@ flipWorm =
 
 -- | worm made from flipping a flippable worm
 worm2 :: AnimalNode Float
-worm2 = asRoot $ mans "root" (relV3 0 0 0) (Abs 0.2)
+worm2 = asPhantom $ mans "root" (relV3 0 0 0) (Abs 0.2)
     [flipWorm
     , flipAnimalNode ReflX (defTransFlag ReflX) flipWorm
     ]

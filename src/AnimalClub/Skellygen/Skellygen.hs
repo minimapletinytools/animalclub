@@ -25,7 +25,7 @@ import qualified Debug.Trace                 as Debug
 data SkellyNode a = SkellyNode
     {
     _snDebugName   :: String
-    , _snIsRoot    :: Bool
+    , _snIsPhantom    :: Bool
     , _snChildren  :: [SkellyNode a]
     , _snTrs       :: TRS a -- ^ relative to parent
     , _snThickness :: a -- ^ base physical size of joint.
@@ -91,7 +91,7 @@ _generateMesh p_snM44 p_thick skn = selfMesh `mappend` mconcat cmeshes
     --selfMesh = Debug.trace ("skn: " ++ (show (_snDebugName skn)) ++ " p: " ++ show (_trans p_snTrs) ++ " c: " ++ show (_trans reltrs)) $
     --selfMesh = Debug.trace ("sknabs: " ++ show abstrs ++ " p: " ++ show (_rot p_snTrs) ++ " c: " ++ show (_rot reltrs)) $
     selfMesh =
-        if _snIsRoot skn then emptyMesh else transformMeshM44 p_snM44 $ generateSingleMeshLocal reltrs thick p_thick
+        if _snIsPhantom skn then emptyMesh else transformMeshM44 p_snM44 $ generateSingleMeshLocal reltrs thick p_thick
     -- TODO change this to M44 multiplication
     absM44 = p_snM44 !*! conv_TRS_M44 reltrs
     cmeshes = map (_generateMesh absM44 thick) (_snChildren skn)
