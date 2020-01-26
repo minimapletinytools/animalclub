@@ -43,7 +43,7 @@ wormNode 0 = mans (showT 0) (Rel $ V3 0.5 0 0) (Rel 1) []
 wormNode n = mans (showT n) (Rel $ V3 0.5 0 0) (Rel 1) [wormNode (n-1)]
 worm segs = asRoot $ mans (showT (segs-1)) (Rel 0) (Abs 0.1) [wormNode (segs-1)]
 
-wormGenome' :: (RandomGen g) => Int -> Int -> Genotype g [AnimalExp] ()
+wormGenome' :: (RandomGen g) => Int -> Int -> Genotype g [AnimalExp Float] ()
 wormGenome' segs dnaPerSeg = do forM_ [0..(segs-1)] wormSeg where
     dnaPerSegOver4 = dnaPerSeg `div` 4
     dnaPerSegOver2 = dnaPerSeg `div` 2
@@ -62,7 +62,7 @@ wormGenome' segs dnaPerSeg = do forM_ [0..(segs-1)] wormSeg where
 wormGenome ::
   Int -- ^ number of segments
   -> Int -- ^ DNA length of each segment
-  -> Genome StdGen [AnimalExp]
+  -> Genome StdGen [AnimalExp Float]
 wormGenome segs dnaPerSeg = Genome (segs*dnaPerSeg) (wormGenome' segs dnaPerSeg) (mkStdGen 0)
 
 
@@ -71,7 +71,7 @@ wormGenome segs dnaPerSeg = Genome (segs*dnaPerSeg) (wormGenome' segs dnaPerSeg)
 -- a brief history of this evolution is available through `git blame`
 testWorm ::
   Int -- ^ number of segments
-  -> AnimalPropertyMap -- ^ the worm's AnimalPropertyMap
+  -> AnimalPropertyMap Float -- ^ the worm's AnimalPropertyMap
   -> Float
 testWorm segs props = score where
     --desiredThick i =  (fromIntegral i / fromIntegral segs) * 3 + 0.5
@@ -89,9 +89,9 @@ testWorm segs props = score where
 -- | breedAndSelectWormPool breeds worms in a pool targetting the ideal form
 -- TODO use breedAndSelectPool in DNA <-- I can't remember what this means anymore
 breedAndSelectWormPool :: (RandomGen g) =>
-    (AnimalPropertyMap -> Float) -- ^ test function
+    (AnimalPropertyMap Float -> Float) -- ^ test function
     -- TODO consider packing this into its own type since they are used together a lot
-    -> ([BoneId], Genome StdGen [AnimalExp]) -- ^ worm
+    -> ([BoneId], Genome StdGen [AnimalExp Float]) -- ^ worm
     -> Float -- ^ mutation chance
     -> g -- ^ random generator
     -> (Int, Int) -- ^ size, # winners to go to next generation

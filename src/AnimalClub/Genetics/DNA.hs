@@ -51,12 +51,12 @@ type DNA = V.Vector Allele4
 
 -- | number of Allele4 in DNA
 -- that is to say, length in in 8-bit intervals
-dnaLength :: DNA -> Int
-dnaLength = V.length
+dnaLength :: (Num a) => DNA -> a
+dnaLength = fromIntegral . V.length
 
 -- | sum of all bits in DNA
-dnaSum :: DNA -> Int
-dnaSum = V.foldl' (\acc x -> acc + popCount x) 0
+dnaSum :: (Num a) => DNA -> a
+dnaSum = V.foldl' (\acc x -> acc + fromIntegral (popCount x)) 0
 
 -- | returns an 8 length array that counts occurrence of each bit
 dnaBitCount :: DNA -> V.Vector Int

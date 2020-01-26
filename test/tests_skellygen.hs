@@ -18,7 +18,7 @@ prop_justfortesting :: Int -> Bool
 prop_justfortesting x = (read . show) x == x
 
 -- TODO finish
-instance Arbitrary AnimalNode where
+instance (Arbitrary a) => Arbitrary (AnimalNode a) where
   arbitrary = sized arb where
     arb 0 = do
       pos <- arbitrary

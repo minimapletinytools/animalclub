@@ -37,9 +37,9 @@ relV3 x y z = Rel $ V3 x y z
 -}
 
 -- | goat parameteris
-goatBodyLegWidth = 0.1
-goatBodyLegVert = -0.01
-goatLeg = 0.6
+goatBodyLegWidth = 0.1 :: Float
+goatBodyLegVert = -0.01  :: Float
+goatLeg = 0.6  :: Float
 
 -- | front leg!
 goatFrontRightLeg = asRoot $
@@ -56,6 +56,7 @@ goatBackRightLeg = asRoot $
                 [manf "toe" [BF_Right, BF_Back] (relV3 (-0.1) 0 0) (Rel 0.4) []]]]
 
 -- | goat!
+goat :: AnimalNode Float
 goat = asRoot $
     mans "root" (relV3 0 0 0) (Abs 0.2)
         [mans "neck" (relV3 (-0.07) (0.3) 0) (Rel 0.75)
@@ -73,6 +74,7 @@ goat = asRoot $
         ]
 
 -- | your basic worm
+worm :: AnimalNode Float
 worm = asRoot $
     mans "0" (relV3 0 0 0) (Abs 0.1)
         [mans "1" (relV3 1 0 0) (Rel 1)
@@ -88,6 +90,7 @@ flipWorm =
                 [mans "3" (relV3 0 0 1) (Rel 1.1) []]]]
 
 -- | worm made from flipping a flippable worm
+worm2 :: AnimalNode Float
 worm2 = asRoot $ mans "root" (relV3 0 0 0) (Abs 0.2)
     [flipWorm
     , flipAnimalNode ReflX (defTransFlag ReflX) flipWorm

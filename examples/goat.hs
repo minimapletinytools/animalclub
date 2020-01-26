@@ -14,6 +14,7 @@ import           ExamplesLib.Skeletons
 import           AnimalClub.Animals
 import           AnimalClub.Genetics
 import           AnimalClub.Skellygen
+import qualified AnimalClub.Skellygen.Math.TRS as TRS
 import           AnimalClub.Skellygen.Math.Mesh
 
 import           System.Random
@@ -27,18 +28,19 @@ import           Text.Printf                    (printf)
 
 -- energyNode = ATree ((Left "energy consumption", Normal (0,2) 10), [(Linear 1, undefined)])
 
-gdOrient = (-0.5, 0.5)
-gdLength = (0, 2)
-gdThick = (0, 2)
+gdOrient = (-0.5, 0.5) :: (Float, Float)
+gdLength = (0, 2) :: (Float, Float)
+gdThick = (0, 2) :: (Float, Float)
 --gdOrient = (0,0)
 --gdLength = (0,0)
 --gdThick = (0,0)
 
 
 goatHelper ::
-  (BoneMethod -> SkellyFunc)
-  -> ((Float,Float),(Float,Float),(Float,Float))
-  -> [(SkellyFunc, AutoGeneMethod)]
+  (TRS.TRSFloating a)
+  => (BoneMethod a -> SkellyFunc a)
+  -> ((a,a),(a,a),(a,a))
+  -> [(SkellyFunc a, AutoGeneMethod a)]
 goatHelper bmf (l,t,o)= [
   (bmf defLength, Normal l 1)
   , (bmf defThickness, Normal t 1)
@@ -46,7 +48,7 @@ goatHelper bmf (l,t,o)= [
   ]
 
 -- NOTE, this is setting thickness on some "root" nodes which is pointless and harmless
-goatPropertyList :: [(SkellyFunc, AutoGeneMethod)]
+goatPropertyList :: [(SkellyFunc Float, AutoGeneMethod Float)]
 goatPropertyList =
   goatHelper (WithBoneMatcher (nameFlagMatcher "leg" [BF_Front])) (gdLength,gdThick,gdOrient)
   ++ goatHelper (WithBoneMatcher (nameFlagMatcher "knee" [BF_Front])) (gdLength,gdThick,gdOrient)

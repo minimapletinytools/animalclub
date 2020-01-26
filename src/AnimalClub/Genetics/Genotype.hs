@@ -177,11 +177,11 @@ gbDNALength :: (Monoid w, Monad m) => GenotypeT g w m Int
 gbDNALength = GenotypeT $ \g dna -> return (dnaLength dna, g, mempty)
 
 -- | Computation that adds all genes of current genotype
-gbSum :: (Monoid w, Monad m) => GenotypeT g w m Int
+gbSum :: (Num a, Monoid w, Monad m) => GenotypeT g w m a
 gbSum = GenotypeT $ \g dna -> return (dnaSum dna, g, mempty)
 
 -- | gbSum normalized to [0,1]
-gbNormalizedSum :: (Monoid w, Monad m) => GenotypeT g w m Float
+gbNormalizedSum :: (Fractional a, Monoid w, Monad m) => GenotypeT g w m a
 gbNormalizedSum = do
     s <- gbSum
     l <- gbDNALength
@@ -192,7 +192,7 @@ gbNormalizedSum = do
 --gbNormalizedSum = liftA2 (\s l -> 0.125 * fromIntegral s / fromIntegral l) gbSum gbDNALength
 
 -- | Computation returns True if gbNormalizedSum > thresh, False otherwise
-gbSumRange :: (Monoid w, Monad m) => (Float,Float) -> GenotypeT g w m Float
+gbSumRange :: (Fractional a, Monoid w, Monad m) => (a,a) -> GenotypeT g w m a
 gbSumRange (min',max') = do
     s <- gbNormalizedSum
     return $ min' + s * (max'-min')
