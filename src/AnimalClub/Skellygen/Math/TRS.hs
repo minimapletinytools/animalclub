@@ -134,7 +134,21 @@ mul_TRS_V4 trs v = fromTRS trs M.!* v
 --_componentMul (V3 ax ay az) (V3 bx by bz) = V3 (ax * bx) (ay * by) (az * bz)
 
 -- |
--- this is probably not very correct
+-- this is the correct implementation for combining two TRSs I believe
+-- requires scale component to be a 3x3 matrix
+-- assuming T R S is closed under multiplication (prove by representing as 4x4 homogenous matrix)
+-- w.t.s $$T*R*S = (T1*R1*S1) * (T2*R2*S2)$$
+-- since $T*v = TRS*v$ where $$v=[0,0,0,1]$$ is a point at the origin (in R3)
+-- and this entirely determines $T$
+-- we have $$T = T1 * (R1*S1*T2)$$
+-- by examining matrix decomposition of a homogenous M44
+-- we get that in general the rotation and scale components as represented as M33 are not affected by the translation component
+-- in particular $$m33(R*S*T) = m33(T*R*S)$$ where $$m33$$ is the upper left 3x3 submatrix
+-- thus we have $$R*S = R1*S1*R2*S2$$
+-- by taking $$R = R1*R2$$
+-- we multiply both sides by $$invR = invR2*invR1$$ to get
+-- $$S = invR2*S1*R2*S2$$
+-- $$S$$ will not be a diagonal matrix in general
 potatoMul :: (Conjugate a, RealFloat a) => TRS a -> TRS a -> TRS a
 potatoMul (TRS pt pr ps) (TRS ct cr cs) =
   TRS

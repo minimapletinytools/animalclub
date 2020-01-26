@@ -10,9 +10,6 @@
     -confirm
     -update comments
     -see if this breaks our inherit and invTRS functions
--BoneTrans refactor
-  -TRS should always have a pure scale component (V3 instead of M33)
-  -applyBoneTrans modifies TRS directly
 -basic test cases
 -finish goat breeding app MVP
   -just randomly breed and see what happens?
@@ -20,10 +17,15 @@
   -try breeding to maximize volume and see what happens
   -try breeding to maximize bending joints and see what happens
 -finish exporting genetics stuff to C++
+-change scale to V3 instead of M33
+  -see comments in reduceBoneTrans in AnimalScript.hs
 -refactor
   DONE-consider deleting Hierarchical
   -move goat.hs:goatHelper into Builder.hs
   -consider moving parts of Builder.hs into Genetics
+IGNORE-BoneTrans refactor
+  -TRS should always have a pure scale component (V3 instead of M33)
+  FAIL-applyBoneTrans modifies TRS directly
 DONE-refactor
   IGNORE-rename AnimalNode' to AnimalNodeInternal
   DONE-expand skellyfunc to host all possibilities

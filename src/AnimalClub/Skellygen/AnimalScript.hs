@@ -171,6 +171,7 @@ reduceBoneTrans p c = c_new where
     -- apply BoneTrans to c
     p_abs_m44 = _m44Abs' p
     bt = _boneTrans' c
+    -- TODO switch to M44 here and create a new AnimalNode' type or something so we can switch TRS scale to just V3 instead of M33
     btf = applyBoneTrans bt
     c_rel_trs_new = btf $ _trs' c
 
