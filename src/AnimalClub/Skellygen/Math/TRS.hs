@@ -8,13 +8,16 @@ Stability   : experimental
 
 -}
 
+{-# LANGUAGE ConstraintKinds   #-}
 {-# LANGUAGE DeriveAnyClass  #-}
 {-# LANGUAGE DeriveGeneric   #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 
 module AnimalClub.Skellygen.Math.TRS
-  ( Translation
+  (
+  TRSFloating
+  , Translation
   , Rotation
   , Scale
   , TRS(..)
@@ -47,6 +50,9 @@ import           Linear.Quaternion
 import           Linear.V3
 import           Linear.V4
 import           Linear.Vector
+import           Linear.Epsilon
+
+type TRSFloating a = (Conjugate a, RealFloat a, Epsilon a)
 
 -- TODO you can probably get rid of these
 type Translation a = V3 a
@@ -149,7 +155,7 @@ mul_TRS_V4 trs v = fromTRS trs M.!* v
 -- we multiply both sides by $$invR = invR2*invR1$$ to get
 -- $$S = invR2*S1*R2*S2$$
 -- $$S$$ will not be a diagonal matrix in general
-potatoMul :: (Conjugate a, RealFloat a) => TRS a -> TRS a -> TRS a
+potatoMul :: (TRSFloating a) => TRS a -> TRS a -> TRS a
 potatoMul (TRS pt pr ps) (TRS ct cr cs) =
   TRS
     (pt ^+^ (pr `rotate` (ps M.!* ct)))

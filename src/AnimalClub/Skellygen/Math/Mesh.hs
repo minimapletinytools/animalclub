@@ -26,16 +26,16 @@ import           Linear.V3
 
 
 
-data Mesh = Mesh ([V3 Float], [Int]) deriving (Generic, NFData)
+data Mesh a = Mesh ([V3 a], [Int]) deriving (Generic, NFData)
 
 
-emptyMesh :: Mesh
+emptyMesh :: Mesh a
 emptyMesh = Mesh ([],[])
 
-instance Semigroup Mesh where
+instance Semigroup (Mesh a) where
     (<>) (Mesh (m1,i1)) (Mesh (m2, i2)) = Mesh (m1++m2, i1 ++ map (\x->x+length m1) i2)
 
-instance Monoid Mesh where
+instance Monoid (Mesh a) where
     mempty = Mesh ([],[])
     mappend = (<>)
 
@@ -52,18 +52,18 @@ group n l
   | otherwise = error "Negative n"
 
 -- TODO change this to Data.Text
-meshToObj :: Mesh -> String
+meshToObj :: (Show a) => Mesh a -> String
 meshToObj (Mesh m) = execWriter $ do
     tell "#beginning of mesh obj file \ng\n"
     mapM_ tellV3 $ fst m
     mapM_ (\x -> tell $ "f " ++ foldr (\y acc -> acc ++ " " ++ show (y+1)) "" x ++ "\n") . group 3 . snd $ m
 
 -- TODO rewrite this using M44
-transformMesh :: TRS.TRS Float -> Mesh -> Mesh
+transformMesh :: (TRS.TRSFloating a) => TRS.TRS a -> Mesh a -> Mesh a
 transformMesh trs (Mesh (verts, inds)) =  Mesh (map mapfn verts, inds) where
     mapfn = TRS.mul_TRS_V3 trs
 
 -- TODO rewrite this using M44
-transformMeshM44 :: M.M44 Float -> Mesh -> Mesh
+transformMeshM44 :: (TRS.TRSFloating a) => M.M44 a -> Mesh a -> Mesh a
 transformMeshM44 trs (Mesh (verts, inds)) =  Mesh (map mapfn verts, inds) where
     mapfn = TRS.mul_M44_V3 trs

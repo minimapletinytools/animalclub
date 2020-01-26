@@ -23,6 +23,7 @@ module AnimalClub.Animals.Builder (
 import           AnimalClub.Animals.Animal
 import           AnimalClub.Genetics
 import           AnimalClub.Skellygen
+import     qualified      AnimalClub.Skellygen.Math.TRS as TRS
 
 import           Control.DeepSeq
 import           Control.Monad
@@ -37,32 +38,33 @@ import           System.Random
 
 
 -- TODO figure out what this stuff is and finish it
-data DepFunc = Linear Float | Mutate Float
-data ATree = ATree ((Either T.Text SkellyFunc, AutoGeneMethod), [(DepFunc, ATree)])
+data DepFunc a = Linear a | Mutate a
+data ATree a = ATree ((Either T.Text (SkellyFunc a), AutoGeneMethod a), [(DepFunc a, ATree a)])
 
 
 -- | defines parameters for automatically creating genes
-data AutoGeneMethod =
-    Normal (Float, Float) Int -- ^ normal distribution: (min, max) num_outputs
+data AutoGeneMethod a =
+    Normal (a, a) Int -- ^ normal distribution: (min, max) num_outputs
     deriving (Generic, NFData)
 
 -- | returns number of floats this genotype creates
-autoGeneCount :: AutoGeneMethod -> Int
+autoGeneCount :: AutoGeneMethod a -> Int
 autoGeneCount (Normal _ x) = x
 
 -- | returns relative amount of DNA this genotype should take up
 -- note, this is NOT the same as how many float values need to be produced, but it was convenient
-autoGeneSize :: AutoGeneMethod -> Int
+autoGeneSize :: AutoGeneMethod a -> Int
 autoGeneSize (Normal _ x) = x
 
 -- FUTURE make it so that number of params are enforced at type level in (SkellyFunc, AutoGeneMethod)
 -- | automatically create genome from given lists of properties
 -- this version does no overlap. All properties are independent
 makeGenomeFromPropertiesSimple ::
-    Int -- ^ DNA length (vector length / 4)
-    -> [(T.Text, AutoGeneMethod)] -- ^ other properties
-    -> [(SkellyFunc, AutoGeneMethod)] -- ^ skellygen properties, values in SkellyFunc are used as starting values
-    -> Genome StdGen [AnimalExp] -- ^ output genome
+    (TRS.TRSFloating a)
+    => Int -- ^ DNA length (vector length / 4)
+    -> [(T.Text, AutoGeneMethod a)] -- ^ other properties
+    -> [(SkellyFunc a, AutoGeneMethod a)] -- ^ skellygen properties, values in SkellyFunc are used as starting values
+    -> Genome StdGen [AnimalExp a] -- ^ output genome
 makeGenomeFromPropertiesSimple dnasz ops sfps = Genome dnasz geneBuilder (mkStdGen 0) where
     -- combine other properties and skellygen properties into a single list
     aps = map (over _1 Left) ops ++ map (over _1 Right) sfps

@@ -99,7 +99,7 @@ type FlagTrans = [BoneFlag] -> [BoneFlag]
 
 -- | this flag transformer automatically translate built-in 'BoneFlag's in the sensible way
 -- does not work with 'ArbTrans', don't do it!
-defTransFlag :: BoneTrans -> FlagTrans
+defTransFlag :: BoneTrans a -> FlagTrans
 defTransFlag _ []                 = []
 defTransFlag Same x               = x
 defTransFlag ReflZ (BF_Left:xs)   = BF_Right:defTransFlag ReflZ xs
@@ -120,9 +120,9 @@ defTransFlag (ArbTrans _) _       = error "don't do this"
 -- e.g. if you have two legs, you only need to add ReflX at the hips
 -- BoneTrans is applied to _trs'/_pos of AnimalNode'/AnimalNode respectively
 -- and by extension it also affects _orientation of AnimalProperty
-data BoneTrans = Same | ReflX | ReflY | ReflZ | ArbTrans (TRS.TRS Float -> TRS.TRS Float)
+data BoneTrans a = Same | ReflX | ReflY | ReflZ | ArbTrans (TRS.TRS a -> TRS.TRS a)
 
-instance Show BoneTrans where
+instance Show (BoneTrans a) where
     show Same         = "Same"
     show ReflX        = "ReflX"
     show ReflY        = "ReflY"
@@ -130,7 +130,7 @@ instance Show BoneTrans where
     show (ArbTrans _) = "ArbTrans"
 
 -- | combine two BoneTrans together
-composeBoneTrans :: BoneTrans -> BoneTrans -> BoneTrans
+composeBoneTrans :: (TRS.TRSFloating a) => BoneTrans a -> BoneTrans a -> BoneTrans a
 composeBoneTrans Same x      = x
 composeBoneTrans x Same      = x
 composeBoneTrans ReflX ReflX = Same
@@ -139,7 +139,7 @@ composeBoneTrans ReflZ ReflZ = Same
 composeBoneTrans x y         = ArbTrans $ applyBoneTrans x . applyBoneTrans y
 
 -- | applies BoneTrans to a TRS
-applyBoneTrans :: BoneTrans -> TRS.TRS Float -> TRS.TRS Float
+applyBoneTrans :: (TRS.TRSFloating a) => BoneTrans a -> TRS.TRS a -> TRS.TRS a
 applyBoneTrans Same = id
 applyBoneTrans ReflX = TRS.potatoMul (set TRS.scale (TRS.makeScale $ V3 (-1) 1 1) TRS.identity)
 applyBoneTrans ReflY = TRS.potatoMul (set TRS.scale (TRS.makeScale $ V3 1 (-1) 1) TRS.identity)
@@ -165,24 +165,24 @@ applyBoneTrans (ArbTrans f) = f
 -- finally, the contained 'BoneTrans' applies a transformation after all other transformations are done
 -- this allows us to create animals with symmetrical parts and only defining the transformation on one part
 --
-data AnimalNode = AnimalNode {
+data AnimalNode a = AnimalNode {
     -- TODO separate out BoneId and BoneTrans
     _name      :: BoneId, -- ^ name and transformation if relevant
-    _boneTrans :: BoneTrans,
-    _pos       :: AbsOrRel (V3 Float), -- ^ position, relative to parent if rel, 'BoneTrans' in 'BoneName' is applied to this
-    _thickness :: AbsOrRel Float, -- ^ base thickness, relative to parent thickness if rel
+    _boneTrans :: BoneTrans a,
+    _pos       :: AbsOrRel (V3 a), -- ^ position, relative to parent if rel, 'BoneTrans' in 'BoneName' is applied to this
+    _thickness :: AbsOrRel a, -- ^ base thickness, relative to parent thickness if rel
     _isRoot    :: Bool,
-    _children  :: [AnimalNode]
+    _children  :: [AnimalNode a]
     -- _nodeOrientation :: NodeOrientation
 }
 
 makeLenses ''AnimalNode
 
-foldAnimalNode :: (a -> AnimalNode -> a) -> a -> AnimalNode -> a
+foldAnimalNode :: (a -> AnimalNode b -> a) -> a -> AnimalNode b -> a
 foldAnimalNode f acc an = foldl (foldAnimalNode f) (f acc an) (_children an)
 
 -- | extracts all BoneIds from AnimalNode tree
-makeBoneIdList :: AnimalNode -> [BoneId]
+makeBoneIdList :: AnimalNode a -> [BoneId]
 makeBoneIdList = foldAnimalNode (\bids an ->  _name an:bids) []
 
 -- | flip an AnimalNode, the children of the flipped parent will inherit the flipped parent's new transform
@@ -194,10 +194,11 @@ makeBoneIdList = foldAnimalNode (\bids an ->  _name an:bids) []
 -- flipAnimalNodeFancy :: BoneTrans -> [Int] -> AnimalNode -> AnimalNode
 --
 flipAnimalNode ::
-  BoneTrans -- ^ the BoneTrans we want to apply
+  (TRS.TRSFloating a)
+  => BoneTrans a -- ^ the BoneTrans we want to apply
   -> FlagTrans -- ^ how to modify the flags of the Bone (and all its children)
-  -> AnimalNode -- ^ the node we want to apply the BoneTrans to
-  -> AnimalNode -- ^ the node with BoneTrans applied to it
+  -> AnimalNode a -- ^ the node we want to apply the BoneTrans to
+  -> AnimalNode a -- ^ the node with BoneTrans applied to it
 flipAnimalNode bt ft an = set children newChildren $ set boneTrans newBoneTrans an where
   newBoneTrans = composeBoneTrans bt (_boneTrans an)
   newChildren = map (flipAnimalNode Same ft) (_children an)

@@ -54,39 +54,39 @@ import qualified Debug.Trace                          as Debug
 -- so do not use it together with Thickness Length and Orientation
 -- or you will not be guaranteed which one overwrites which
 -- FUTURE for performance, you could add `TLOCombined (Float, Float, TRS.Rotation)`
-data BoneMethod = Thickness Float |  Length Float | Orientation (TRS.Rotation Float) | Color () deriving (Read, Show, Generic, NFData)
+data BoneMethod a = Thickness a  |  Length a | Orientation (TRS.Rotation a) | Color () deriving (Read, Show, Generic, NFData)
 
 
 -- | default (identity) bone methods
-defThickness :: BoneMethod
+defThickness :: (TRS.TRSFloating a) => BoneMethod a
 defThickness = Thickness 1
 
-defLength :: BoneMethod
+defLength :: (TRS.TRSFloating a) => BoneMethod a
 defLength = Length 1
 
-defOrientation :: BoneMethod
+defOrientation :: (TRS.TRSFloating a) => BoneMethod a
 defOrientation = Orientation Q.identity
 
-defColor :: BoneMethod
+defColor :: BoneMethod a
 defColor = Color ()
 
 -- | internal version carries actual values of method
-data SkellyFunc where
-  WithBoneId :: BoneId -> BoneMethod -> SkellyFunc
-  WithBoneMatcher :: BoneMatcher -> BoneMethod -> SkellyFunc
+data SkellyFunc a where
+  WithBoneId :: BoneId -> BoneMethod a -> SkellyFunc a
+  WithBoneMatcher :: BoneMatcher -> BoneMethod a -> SkellyFunc a
 
-instance Show SkellyFunc where
+instance (Show a) => Show (SkellyFunc a) where
   show (WithBoneId bid m) = "with BoneId " ++ show bid ++ " " ++ show m
   show (WithBoneMatcher matech m) = "with matcher " ++ show m
 
 -- | bone matchers are applied in ascending order of its priority
-newtype PrioritizedSkellyFunc = PrioritizedSkellyFunc{ unPrioritizedSkellyFunc :: (Int, SkellyFunc) }
+newtype PrioritizedSkellyFunc a = PrioritizedSkellyFunc{ unPrioritizedSkellyFunc :: (Int, SkellyFunc a) }
 --instance Ord PrioritizedSkellyFunc where
 --  (<=) (PrioritizedSkellyFunc (a,_)) (PrioritizedSkellyFunc (b,_)) = a <= b
 
 -- | adds values to parameters in BoneMethod_
 -- N.B this does no error checking on length of list being passed in
-addValuesToBoneMethod :: BoneMethod -> [Float] -> BoneMethod
+addValuesToBoneMethod :: (TRS.TRSFloating a) => BoneMethod a -> [a] -> BoneMethod a
 addValuesToBoneMethod m vals = case m of
   Orientation x ->
     Orientation $ x * Q.fromEulerXYZ (V3 (vals !! 0) (vals !! 1) (vals !! 2))
@@ -98,16 +98,16 @@ addValuesToBoneMethod m vals = case m of
 
 -- | adds values to parameters in BoneMethod inside SkellyFunc
 -- N.B this does no error checking on length of list being passed in
-addValuesToSkellyFunc :: SkellyFunc -> [Float] -> SkellyFunc
+addValuesToSkellyFunc :: (TRS.TRSFloating a) => SkellyFunc a -> [a] -> SkellyFunc a
 addValuesToSkellyFunc (WithBoneId bid m) vals = WithBoneId bid (addValuesToBoneMethod m vals)
 addValuesToSkellyFunc (WithBoneMatcher matcher m) vals = WithBoneMatcher matcher (addValuesToBoneMethod m vals)
 
 -- | used for generating skelly over each bone of the base skelly
 -- these are mapped to properties in SkellyNode
-data AnimalProperty = AnimalProperty {
-    _orientation :: TRS.Rotation Float, -- ^ combines multiplicatively
-    _distance    :: Float, -- ^ combines multiplicatively
-    _skinParams  :: Float -- ^ combines multiplicatively
+data AnimalProperty a = AnimalProperty {
+    _orientation :: TRS.Rotation a, -- ^ combines multiplicatively
+    _distance    :: a, -- ^ combines multiplicatively
+    _skinParams  :: a -- ^ combines multiplicatively
     -- mesh + UV style
     -- UV map properties
     -- texture name, stretch shift,
@@ -117,7 +117,7 @@ makeLenses ''AnimalProperty
 
 -- TODO rename to identityAnimalProperty
 -- | the identity AnimalProperty
-defaultAnimalProperty :: AnimalProperty
+defaultAnimalProperty :: (TRS.TRSFloating a) => AnimalProperty a
 defaultAnimalProperty = AnimalProperty {
     _orientation = Q.identity,
     _distance = 1,
@@ -126,25 +126,26 @@ defaultAnimalProperty = AnimalProperty {
 
 
 -- |
-type AnimalPropertyMap = M.Map BoneId AnimalProperty
+type AnimalPropertyMap a = M.Map BoneId (AnimalProperty a)
 
 -- | makes AnimalPropertyMap with all BoneIds as keys and gives them the identity property
-makeStartingAnimalPropertyMap :: [BoneId] -> AnimalPropertyMap
+makeStartingAnimalPropertyMap :: (TRS.TRSFloating a) => [BoneId] -> AnimalPropertyMap a
 makeStartingAnimalPropertyMap = M.fromList . map (\bid -> (bid,defaultAnimalProperty))
 
 
 
 -- |
 generateAnimalPropertiesInternal_ ::
-  AnimalPropertyMap -- ^ accumulating map of properties.
-  -> [PrioritizedSkellyFunc] -- ^ list of properties
-  -> AnimalPropertyMap -- ^ output map list of properties
+  (TRS.TRSFloating a)
+  => AnimalPropertyMap a -- ^ accumulating map of properties.
+  -> [PrioritizedSkellyFunc a] -- ^ list of properties
+  -> AnimalPropertyMap a -- ^ output map list of properties
 generateAnimalPropertiesInternal_ props psfs = foldl addProp props sorted_psfs where
   -- sort psfs by priority
   sorted_psfs = L.sortOn (fst . unPrioritizedSkellyFunc) psfs
 
   -- add a property to the map
-  addProp :: AnimalPropertyMap -> PrioritizedSkellyFunc -> AnimalPropertyMap
+  addProp :: (TRS.TRSFloating a) => AnimalPropertyMap a -> PrioritizedSkellyFunc a -> AnimalPropertyMap a
   addProp accProp (PrioritizedSkellyFunc (_,sf)) = r where
     (matched, method) = case sf of
       WithBoneId bid method -> (fromMaybe M.empty $ accProp M.!? bid >>= \a -> return (M.singleton bid a), method)
@@ -169,11 +170,12 @@ generateAnimalPropertiesInternal_ props psfs = foldl addProp props sorted_psfs w
 
 -- If we were really awesome, we could clean out all the BoneIds that are untouched (and thus have defaultAnimalProperty) for performance but whatever
 generateAnimalProperties_ ::
-    [BoneId] -- ^ list of all bones (will be given default property in the map)
-    -> [PrioritizedSkellyFunc] -- ^ list of all SkellyFunc
-    -> AnimalPropertyMap -- ^ output accumulated map of properties. EnumBone' property will override AllBone' property
+    (TRS.TRSFloating a)
+    => [BoneId] -- ^ list of all bones (will be given default property in the map)
+    -> [PrioritizedSkellyFunc a] -- ^ list of all SkellyFunc
+    -> AnimalPropertyMap a -- ^ output accumulated map of properties. EnumBone' property will override AllBone' property
 generateAnimalProperties_ bids = generateAnimalPropertiesInternal_ (makeStartingAnimalPropertyMap bids)
 
 -- | property access helpers
-getAnimalProperty :: BoneId -> AnimalPropertyMap -> AnimalProperty
+getAnimalProperty :: (TRS.TRSFloating a) => BoneId -> AnimalPropertyMap a -> AnimalProperty a
 getAnimalProperty boneId props = M.findWithDefault defaultAnimalProperty boneId props
