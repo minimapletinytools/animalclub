@@ -65,7 +65,7 @@ defLength :: (TRSFloating a) => BoneMethod a
 defLength = Length 1
 
 defOrientation :: (TRSFloating a) => BoneMethod a
-defOrientation = Orientation rotationIdentity
+defOrientation = Orientation identityRotation
 
 defColor :: BoneMethod a
 defColor = Color ()
@@ -115,11 +115,11 @@ data AnimalProperty a = AnimalProperty {
 
 makeLenses ''AnimalProperty
 
--- TODO rename to identityAnimalProperty
--- | the identity AnimalProperty
+-- TODO rename to identityTRSAnimalProperty
+-- | the identityTRS AnimalProperty
 defaultAnimalProperty :: (TRSFloating a) => AnimalProperty a
 defaultAnimalProperty = AnimalProperty {
-    _orientation = rotationIdentity,
+    _orientation = identityRotation,
     _distance = 1,
     _skinParams = 1
 }
@@ -128,7 +128,7 @@ defaultAnimalProperty = AnimalProperty {
 -- |
 type AnimalPropertyMap a = M.Map BoneId (AnimalProperty a)
 
--- | makes AnimalPropertyMap with all BoneIds as keys and gives them the identity property
+-- | makes AnimalPropertyMap with all BoneIds as keys and gives them the identityTRS property
 makeStartingAnimalPropertyMap :: (TRSFloating a) => [BoneId] -> AnimalPropertyMap a
 makeStartingAnimalPropertyMap = M.fromList . map (\bid -> (bid,defaultAnimalProperty))
 

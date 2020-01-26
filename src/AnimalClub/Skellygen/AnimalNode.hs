@@ -115,7 +115,7 @@ defTransFlag (ArbTrans _) _       = error "don't do this"
 
 
 -- | user friendly representation of a Bone transformation
--- applies a transformation relative to identity TRS
+-- applies a transformation relative to identityTRS TRS
 -- the transformation effects all children
 -- e.g. if you have two legs, you only need to add ReflX at the hips
 -- BoneTrans is applied to _trs'/_pos of AnimalNode'/AnimalNode respectively
@@ -141,9 +141,9 @@ composeBoneTrans x y         = ArbTrans $ applyBoneTrans x . applyBoneTrans y
 -- | applies BoneTrans to a TRS
 applyBoneTrans :: (TRSFloating a) => BoneTrans a -> TRS a -> TRS a
 applyBoneTrans Same = id
-applyBoneTrans ReflX = potatoMul (set scale (conv_V3_Scale $ V3 (-1) 1 1) identity)
-applyBoneTrans ReflY = potatoMul (set scale (conv_V3_Scale $ V3 1 (-1) 1) identity)
-applyBoneTrans ReflZ = potatoMul (set scale (conv_V3_Scale $ V3 1 1 (-1)) identity)
+applyBoneTrans ReflX = potatoMul (set scale (conv_V3_Scale $ V3 (-1) 1 1) identityTRS)
+applyBoneTrans ReflY = potatoMul (set scale (conv_V3_Scale $ V3 1 (-1) 1) identityTRS)
+applyBoneTrans ReflZ = potatoMul (set scale (conv_V3_Scale $ V3 1 1 (-1)) identityTRS)
 applyBoneTrans (ArbTrans f) = f
 
 

@@ -55,7 +55,7 @@ instance (Arbitrary a, Epsilon a, Floating a) => Arbitrary (TRS a) where
 prop_invTRS :: TRS Double -> Bool
 prop_invTRS trs = pass where
   help@(TRS t r s) = (trs `inherit` invTRS trs)
-  pass = trace (show help) $ nearZero t && nearZero (Metric.distance r rotationIdentity) && nearZero (s - M.identity)
+  pass = trace (show help) $ nearZero t && nearZero (Metric.distance r identityRotation) && nearZero (s - M.identity)
 -}
 
 main :: IO ()

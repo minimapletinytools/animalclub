@@ -37,7 +37,7 @@ data SkellyNode a = SkellyNode
     } deriving (Show, Generic, NFData)
 
 --dummyParent :: SkellyNode
---dummyParent = SkellyNode True [] identity rotationIdentity 0.0 1.0
+--dummyParent = SkellyNode True [] identityTRS identityRotation 0.0 1.0
 makeLenses ''SkellyNode
 
 data BoxSkinParameters a = BoxSkinParameters

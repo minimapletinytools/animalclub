@@ -49,7 +49,7 @@ makeLenses ''AnimalNode'
 
 -- | sometimes helpful for root node cases
 dummyAnimalNode' :: (TRSFloating a) => AnimalNode' a
-dummyAnimalNode' = AnimalNode' (BoneId "" []) Same M.identity identity 1 True []
+dummyAnimalNode' = AnimalNode' (BoneId "" []) Same M.identity identityTRS 1 True []
 
 -- | converts AnimalNode to internal format superficially
 -- i.e. this takes care of converting the '_pos' parameter into the internal '_trs'' and '_m44Abs''
