@@ -1,6 +1,6 @@
 ::TODO::
 DONE D:-do constraint parameterization of Float (so we can switch to Double)
--combine all math libraries into single Math.hs module...
+DONE-combine all math libraries into single Math.hs module...
 -fix missing-home-module warning
 -fix or change the isRoot parameter in AnimalNode
 -finish lookAt function, and make its interface less weird
