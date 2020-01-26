@@ -181,6 +181,7 @@ tests:
     - animalclub
     - QuickCheck
     - hspec
+    - HUnit
     - linear-tests
 
 # hpack does not support foreign-library yet

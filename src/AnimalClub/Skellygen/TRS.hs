@@ -105,8 +105,6 @@ identityTRS = TRS (V3 0 0 0) identityRotation identity
 conv_V3_Scale :: (Num a) => V3 a -> M33 a
 conv_V3_Scale (V3 x y z) = V3 (V3 x 0 0) (V3 0 y 0) (V3 0 0 z)
 
-
-
 m33_to_homogenous_m44 :: (Num a) => M33 a -> M44 a
 m33_to_homogenous_m44 (V3 (V3 a b c) (V3 d e f) (V3 g h i)) =
     V4  (V4 a b c 0)
@@ -127,8 +125,6 @@ conv_TRS_M44 (TRS t r s) = fromTranslation t !*! m33_to_homogenous_m44 (conv_Rot
 
 mul_TRS_V3 :: (RealFloat a) => TRS a -> V3 a -> V3 a
 mul_TRS_V3 trs (V3 x y z) = V3 x' y' z' where V4 x' y' z' _ = mul_TRS_V4 trs (V4 x y z 1)
--- TODO test this by testing both implementations have the same result
---mul_TRS_V3 (TRS pt pr ps) ct = pt ^+^ (pr `rotate` (ps !* ct))
 
 mul_TRS_V4 :: (RealFloat a) => TRS a -> V4 a -> V4 a
 mul_TRS_V4 trs v = conv_TRS_M44 trs !* v
@@ -188,6 +184,7 @@ conv_Rotation_M33 = fromQuaternion
 conv_Rotation_M44 :: (RealFloat a, Conjugate a) => Quaternion a -> M44 a
 conv_Rotation_M44 q = set (_w . _w) 1 (m33_to_m44 $ conv_Rotation_M33 q)
 
+-- how is this even compiling?
 _orthogonal :: (Num a, Ord a) => V3 a -> V3 a
 _orthogonal v@(V3 x y z) = cross v other
   where
@@ -246,5 +243,6 @@ fromTo fromv tov =
 -- | x y z rotation order
 fromEulerXYZ :: (RealFloat a, Epsilon a) => V3 a -> Quaternion a
 fromEulerXYZ (V3 x y z) =
-    (axisAngle (V3 0 0 1) z) * (axisAngle (V3 0 1 0) y) *
-    (axisAngle (V3 1 0 0) x)
+  (axisAngle (V3 0 0 1) z)
+  * (axisAngle (V3 0 1 0) y)
+  * (axisAngle (V3 1 0 0) x)
