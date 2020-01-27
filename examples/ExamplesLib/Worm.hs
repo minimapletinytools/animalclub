@@ -8,8 +8,9 @@ Stability   : experimental
 
 -}
 
-{-# OPTIONS_GHC -fno-warn-missing-signatures #-}
-{-# OPTIONS_GHC -fno-warn-unused-local-binds #-}
+--{-# OPTIONS_GHC -fno-warn-missing-signatures #-}
+--{-# OPTIONS_GHC -fno-warn-unused-local-binds #-}
+{-# OPTIONS_GHC -fno-warn-type-defaults #-}
 --{-# OPTIONS_GHC -fno-warn-unused-top-binds #-}
 
 module ExamplesLib.Worm (
@@ -39,13 +40,17 @@ import qualified Debug.Trace                 as Debug
 showT :: (Show a) => a -> T.Text
 showT = T.pack . show
 
+
+wormNode :: (AnimalFloat a) => Int -> AnimalNode a
 wormNode 0 = mans (showT 0) (Rel $ V3 0.5 0 0) (Rel 1) []
 wormNode n = mans (showT n) (Rel $ V3 0.5 0 0) (Rel 1) [wormNode (n-1)]
+
+worm :: (AnimalFloat a) => Int -> AnimalNode a
 worm segs = asPhantom $ mans (showT (segs-1)) (Rel 0) (Abs 0.1) [wormNode (segs-1)]
 
 wormGenome' :: (RandomGen g) => Int -> Int -> Genotype g [AnimalExp Float] ()
 wormGenome' segs dnaPerSeg = do forM_ [0..(segs-1)] wormSeg where
-    dnaPerSegOver4 = dnaPerSeg `div` 4
+    --dnaPerSegOver4 = dnaPerSeg `div` 4
     dnaPerSegOver2 = dnaPerSeg `div` 2
     wormSeg i = do
         --gbPush $ Gene (dnaPerSeg*i) dnaPerSeg

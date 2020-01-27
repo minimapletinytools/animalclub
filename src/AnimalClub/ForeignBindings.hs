@@ -24,8 +24,6 @@ import           Data.Convertible
 import qualified Data.Vector.Storable        as V
 import           Foreign
 import           Foreign.C.Types
-import           Foreign.ForeignPtr
-import           Foreign.StablePtr
 import           System.Random
 
 
@@ -40,7 +38,6 @@ breed_hs seed dna1' dna2' outdna' size = do
   dna1 <- newForeignPtr_ . castPtr $ dna1'
   dna2 <- newForeignPtr_ . castPtr $ dna2'
   outdna <-  newForeignPtr_ . castPtr $ outdna'
-  gen <- getStdGen
   let
     gen = mkStdGen (convert seed)
     dna1v = V.unsafeFromForeignPtr0 dna1 (convert size) :: DNA
@@ -61,12 +58,12 @@ foreign export ccall breed_hs :: CInt -> Ptr CChar -> Ptr CChar -> Ptr CChar -> 
 type Goat = (DNA, Genome StdGen [AnimalExp Float])
 
 random_goat :: CInt -> IO (StablePtr Goat)
-random_goat dnaLength' = do
+random_goat len = do
   gen <- getStdGen
   let
-    dnaLength = convert dnaLength'
-    genome = makeGenomeFromPropertiesSimple dnaLength [] goatPropertyList
-    dna = makeRandDNA gen dnaLength
+    len' = convert len
+    genome = makeGenomeFromPropertiesSimple len' [] goatPropertyList
+    dna = makeRandDNA gen len'
   newStablePtr (dna, genome)
 
 free_goat :: StablePtr Goat -> IO ()

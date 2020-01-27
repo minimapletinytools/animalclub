@@ -1,21 +1,20 @@
---{-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 import           AnimalClub.Skellygen
-import           AnimalClub.Skellygen.TRS
 import           AnimalClub.Skellygen.Linear hiding (trace)
+import           AnimalClub.Skellygen.TRS
 import           Test.Hspec
 import           Test.HUnit
 import           Test.QuickCheck
-import           Test.QuickCheck.Modifiers
 
-import Linear.Arbitrary
+import           Linear.Arbitrary
 
-
-import           Debug.Trace
+--import           Debug.Trace
 
 prop_justfortesting :: Int -> Bool
 prop_justfortesting x = (read . show) x == x
 
 -- TODO finish
+{-
 instance (Arbitrary a) => Arbitrary (AnimalNode a) where
   arbitrary = sized arb where
     arb 0 = do
@@ -27,6 +26,7 @@ instance (Arbitrary a) => Arbitrary (AnimalNode a) where
           , _isPhantom = True
           , _children = []
         }
+-}
 
 -- TODO flips an animal node using ReflX
 -- and checks that all X coordinates cancel out

@@ -10,9 +10,12 @@ module AnimalClub.Animals.Examples.Goat (
 import           AnimalClub.Animals
 import           AnimalClub.Skellygen
 import           AnimalClub.Skellygen.Linear
+import           AnimalClub.Skellygen.TRS
 
 
 -- | whatever helper
+
+relV3 :: (AnimalFloat a) => a -> a -> a -> AbsOrRel (V3 a)
 relV3 x y z = Rel $ V3 x y z
 
 {- goat
@@ -27,11 +30,15 @@ relV3 x y z = Rel $ V3 x y z
 -}
 
 -- | goat parameteris
-goatBodyLegWidth = 0.1 :: Float
-goatBodyLegVert = -0.01  :: Float
-goatLeg = 0.6  :: Float
+goatBodyLegWidth :: (AnimalFloat a) => a
+goatBodyLegWidth = 0.1
+goatBodyLegVert :: (AnimalFloat a) => a
+goatBodyLegVert = -0.01
+goatLeg :: (AnimalFloat a) => a
+goatLeg = 0.6
 
 -- | front leg!
+goatFrontRightLeg :: (AnimalFloat a) => AnimalNode a
 goatFrontRightLeg = asPhantom $
     manf "leg" [BF_Right, BF_Front] (relV3 (0.05) goatBodyLegVert goatBodyLegWidth) (Rel 0.3)
         [manf "knee" [BF_Right, BF_Front] (relV3 (-0.05) (-goatLeg/2.0) 0) (Rel 0.8)
@@ -39,6 +46,7 @@ goatFrontRightLeg = asPhantom $
                 [manf "toe" [BF_Right, BF_Front] (relV3 (-0.1) 0 0) (Rel 0.4) []]]]
 
 -- | back leg!
+goatBackRightLeg :: (AnimalFloat a) => AnimalNode a
 goatBackRightLeg = asPhantom $
     manf "leg" [BF_Right, BF_Back] (relV3 (-0.05) goatBodyLegVert goatBodyLegWidth) (Rel 0.38)
         [manf "knee" [BF_Right, BF_Back] (relV3 (-0.05) (-goatLeg/2.0) 0) (Rel 0.8)

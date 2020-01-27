@@ -15,7 +15,6 @@ import           AnimalClub.Animals
 import           AnimalClub.Genetics
 import           AnimalClub.Skellygen
 import           AnimalClub.Skellygen.Mesh
-import           AnimalClub.Skellygen.TRS
 
 import           System.Random
 import           Text.Printf                 (printf)

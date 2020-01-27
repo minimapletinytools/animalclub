@@ -39,7 +39,7 @@ asPhantom an = an { _isPhantom = True }
 
 -- | helper method for making AnimalNode
 mans ::
-  (Floating a)
+  (AnimalFloat a)
   => T.Text -- ^ name
   -> AbsOrRel (V3 a) -- ^ position
   -> AbsOrRel a -- ^ thickness
@@ -49,7 +49,7 @@ mans n p t c = manf n [] p t c
 
 -- | helper method for making AnimalNode
 manf ::
-  (Floating a)
+  (AnimalFloat a)
   => T.Text -- ^ name
   -> [BoneFlag]
   -> AbsOrRel (V3 a) -- ^ position
@@ -60,7 +60,7 @@ manf n f p t c = manbt n f Same p t c
 
 -- | helper method for making AnimalNode
 manbt ::
-  (Floating a)
+  (AnimalFloat a)
   => T.Text -- ^ name
   -> [BoneFlag]
   -> BoneTrans a
