@@ -1,5 +1,5 @@
 ::TODO::
-
+-switch mesh to Vector.Storable
 -switch indentation to 2 spaces
 -fix missing-home-module warning
 -finish lookAt function, and make its interface less weird

@@ -19,20 +19,24 @@ import           GHC.Generics                (Generic)
 
 import           Data.Monoid                 (Monoid, mappend)
 import           Data.Semigroup              (Semigroup, (<>))
+import qualified Data.Vector.Storable        as S
 
 import           AnimalClub.Skellygen.Linear
 import           AnimalClub.Skellygen.TRS
 
 
 
-data Mesh a = Mesh ([V3 a], [Int]) deriving (Generic, NFData)
-
+data Mesh a = Mesh ([V3 a], [(Int,Int,Int)]) deriving (Generic, NFData)
 
 emptyMesh :: Mesh a
 emptyMesh = Mesh ([],[])
 
+map3Tuple :: (a->b) -> (a,a,a) -> (b,b,b)
+map3Tuple f (a1,a2,a3) = (f a1, f a2, f a3)
+
+-- | semigroup instance offsets triangle indices appropriately
 instance Semigroup (Mesh a) where
-    (<>) (Mesh (m1,i1)) (Mesh (m2, i2)) = Mesh (m1++m2, i1 ++ map (\x->x+length m1) i2)
+    (<>) (Mesh (m1,i1)) (Mesh (m2, i2)) = Mesh (m1++m2, i1 ++ map (map3Tuple (+length m1)) i2)
 
 instance Monoid (Mesh a) where
     mempty = Mesh ([],[])
@@ -55,14 +59,12 @@ meshToObj :: (Show a) => Mesh a -> String
 meshToObj (Mesh m) = execWriter $ do
     tell "#beginning of mesh obj file \ng\n"
     mapM_ tellV3 $ fst m
-    mapM_ (\x -> tell $ "f " ++ foldr (\y acc -> acc ++ " " ++ show (y+1)) "" x ++ "\n") . group 3 . snd $ m
+    mapM_ (\(a1,a2,a3) -> tell $ "f " ++ show (a1+1) ++ " " ++ show (a2+1) ++ " " ++ show (a3+1) ++ "\n") . snd $ m
 
--- TODO rewrite this using M44
 transformMesh :: (AnimalFloat a) => TRS a -> Mesh a -> Mesh a
 transformMesh trs (Mesh (verts, inds)) =  Mesh (map mapfn verts, inds) where
     mapfn = mul_TRS_V3 trs
 
--- TODO rewrite this using M44
 transformMeshM44 :: (AnimalFloat a) => M44 a -> Mesh a -> Mesh a
 transformMeshM44 trs (Mesh (verts, inds)) =  Mesh (map mapfn verts, inds) where
     mapfn = mul_M44_V3 trs
