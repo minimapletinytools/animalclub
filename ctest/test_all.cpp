@@ -26,8 +26,15 @@ bool test_breed_hs() {
   return true;
 }
 
+bool test_basic_goat() {
+  // TODO export methods in csrc or whatever
+  //free_goat(random_goat(100000));
+  return true;
+}
+
 TEST_CASE( "basic breed", "genetics" ) {
-    REQUIRE( test_breed_hs() );
+    REQUIRE(test_breed_hs());
+    REQUIRE(test_basic_goat());
 }
 
 int main( int argc, char* argv[] ) {

@@ -14,15 +14,18 @@ This module exports a bunch of methods in AnimalClub via FFI
 {-# LANGUAGE ForeignFunctionInterface #-}
 
 module AnimalClub.ForeignBindings (
-  breed_hs
 ) where
 
-import           AnimalClub.Genetics.DNA
+import           AnimalClub.Animals
+import           AnimalClub.Animals.Examples
+import           AnimalClub.Genetics
+
 import           Data.Convertible
-import qualified Data.Vector.Storable    as V
+import qualified Data.Vector.Storable        as V
 import           Foreign
 import           Foreign.C.Types
 import           Foreign.ForeignPtr
+import           Foreign.StablePtr
 import           System.Random
 
 
@@ -49,6 +52,37 @@ breed_hs seed dna1' dna2' outdna' size = do
   V.copy outdnamv newdna
 
 foreign export ccall breed_hs :: CInt -> Ptr CChar -> Ptr CChar -> Ptr CChar -> CSize -> IO ()
+
+
+
+
+-- | stuff below is specific to goats
+-- consider moving this into the Animals.Examples folder
+type Goat = (DNA, Genome StdGen [AnimalExp Float])
+
+random_goat :: CInt -> IO (StablePtr Goat)
+random_goat dnaLength' = do
+  gen <- getStdGen
+  let
+    dnaLength = convert dnaLength'
+    genome = makeGenomeFromPropertiesSimple dnaLength [] goatPropertyList
+    dna = makeRandDNA gen dnaLength
+  newStablePtr (dna, genome)
+
+free_goat :: StablePtr Goat -> IO ()
+free_goat = freeStablePtr
+
+
+foreign export ccall random_goat :: CInt -> IO (StablePtr Goat)
+foreign export ccall free_goat :: StablePtr Goat -> IO ()
+
+--goatObj :: StablePtr Goat -> IO
+--goatObj goatPtr = do
+  -- goat <- deRefStablePtr goatPtr
+  --goatProps = generateAnimalProperties (makeBoneIdList goat) $ evalGenome goatGenome original
+  --skelly = animalNodeToSkellyNodeWithProps goatProps goat
+  --writeFile "wigglygoat.obj" . meshToObj . generateMesh $ skelly
+
 
 -- TODO figure out how to create genome
 {- dnaProps_hs ::
