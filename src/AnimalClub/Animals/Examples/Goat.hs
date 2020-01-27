@@ -1,26 +1,16 @@
-{-|
-Module      : Animals
-Description : Example animals skeletons
-Copyright   : (c) Peter Lu, 2018
-License     : GPL-3
-Maintainer  : chippermonky@email.com
-Stability   : experimental
+module AnimalClub.Animals.Examples.Goat (
+    goat
+    , goatPropertyList
 
-provides example AnimalClub.Skellygen skeletons
-
--}
-{-# OPTIONS_GHC -fno-warn-missing-signatures #-}
-{-# OPTIONS_GHC -fno-warn-unused-top-binds #-}
-
-module ExamplesLib.Skeletons (
-    goat,
-    writeExampleObjs
+    -- for feeding goats
+    , worm
+    , worm2
 ) where
 
 import           AnimalClub.Animals
 import           AnimalClub.Skellygen
 import           AnimalClub.Skellygen.Linear
-import           AnimalClub.Skellygen.Mesh
+
 
 -- | whatever helper
 relV3 x y z = Rel $ V3 x y z
@@ -73,6 +63,29 @@ goat = asPhantom $
             ]
         ]
 
+gdOrient = (-0.5, 0.5) :: (Float, Float)
+gdLength = (0, 2) :: (Float, Float)
+gdThick = (0, 2) :: (Float, Float)
+
+-- NOTE, this is setting thickness on some phantom nodes which is pointless and harmless
+goatPropertyList :: [(SkellyFunc Float, AutoGeneMethod Float)]
+goatPropertyList =
+  sfAutoGenome (WithBoneMatcher (nameFlagMatcher "leg" [BF_Front])) (gdLength,gdThick,gdOrient)
+  ++ sfAutoGenome (WithBoneMatcher (nameFlagMatcher "knee" [BF_Front])) (gdLength,gdThick,gdOrient)
+  ++ sfAutoGenome (WithBoneMatcher (nameFlagMatcher "ankle" [BF_Front])) (gdLength,gdThick,gdOrient)
+  ++ sfAutoGenome (WithBoneMatcher (nameFlagMatcher "toe" [BF_Front])) (gdLength,gdThick,gdOrient)
+  ++ sfAutoGenome (WithBoneMatcher (nameFlagMatcher "leg" [BF_Back])) (gdLength,gdThick,gdOrient)
+  ++ sfAutoGenome (WithBoneMatcher (nameFlagMatcher "knee" [BF_Back])) (gdLength,gdThick,gdOrient)
+  ++ sfAutoGenome (WithBoneMatcher (nameFlagMatcher "ankle" [BF_Back])) (gdLength,gdThick,gdOrient)
+  ++ sfAutoGenome (WithBoneMatcher (nameFlagMatcher "toe" [BF_Back])) (gdLength,gdThick,gdOrient)
+  ++ sfAutoGenome (WithBoneId (BoneId "neck" [])) (gdLength,gdThick,gdOrient)
+  ++ sfAutoGenome (WithBoneId (BoneId "head" [])) (gdLength,gdThick,gdOrient)
+  ++ sfAutoGenome (WithBoneId (BoneId "body" [])) (gdLength,gdThick,gdOrient)
+  ++ sfAutoGenome (WithBoneId (BoneId "body2" [])) (gdLength,gdThick,gdOrient)
+  ++ sfAutoGenome (WithBoneId (BoneId "tailbone" [])) (gdLength,gdThick,gdOrient)
+  ++ sfAutoGenome (WithBoneId (BoneId "tailend" [])) (gdLength,gdThick,gdOrient)
+
+
 -- | your basic worm
 worm :: AnimalNode Float
 worm = asPhantom $
@@ -82,7 +95,7 @@ worm = asPhantom $
                 [mans "3" (relV3 1 0 0) (Rel 1)
                     [mans "4" (relV3 0 1 0) (Rel 1) []]]]]
 
--- | flippable worm
+-- | a worm intended to be flipped that scales geometrically
 flipWorm =
     mans "1" (relV3 1 0 0) (Rel 1.1)
         [mans "2" (relV3 0 0 1) (Rel 1.1)
@@ -95,9 +108,3 @@ worm2 = asPhantom $ mans "root" (relV3 0 0 0) (Abs 0.2)
     [flipWorm
     , flipAnimalNode ReflX (defTransFlag ReflX) flipWorm
     ]
-
--- | write the example skeletons
-writeExampleObjs = do
-    writeFile "goat.obj" . meshToObj . generateMesh . animalNodeToSkellyNode $ goat
-    writeFile "worm.obj" . meshToObj . generateMesh . animalNodeToSkellyNode $ worm
-    writeFile "worm2.obj" . meshToObj . generateMesh . animalNodeToSkellyNode $ worm2

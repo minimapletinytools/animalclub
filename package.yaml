@@ -84,6 +84,7 @@ library:
     - AnimalClub.Skellygen.Linear
     # Animal
     - AnimalClub.Animals
+    - AnimalClub.Animals.Examples
 
     # Hidden stuff that's only here for testing reasons
     - AnimalClub.Genetics.Internal.Unused.Genotype
@@ -108,8 +109,6 @@ executables:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
-    other-modules:
-    - ExamplesLib.Skeletons
     dependencies:
     - animalclub
 
