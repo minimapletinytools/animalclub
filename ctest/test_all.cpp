@@ -27,8 +27,7 @@ bool test_breed_hs() {
 }
 
 bool test_basic_goat() {
-  // TODO export methods in csrc or whatever
-  //free_goat(random_goat(100000));
+  free_goat(random_goat(100000));
   return true;
 }
 

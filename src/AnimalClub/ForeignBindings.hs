@@ -57,8 +57,8 @@ foreign export ccall breed_hs :: CInt -> Ptr CChar -> Ptr CChar -> Ptr CChar -> 
 -- consider moving this into the Animals.Examples folder
 type Goat = (DNA, Genome StdGen [AnimalExp Float])
 
-random_goat :: CInt -> IO (StablePtr Goat)
-random_goat len = do
+random_goat_hs :: CInt -> IO (StablePtr Goat)
+random_goat_hs len = do
   gen <- getStdGen
   let
     len' = convert len
@@ -66,12 +66,12 @@ random_goat len = do
     dna = makeRandDNA gen len'
   newStablePtr (dna, genome)
 
-free_goat :: StablePtr Goat -> IO ()
-free_goat = freeStablePtr
+free_goat_hs :: StablePtr Goat -> IO ()
+free_goat_hs = freeStablePtr
 
 
-foreign export ccall random_goat :: CInt -> IO (StablePtr Goat)
-foreign export ccall free_goat :: StablePtr Goat -> IO ()
+foreign export ccall random_goat_hs :: CInt -> IO (StablePtr Goat)
+foreign export ccall free_goat_hs :: StablePtr Goat -> IO ()
 
 --goatObj :: StablePtr Goat -> IO
 --goatObj goatPtr = do
