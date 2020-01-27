@@ -13,6 +13,7 @@ Stability   : experimental
 
 module AnimalClub.Animals.Builder (
     AutoGeneMethod(..),
+    sfAutoGenome,
     makeGenomeFromPropertiesSimple,
 
     -- WIP
@@ -55,6 +56,17 @@ autoGeneCount (Normal _ x) = x
 -- note, this is NOT the same as how many float values need to be produced, but it was convenient
 autoGeneSize :: AutoGeneMethod a -> Int
 autoGeneSize (Normal _ x) = x
+
+sfAutoGenome ::
+  (AnimalFloat a)
+  => (BoneMethod a -> SkellyFunc a)
+  -> ((a,a),(a,a),(a,a))
+  -> [(SkellyFunc a, AutoGeneMethod a)]
+sfAutoGenome bmf (l,t,o)= [
+  (bmf defLength, Normal l 1)
+  , (bmf defThickness, Normal t 1)
+  , (bmf defOrientation, Normal o 3)
+  ]
 
 -- FUTURE make it so that number of params are enforced at type level in (SkellyFunc, AutoGeneMethod)
 -- | automatically create genome from given lists of properties

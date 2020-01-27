@@ -36,34 +36,23 @@ gdThick = (0, 2) :: (Float, Float)
 --gdThick = (0,0)
 
 
-goatHelper ::
-  (AnimalFloat a)
-  => (BoneMethod a -> SkellyFunc a)
-  -> ((a,a),(a,a),(a,a))
-  -> [(SkellyFunc a, AutoGeneMethod a)]
-goatHelper bmf (l,t,o)= [
-  (bmf defLength, Normal l 1)
-  , (bmf defThickness, Normal t 1)
-  , (bmf defOrientation, Normal o 3)
-  ]
-
--- NOTE, this is setting thickness on some "root" nodes which is pointless and harmless
+-- NOTE, this is setting thickness on some phantom nodes which is pointless and harmless
 goatPropertyList :: [(SkellyFunc Float, AutoGeneMethod Float)]
 goatPropertyList =
-  goatHelper (WithBoneMatcher (nameFlagMatcher "leg" [BF_Front])) (gdLength,gdThick,gdOrient)
-  ++ goatHelper (WithBoneMatcher (nameFlagMatcher "knee" [BF_Front])) (gdLength,gdThick,gdOrient)
-  ++ goatHelper (WithBoneMatcher (nameFlagMatcher "ankle" [BF_Front])) (gdLength,gdThick,gdOrient)
-  ++ goatHelper (WithBoneMatcher (nameFlagMatcher "toe" [BF_Front])) (gdLength,gdThick,gdOrient)
-  ++ goatHelper (WithBoneMatcher (nameFlagMatcher "leg" [BF_Back])) (gdLength,gdThick,gdOrient)
-  ++ goatHelper (WithBoneMatcher (nameFlagMatcher "knee" [BF_Back])) (gdLength,gdThick,gdOrient)
-  ++ goatHelper (WithBoneMatcher (nameFlagMatcher "ankle" [BF_Back])) (gdLength,gdThick,gdOrient)
-  ++ goatHelper (WithBoneMatcher (nameFlagMatcher "toe" [BF_Back])) (gdLength,gdThick,gdOrient)
-  ++ goatHelper (WithBoneId (BoneId "neck" [])) (gdLength,gdThick,gdOrient)
-  ++ goatHelper (WithBoneId (BoneId "head" [])) (gdLength,gdThick,gdOrient)
-  ++ goatHelper (WithBoneId (BoneId "body" [])) (gdLength,gdThick,gdOrient)
-  ++ goatHelper (WithBoneId (BoneId "body2" [])) (gdLength,gdThick,gdOrient)
-  ++ goatHelper (WithBoneId (BoneId "tailbone" [])) (gdLength,gdThick,gdOrient)
-  ++ goatHelper (WithBoneId (BoneId "tailend" [])) (gdLength,gdThick,gdOrient)
+  sfAutoGenome (WithBoneMatcher (nameFlagMatcher "leg" [BF_Front])) (gdLength,gdThick,gdOrient)
+  ++ sfAutoGenome (WithBoneMatcher (nameFlagMatcher "knee" [BF_Front])) (gdLength,gdThick,gdOrient)
+  ++ sfAutoGenome (WithBoneMatcher (nameFlagMatcher "ankle" [BF_Front])) (gdLength,gdThick,gdOrient)
+  ++ sfAutoGenome (WithBoneMatcher (nameFlagMatcher "toe" [BF_Front])) (gdLength,gdThick,gdOrient)
+  ++ sfAutoGenome (WithBoneMatcher (nameFlagMatcher "leg" [BF_Back])) (gdLength,gdThick,gdOrient)
+  ++ sfAutoGenome (WithBoneMatcher (nameFlagMatcher "knee" [BF_Back])) (gdLength,gdThick,gdOrient)
+  ++ sfAutoGenome (WithBoneMatcher (nameFlagMatcher "ankle" [BF_Back])) (gdLength,gdThick,gdOrient)
+  ++ sfAutoGenome (WithBoneMatcher (nameFlagMatcher "toe" [BF_Back])) (gdLength,gdThick,gdOrient)
+  ++ sfAutoGenome (WithBoneId (BoneId "neck" [])) (gdLength,gdThick,gdOrient)
+  ++ sfAutoGenome (WithBoneId (BoneId "head" [])) (gdLength,gdThick,gdOrient)
+  ++ sfAutoGenome (WithBoneId (BoneId "body" [])) (gdLength,gdThick,gdOrient)
+  ++ sfAutoGenome (WithBoneId (BoneId "body2" [])) (gdLength,gdThick,gdOrient)
+  ++ sfAutoGenome (WithBoneId (BoneId "tailbone" [])) (gdLength,gdThick,gdOrient)
+  ++ sfAutoGenome (WithBoneId (BoneId "tailend" [])) (gdLength,gdThick,gdOrient)
 
 main :: IO ()
 main = do

@@ -12,10 +12,10 @@
 -finish exporting genetics stuff to C++
 -change scale to V3 instead of M33
   -see comments in reduceBoneTrans in AnimalScript.hs
--refactor
+-consider moving parts of Builder.hs into Genetics
+DONe-refactor
   DONE-consider deleting Hierarchical
-  -move goat.hs:goatHelper into Builder.hs
-  -consider moving parts of Builder.hs into Genetics
+  DONE-move goat.hs:goatHelper into Builder.hs
 DONE D:-do constraint parameterization of Float (so we can switch to Double)
 DONE-combine all math libraries into single Math.hs module...
 DONE-fix or change the isRoot parameter in AnimalNode
