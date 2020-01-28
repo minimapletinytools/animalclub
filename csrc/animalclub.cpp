@@ -36,8 +36,8 @@ void breed(uint32_t seed, char* dna1, char* dna2, char* outdna, uint32_t size) {
   breed_hs(seed, dna1, dna2, outdna, size);
 }
 
-GoatSpecimenPtr random_goat(uint32_t length) {
-  return (GoatSpecimenPtr)random_goat_hs(length);
+GoatSpecimenPtr random_goat() {
+  return (GoatSpecimenPtr)random_goat_hs();
 }
 void free_goat(GoatSpecimenPtr goat) {
   return free_goat_hs((HsStablePtr)goat);

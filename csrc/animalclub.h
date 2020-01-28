@@ -17,7 +17,7 @@ void exit(void);
 
 void breed(uint32_t seed, char* dna1, char* dna2, char* outdna, uint32_t size);
 
-GoatSpecimenPtr random_goat(uint32_t length);
+GoatSpecimenPtr random_goat();
 void free_goat(GoatSpecimenPtr goat);
 
 Mesh* goat_mesh(GoatSpecimenPtr);

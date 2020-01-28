@@ -62,29 +62,27 @@ foreign export ccall breed_hs :: CInt -> Ptr CChar -> Ptr CChar -> Ptr CChar -> 
 
 -- | stuff below is specific to goats
 -- consider moving this into the Animals.Examples folder
--- TODO need DNA length parameter
-type GoatSpecimen = (DNA, Genome StdGen [AnimalExp Float])
 
-random_goat_hs :: CInt -> IO (StablePtr GoatSpecimen)
-random_goat_hs len = do
+goatSize :: Int
+goatSize = 10000
+
+goatGenome :: Genome StdGen [AnimalExp Float]
+goatGenome = makeGenomeFromPropertiesSimple goatSize [] goatPropertyList
+
+random_goat_hs :: IO (StablePtr DNA)
+random_goat_hs = do
   gen <- getStdGen
-  let
-    len' = convert len
-    genome = makeGenomeFromPropertiesSimple len' [] goatPropertyList
-    dna = makeRandDNA gen len'
-  r <- newStablePtr (dna, genome)
-  trace (show (castStablePtrToPtr r)) $ return r
+  newStablePtr (makeRandDNA gen goatSize)
 
-free_goat_hs :: StablePtr GoatSpecimen -> IO ()
+free_goat_hs :: StablePtr DNA -> IO ()
 free_goat_hs = freeStablePtr
-
 
 type CCMesh = (Ptr CFloat, CInt, Ptr CInt, CInt)
 
 -- | caller is responsible for freeing memory by calling free_goat_mesh_hs
-goat_mesh_hs :: StablePtr GoatSpecimen -> IO (Ptr CCMesh)
+goat_mesh_hs :: StablePtr DNA -> IO (Ptr CCMesh)
 goat_mesh_hs goatPtr = do
-  (dna, goatGenome) <- deRefStablePtr goatPtr
+  dna <- deRefStablePtr goatPtr
   let
     goatProps = generateAnimalProperties (makeBoneIdList goatAnimalNode) $ evalGenome goatGenome dna
     skelly = animalNodeToSkellyNodeWithProps goatProps goatAnimalNode
@@ -107,9 +105,9 @@ free_goat_mesh_hs ptr = do
   free pt2
   free ptr
 
-foreign export ccall random_goat_hs :: CInt -> IO (StablePtr GoatSpecimen)
-foreign export ccall free_goat_hs :: StablePtr GoatSpecimen -> IO ()
-foreign export ccall goat_mesh_hs :: StablePtr GoatSpecimen -> IO (Ptr CCMesh)
+foreign export ccall random_goat_hs :: IO (StablePtr DNA)
+foreign export ccall free_goat_hs :: StablePtr DNA -> IO ()
+foreign export ccall goat_mesh_hs :: StablePtr DNA -> IO (Ptr CCMesh)
 foreign export ccall free_goat_mesh_hs :: Ptr CCMesh -> IO ()
 
 

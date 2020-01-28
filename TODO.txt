@@ -3,7 +3,6 @@
 -switch indentation to 2 spaces
 -fix missing-home-module warning
 -finish lookAt function, and make its interface less weird
--look into switching DNA to use fixed vector (type level dimension)
 -basic test cases
 -finish goat breeding app MVP
   -just randomly breed and see what happens?
@@ -14,7 +13,10 @@
 -change scale to V3 instead of M33
   -see comments in reduceBoneTrans in AnimalScript.hs
 -consider moving parts of Builder.hs into Genetics
-DONe-refactor
+-look into adding type level size parameter to DNA
+DONE-look into switching DNA to use fixed vector (type level dimension)
+  -it's not compatible with Data.Vector.Storable and not intended for large dimensions
+DONE-refactor
   DONE-consider deleting Hierarchical
   DONE-move goat.hs:goatHelper into Builder.hs
 DONE D:-do constraint parameterization of Float (so we can switch to Double)
