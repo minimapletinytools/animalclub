@@ -26,18 +26,36 @@ bool test_breed_hs() {
   return true;
 }
 
-bool test_basic_goat() {
+bool test_goat() {
   GoatSpecimenPtr gptr = random_goat();
   Mesh* gmesh = goat_mesh(gptr);
-  cout << printMesh(*gmesh);
+  //cout << printMesh(*gmesh);
   free_goat_mesh(gmesh);
   free_goat(gptr);
   return true;
 }
 
+bool test_many_goats() {
+  const int count = 100;
+  GoatSpecimenPtr goats[count];
+  GoatSpecimenPtr bredGoats[count/2];
+  for_each(goats, goats+count, [](GoatSpecimenPtr& g){ g = random_goat(); });
+  for(int i = 0; i < count/2; i++) {
+    bredGoats[i] = breed_goat(goats[i*2], goats[i*2+1]);
+  }
+
+  Mesh* gmesh = goat_mesh(bredGoats[0]);
+  cout << printMesh(*gmesh);
+
+  for_each(bredGoats, bredGoats+count/2, [](GoatSpecimenPtr& g){ free_goat(g); });
+  for_each(goats, goats+count, [](GoatSpecimenPtr& g){ free_goat(g); });
+  return true;
+}
+
 TEST_CASE( "basic breed", "genetics" ) {
     REQUIRE(test_breed_hs());
-    REQUIRE(test_basic_goat());
+    REQUIRE(test_goat());
+    REQUIRE(test_many_goats());
 }
 
 int main( int argc, char* argv[] ) {

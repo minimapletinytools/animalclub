@@ -26,6 +26,7 @@ import           GHC.Generics                 (Generic)
 
 import           AnimalClub.Skellygen.Linear
 import           AnimalClub.Skellygen.TRS
+import           Data.Int                     (Int32)
 import qualified Data.List                    as L
 import           Data.Monoid                  (Monoid, mappend)
 import           Data.Semigroup               (Semigroup, (<>))
@@ -36,7 +37,7 @@ import           Control.Monad.Primitive
 import qualified Data.Vector.Storable.Mutable as V
 
 
-type Face = (Int,Int,Int)
+type Face = (Int32,Int32,Int32)
 
 -- TODO maybe get rid of this and use CMesh only
 data LocalMesh a = LocalMesh ([V3 a], [Face]) deriving (Generic, NFData)
@@ -49,7 +50,7 @@ map3Tuple f (a1,a2,a3) = (f a1, f a2, f a3)
 
 -- | semigroup instance offsets triangle indices appropriately
 instance Semigroup (LocalMesh a) where
-    (<>) (LocalMesh (m1,i1)) (LocalMesh (m2, i2)) = LocalMesh (m1++m2, i1 ++ map (map3Tuple (+length m1)) i2)
+    (<>) (LocalMesh (m1,i1)) (LocalMesh (m2, i2)) = LocalMesh (m1++m2, i1 ++ map (map3Tuple (+fromIntegral (length m1))) i2)
 
 instance Monoid (LocalMesh a) where
     mempty = LocalMesh ([],[])
@@ -60,12 +61,6 @@ tellV3 v = do
     tell "v "
     mapM_ (\tv -> tell $ show tv ++ " ") $ v
     tell "\n"
-
-group :: Int -> [a] -> [[a]]
-group _ [] = []
-group n l
-  | n > 0 = (take n l) : (group n (drop n l))
-  | otherwise = error "Negative n"
 
 -- TODO change this to Data.Text
 meshToObj :: (Show a) => LocalMesh a -> String

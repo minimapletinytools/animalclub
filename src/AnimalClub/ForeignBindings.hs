@@ -25,6 +25,7 @@ import           AnimalClub.Skellygen.Linear  hiding (trace)
 import           AnimalClub.Skellygen.Mesh
 
 import           Data.Convertible
+import           Data.Int                     (Int32)
 import qualified Data.Vector.Storable         as V
 import qualified Data.Vector.Storable.Mutable as MV
 import           Foreign
@@ -77,6 +78,13 @@ random_goat_hs = do
 free_goat_hs :: StablePtr DNA -> IO ()
 free_goat_hs = freeStablePtr
 
+breed_goat_hs :: StablePtr DNA -> StablePtr DNA -> IO (StablePtr DNA)
+breed_goat_hs ptr1 ptr2 = do
+  dna1 <- deRefStablePtr ptr1
+  dna2 <- deRefStablePtr ptr2
+  gen <- getStdGen
+  newStablePtr $ breed gen dna1 dna2
+
 type CCMesh = (Ptr CFloat, CInt, Ptr CInt, CInt)
 
 -- | caller is responsible for freeing memory by calling free_goat_mesh_hs
@@ -90,7 +98,7 @@ goat_mesh_hs goatPtr = do
     vl = V.length verts
     fl = V.length faces
   vptr <- mallocArray vl :: IO (Ptr (V3 Float))
-  fptr <- mallocArray fl :: IO (Ptr (Int,Int,Int))
+  fptr <- mallocArray fl :: IO (Ptr (Int32,Int32,Int32))
   vfptr <- newForeignPtr_ vptr
   ffptr <- newForeignPtr_ fptr
   V.copy (MV.unsafeFromForeignPtr0 vfptr vl) verts
@@ -107,6 +115,7 @@ free_goat_mesh_hs ptr = do
 
 foreign export ccall random_goat_hs :: IO (StablePtr DNA)
 foreign export ccall free_goat_hs :: StablePtr DNA -> IO ()
+foreign export ccall breed_goat_hs :: StablePtr DNA -> StablePtr DNA -> IO (StablePtr DNA)
 foreign export ccall goat_mesh_hs :: StablePtr DNA -> IO (Ptr CCMesh)
 foreign export ccall free_goat_mesh_hs :: Ptr CCMesh -> IO ()
 

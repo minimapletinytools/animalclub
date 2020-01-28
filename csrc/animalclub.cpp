@@ -26,7 +26,7 @@ std::string printMesh(Mesh m) {
     r << "v " << m.vertices[i*3 + 0] << " " << m.vertices[i*3 + 1] << " " << m.vertices[i*3 + 2] << std::endl;
   }
   for(int i = 0; i < m.face_count/3; i++) {
-    r << "f " << m.faces[i*3 + 0] << " " << m.faces[i*3 + 1] << " " << m.faces[i*3 + 2] << std::endl;
+    r << "f " << m.faces[i*3 + 0]+1 << " " << m.faces[i*3 + 1]+1 << " " << m.faces[i*3 + 2]+1 << std::endl;
   }
   return r.str();
 }
@@ -43,10 +43,12 @@ void free_goat(GoatSpecimenPtr goat) {
   return free_goat_hs((HsStablePtr)goat);
 }
 
+GoatSpecimenPtr breed_goat(GoatSpecimenPtr g1, GoatSpecimenPtr g2) {
+  return breed_goat_hs(g1,g2);
+}
+
 Mesh* goat_mesh(GoatSpecimenPtr ptr) {
-  std::cout << "specimen is " << ptr << std::endl;
   HsPtr r = goat_mesh_hs(ptr);
-  std::cout << "mesh is " << r << std::endl;
   return (Mesh*)r;
 }
 void free_goat_mesh(Mesh* ptr) {
