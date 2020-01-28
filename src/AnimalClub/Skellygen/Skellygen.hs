@@ -7,18 +7,20 @@
 
 module AnimalClub.Skellygen.Skellygen
     ( SkellyNode(..)
-    , generateMesh
+    , generateLocalMesh
     ) where
 
 import           Control.DeepSeq
 import           GHC.Generics
 import           Lens.Micro.Platform
 
+import qualified Data.Vector.Storable.Mutable as MV
+
 import           AnimalClub.Skellygen.Linear
 import           AnimalClub.Skellygen.Mesh
 import           AnimalClub.Skellygen.TRS
 
-import qualified Debug.Trace                 as Debug
+import qualified Debug.Trace                  as Debug
 
 -- |
 -- prefixed names due to unfortunate naming conflict with AnimalNode
@@ -47,16 +49,16 @@ _normalize :: (AnimalFloat a) => V3 a -> V3 a
 _normalize v = (1 / norm v) *^ v
 
 -- TODO it's better to write this function where it takes a thickness square at the origin facing neutral and apply the transformation to it
-generateSingleMeshLocal ::
+generateSingleLocalMesh ::
     (AnimalFloat a)
     => TRS a -- ^ input node transform
     -> a -- ^ input thickness
     -> a -- ^ node parent thickness
-    -> Mesh a -- ^ output mesh
-generateSingleMeshLocal pos ct pt =
+    -> LocalMesh a -- ^ output mesh
+generateSingleLocalMesh pos ct pt =
   if length' < 1e-6
-    then Mesh ([], [])
-    else Mesh (startPoints ++ endPoints, sides ++ caps)
+    then LocalMesh ([], [])
+    else LocalMesh (startPoints ++ endPoints, sides ++ caps)
   where
     start' = V3 0 0 0
     end' = _trans pos
@@ -80,25 +82,26 @@ generateSingleMeshLocal pos ct pt =
     sides = [(0, 4, 1), (1, 4, 5), (1, 5, 2), (2, 5, 6), (2, 6, 7), (3, 2, 7), (3, 7, 0), (0, 7, 4)]
     caps = [(0, 1, 2), (2, 3, 0), (4, 5, 6), (6, 7, 4)]
 
-_generateMesh ::
+_generateLocalMesh ::
     (AnimalFloat a)
     => M44 a -- ^ parent ABS transform
     -> a -- ^ parent thickness
     -> SkellyNode a -- ^ node to generate
-    -> Mesh a -- ^ output mesh
-_generateMesh p_snM44 p_thick skn = selfMesh <> mconcat cmeshes where
+    -> LocalMesh a -- ^ output mesh
+_generateLocalMesh p_snM44 p_thick skn = selfLocalMesh <> mconcat cmeshes where
   thick = _snThickness skn
   reltrs = _snTrs skn
-  --selfMesh = Debug.trace ("skn: " ++ (show (_snDebugName skn)) ++ " p: " ++ show (_trans p_snTrs) ++ " c: " ++ show (_trans reltrs)) $
-  --selfMesh = Debug.trace ("sknabs: " ++ show abstrs ++ " p: " ++ show (_rot p_snTrs) ++ " c: " ++ show (_rot reltrs)) $
-  selfMesh = if _snIsPhantom skn
-    then emptyMesh
-    else transformMeshM44 p_snM44 $ generateSingleMeshLocal reltrs thick p_thick
+  --selfLocalMesh = Debug.trace ("skn: " ++ (show (_snDebugName skn)) ++ " p: " ++ show (_trans p_snTrs) ++ " c: " ++ show (_trans reltrs)) $
+  --selfLocalMesh = Debug.trace ("sknabs: " ++ show abstrs ++ " p: " ++ show (_rot p_snTrs) ++ " c: " ++ show (_rot reltrs)) $
+  selfLocalMesh = if _snIsPhantom skn
+    then emptyLocalMesh
+    else transformLocalMeshM44 p_snM44 $ generateSingleLocalMesh reltrs thick p_thick
   absM44 = p_snM44 !*! conv_TRS_M44 reltrs
-  cmeshes = map (_generateMesh absM44 thick) (_snChildren skn)
+  cmeshes = map (_generateLocalMesh absM44 thick) (_snChildren skn)
 
-generateMesh ::
+
+generateLocalMesh ::
     (AnimalFloat a)
     => SkellyNode a -- ^ input top level parent node
-    -> Mesh a -- ^ output mesh
-generateMesh skn = _generateMesh identity 1.0 skn
+    -> LocalMesh a -- ^ output mesh
+generateLocalMesh skn = _generateLocalMesh identity 1.0 skn
