@@ -12,6 +12,7 @@ This module exports a bunch of methods in AnimalClub via FFI
 
 {-# LANGUAGE CPP                      #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE UnboxedTuples            #-}
 
 module AnimalClub.ForeignBindings (
 ) where
@@ -19,13 +20,19 @@ module AnimalClub.ForeignBindings (
 import           AnimalClub.Animals
 import           AnimalClub.Animals.Examples
 import           AnimalClub.Genetics
+import           AnimalClub.Skellygen
+import           AnimalClub.Skellygen.Linear  hiding (trace)
+import           AnimalClub.Skellygen.Mesh
 
 import           Data.Convertible
-import qualified Data.Vector.Storable        as V
+import qualified Data.Vector.Storable         as V
+import qualified Data.Vector.Storable.Mutable as MV
 import           Foreign
 import           Foreign.C.Types
+--import           Foreign.Storable.Tuple
 import           System.Random
 
+import           Debug.Trace
 
 breed_hs ::
   CInt -- ^ random seed
@@ -55,23 +62,56 @@ foreign export ccall breed_hs :: CInt -> Ptr CChar -> Ptr CChar -> Ptr CChar -> 
 
 -- | stuff below is specific to goats
 -- consider moving this into the Animals.Examples folder
-type Goat = (DNA, Genome StdGen [AnimalExp Float])
+-- TODO need DNA length parameter
+type GoatSpecimen = (DNA, Genome StdGen [AnimalExp Float])
 
-random_goat_hs :: CInt -> IO (StablePtr Goat)
+random_goat_hs :: CInt -> IO (StablePtr GoatSpecimen)
 random_goat_hs len = do
   gen <- getStdGen
   let
     len' = convert len
     genome = makeGenomeFromPropertiesSimple len' [] goatPropertyList
     dna = makeRandDNA gen len'
-  newStablePtr (dna, genome)
+  r <- newStablePtr (dna, genome)
+  trace (show (castStablePtrToPtr r)) $ return r
 
-free_goat_hs :: StablePtr Goat -> IO ()
+free_goat_hs :: StablePtr GoatSpecimen -> IO ()
 free_goat_hs = freeStablePtr
 
 
-foreign export ccall random_goat_hs :: CInt -> IO (StablePtr Goat)
-foreign export ccall free_goat_hs :: StablePtr Goat -> IO ()
+type CCMesh = (Ptr CFloat, CInt, Ptr CInt, CInt)
+
+-- | caller is responsible for freeing memory by calling free_goat_mesh_hs
+goat_mesh_hs :: StablePtr GoatSpecimen -> IO (Ptr CCMesh)
+goat_mesh_hs goatPtr = do
+  (dna, goatGenome) <- deRefStablePtr goatPtr
+  let
+    goatProps = generateAnimalProperties (makeBoneIdList goatAnimalNode) $ evalGenome goatGenome dna
+    skelly = animalNodeToSkellyNodeWithProps goatProps goatAnimalNode
+    CMesh verts faces = toCMesh . generateLocalMesh $ skelly
+    vl = V.length verts
+    fl = V.length faces
+  vptr <- mallocArray vl :: IO (Ptr (V3 Float))
+  fptr <- mallocArray fl :: IO (Ptr (Int,Int,Int))
+  vfptr <- newForeignPtr_ vptr
+  ffptr <- newForeignPtr_ fptr
+  V.copy (MV.unsafeFromForeignPtr0 vfptr vl) verts
+  V.copy (MV.unsafeFromForeignPtr0 ffptr fl) faces
+  r <- new (castPtr vptr, convert vl * 3, castPtr fptr, convert fl * 3)
+  return r
+
+free_goat_mesh_hs :: Ptr CCMesh -> IO ()
+free_goat_mesh_hs ptr = do
+  (pt1,_,pt2,_) <- peek ptr
+  free pt1
+  free pt2
+  free ptr
+
+foreign export ccall random_goat_hs :: CInt -> IO (StablePtr GoatSpecimen)
+foreign export ccall free_goat_hs :: StablePtr GoatSpecimen -> IO ()
+foreign export ccall goat_mesh_hs :: StablePtr GoatSpecimen -> IO (Ptr CCMesh)
+foreign export ccall free_goat_mesh_hs :: Ptr CCMesh -> IO ()
+
 
 --goatObj :: StablePtr Goat -> IO
 --goatObj goatPtr = do

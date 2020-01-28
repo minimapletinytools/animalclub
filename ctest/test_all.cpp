@@ -27,7 +27,11 @@ bool test_breed_hs() {
 }
 
 bool test_basic_goat() {
-  free_goat(random_goat(100000));
+  GoatSpecimenPtr gptr = random_goat(100000);
+  Mesh* gmesh = goat_mesh(gptr);
+  cout << printMesh(*gmesh);
+  free_goat_mesh(gmesh);
+  free_goat(gptr);
   return true;
 }
 

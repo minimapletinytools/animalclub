@@ -1,8 +1,9 @@
 ::TODO::
-
+-switch LocalMesh to use storabel vector
 -switch indentation to 2 spaces
 -fix missing-home-module warning
 -finish lookAt function, and make its interface less weird
+-look into switching DNA to use fixed vector (type level dimension)
 -basic test cases
 -finish goat breeding app MVP
   -just randomly breed and see what happens?
