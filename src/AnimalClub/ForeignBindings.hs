@@ -87,7 +87,7 @@ goat_mesh_hs goatPtr = do
   let
     goatProps = generateAnimalProperties (makeBoneIdList goatAnimalNode) $ evalGenome goatGenome dna
     skelly = animalNodeToSkellyNodeWithProps goatProps goatAnimalNode
-    CMesh verts faces = toCMesh . generateMesh $ skelly
+    CMesh verts faces = toCMesh . generateLocalMesh $ skelly
     (vptr, vsz) = V.unsafeToForeignPtr0 verts
     (fptr, fsz) = V.unsafeToForeignPtr0 faces
   vsptr <- newStablePtr . castForeignPtr $ vptr

@@ -23,4 +23,4 @@ main = do
     original = makeRandDNA gen goatDNALength
     goatProps = generateAnimalProperties (makeBoneIdList goatAnimalNode) $ evalGenome goatGenome original
     skelly = animalNodeToSkellyNodeWithProps goatProps goatAnimalNode
-  writeFile "wigglygoat.obj" . meshToObj . generateMesh $ skelly
+  writeFile "wigglygoat.obj" . meshToObj . generateLocalMesh $ skelly

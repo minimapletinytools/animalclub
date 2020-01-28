@@ -14,9 +14,9 @@ import           AnimalClub.Genetics
 import           AnimalClub.Skellygen
 import           AnimalClub.Skellygen.Mesh
 
-import           Data.List                      (unfoldr)
+import           Data.List                 (unfoldr)
 import           System.Random
-import           Text.Printf                    (printf)
+import           Text.Printf               (printf)
 
 
 --import qualified Debug.Trace as Debug
@@ -45,4 +45,4 @@ main = do
         bestWorm = last bestWorms
         bestWormProps = generateAnimalProperties wormBones $ evalGenome genome bestWorm
         skelly = animalNodeToSkellyNodeWithProps bestWormProps (baseWorm)
-    writeFile "wigglyworm.obj" . meshToObj . generateMesh $ skelly
+    writeFile "wigglyworm.obj" . meshToObj . generateLocalMesh $ skelly
