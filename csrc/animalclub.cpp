@@ -45,10 +45,10 @@ void free_goat(GoatSpecimenPtr goat) {
 
 Mesh* goat_mesh(GoatSpecimenPtr ptr) {
   std::cout << "specimen is " << ptr << std::endl;
-  HsStablePtr r = goat_mesh_hs(ptr);
+  HsPtr r = goat_mesh_hs(ptr);
   std::cout << "mesh is " << r << std::endl;
   return (Mesh*)r;
 }
 void free_goat_mesh(Mesh* ptr) {
-  free_goat_mesh_hs((HsStablePtr)ptr);
+  free_goat_mesh_hs((HsPtr)ptr);
 }

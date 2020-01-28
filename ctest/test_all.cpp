@@ -27,16 +27,9 @@ bool test_breed_hs() {
 }
 
 bool test_basic_goat() {
-  cout << "hi" << endl;
   GoatSpecimenPtr gptr = random_goat(100000);
-  cout << "hi2" << endl;
   Mesh* gmesh = goat_mesh(gptr);
-  cout << "h3" << endl;
-  cout << gmesh << endl;
-  cout << gmesh->vertex_count << " " << gmesh->face_count << endl;
-  cout << "h4" << endl;
   cout << printMesh(*gmesh);
-  cout << "h5" << endl;
   free_goat_mesh(gmesh);
   free_goat(gptr);
   return true;

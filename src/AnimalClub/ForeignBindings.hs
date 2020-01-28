@@ -21,10 +21,12 @@ import           AnimalClub.Animals
 import           AnimalClub.Animals.Examples
 import           AnimalClub.Genetics
 import           AnimalClub.Skellygen
+import           AnimalClub.Skellygen.Linear  hiding (trace)
 import           AnimalClub.Skellygen.Mesh
 
 import           Data.Convertible
-import qualified Data.Vector.Storable        as V
+import qualified Data.Vector.Storable         as V
+import qualified Data.Vector.Storable.Mutable as MV
 import           Foreign
 import           Foreign.C.Types
 --import           Foreign.Storable.Tuple
@@ -77,35 +79,38 @@ free_goat_hs :: StablePtr GoatSpecimen -> IO ()
 free_goat_hs = freeStablePtr
 
 
--- needed because Vector.Storable only gives us a ForeignPtr which will get GC'd if we lose all refs to ForeignPtr
-type StableForeignPtr a = StablePtr (ForeignPtr a)
-type StableCMesh = (StableForeignPtr CFloat, CInt, StableForeignPtr CInt, CInt)
+type CCMesh = (Ptr CFloat, CInt, Ptr CInt, CInt)
 
-goat_mesh_hs :: StablePtr GoatSpecimen -> IO (StablePtr StableCMesh)
+-- | caller is responsible for freeing memory by calling free_goat_mesh_hs
+goat_mesh_hs :: StablePtr GoatSpecimen -> IO (Ptr CCMesh)
 goat_mesh_hs goatPtr = do
   (dna, goatGenome) <- deRefStablePtr goatPtr
   let
     goatProps = generateAnimalProperties (makeBoneIdList goatAnimalNode) $ evalGenome goatGenome dna
     skelly = animalNodeToSkellyNodeWithProps goatProps goatAnimalNode
     CMesh verts faces = toCMesh . generateLocalMesh $ skelly
-    (vptr, vsz) = V.unsafeToForeignPtr0 verts
-    (fptr, fsz) = V.unsafeToForeignPtr0 faces
-  vsptr <- newStablePtr . castForeignPtr $ vptr
-  fsptr <- newStablePtr . castForeignPtr $ fptr
-  r <- newStablePtr (vsptr, convert vsz * 3, fsptr, convert fsz * 3)
+    vl = V.length verts
+    fl = V.length faces
+  vptr <- mallocArray vl :: IO (Ptr (V3 Float))
+  fptr <- mallocArray fl :: IO (Ptr (Int,Int,Int))
+  vfptr <- newForeignPtr_ vptr
+  ffptr <- newForeignPtr_ fptr
+  V.copy (MV.unsafeFromForeignPtr0 vfptr vl) verts
+  V.copy (MV.unsafeFromForeignPtr0 ffptr fl) faces
+  r <- new (castPtr vptr, convert vl * 3, castPtr fptr, convert fl * 3)
   return r
 
-free_goat_mesh_hs :: StablePtr StableCMesh -> IO ()
+free_goat_mesh_hs :: Ptr CCMesh -> IO ()
 free_goat_mesh_hs ptr = do
-  (pt1,_,pt2,_) <- deRefStablePtr ptr
-  freeStablePtr pt1
-  freeStablePtr pt2
-  freeStablePtr ptr
+  (pt1,_,pt2,_) <- peek ptr
+  free pt1
+  free pt2
+  free ptr
 
 foreign export ccall random_goat_hs :: CInt -> IO (StablePtr GoatSpecimen)
 foreign export ccall free_goat_hs :: StablePtr GoatSpecimen -> IO ()
-foreign export ccall goat_mesh_hs :: StablePtr GoatSpecimen -> IO (StablePtr StableCMesh)
-foreign export ccall free_goat_mesh_hs :: StablePtr StableCMesh -> IO ()
+foreign export ccall goat_mesh_hs :: StablePtr GoatSpecimen -> IO (Ptr CCMesh)
+foreign export ccall free_goat_mesh_hs :: Ptr CCMesh -> IO ()
 
 
 --goatObj :: StablePtr Goat -> IO

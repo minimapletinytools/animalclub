@@ -14,11 +14,13 @@ import           Control.DeepSeq
 import           GHC.Generics
 import           Lens.Micro.Platform
 
+import qualified Data.Vector.Storable.Mutable as MV
+
 import           AnimalClub.Skellygen.Linear
 import           AnimalClub.Skellygen.Mesh
 import           AnimalClub.Skellygen.TRS
 
-import qualified Debug.Trace                 as Debug
+import qualified Debug.Trace                  as Debug
 
 -- |
 -- prefixed names due to unfortunate naming conflict with AnimalNode
@@ -96,6 +98,7 @@ _generateLocalMesh p_snM44 p_thick skn = selfLocalMesh <> mconcat cmeshes where
     else transformLocalMeshM44 p_snM44 $ generateSingleLocalMesh reltrs thick p_thick
   absM44 = p_snM44 !*! conv_TRS_M44 reltrs
   cmeshes = map (_generateLocalMesh absM44 thick) (_snChildren skn)
+
 
 generateLocalMesh ::
     (AnimalFloat a)

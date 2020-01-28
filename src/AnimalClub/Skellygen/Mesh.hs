@@ -4,44 +4,42 @@
 
 module AnimalClub.Skellygen.Mesh (
     LocalMesh(..),
-    CMesh(..),
-    toCMesh,
     emptyLocalMesh,
     meshToObj,
     transformLocalMesh,
-    transformLocalMeshM44
+    transformLocalMeshM44,
+
+    CMesh(..),
+    toCMesh,
+
+    MutableCMesh(..),
+    freezeMutableCMesh,
+    thawCMesh
 
 ) where
 
-import qualified AnimalClub.Skellygen.TRS    as TRS
+import qualified AnimalClub.Skellygen.TRS     as TRS
 
 import           Control.DeepSeq
-import           Control.Monad.Writer.Lazy   (Writer, execWriter, tell)
-import           GHC.Generics                (Generic)
+import           Control.Monad.Writer.Lazy    (Writer, execWriter, tell)
+import           GHC.Generics                 (Generic)
 
 import           AnimalClub.Skellygen.Linear
 import           AnimalClub.Skellygen.TRS
-import qualified Data.List                   as L
-import           Data.Monoid                 (Monoid, mappend)
-import           Data.Semigroup              (Semigroup, (<>))
-import qualified Data.Vector.Storable        as V
+import qualified Data.List                    as L
+import           Data.Monoid                  (Monoid, mappend)
+import           Data.Semigroup               (Semigroup, (<>))
+import qualified Data.Vector.Storable         as V
 import           Foreign.Storable.Tuple
+
+import           Control.Monad.Primitive
+import qualified Data.Vector.Storable.Mutable as V
 
 
 type Face = (Int,Int,Int)
 
--- TODO get rid of this and use CMesh only
+-- TODO maybe get rid of this and use CMesh only
 data LocalMesh a = LocalMesh ([V3 a], [Face]) deriving (Generic, NFData)
-
-data CMesh a = CMesh {
-  cmesh_vertices :: V.Vector (V3 a)
-  , cmesh_faces  :: V.Vector Face
-}
-
-toCMesh :: (V.Storable a) => LocalMesh a -> CMesh a
-toCMesh (LocalMesh (verts, faces)) = CMesh verts' faces' where
-  verts' = V.unfoldr L.uncons verts
-  faces' = V.unfoldr L.uncons faces
 
 emptyLocalMesh :: LocalMesh a
 emptyLocalMesh = LocalMesh ([],[])
@@ -83,3 +81,28 @@ transformLocalMesh trs (LocalMesh (verts, inds)) =  LocalMesh (map mapfn verts, 
 transformLocalMeshM44 :: (AnimalFloat a) => M44 a -> LocalMesh a -> LocalMesh a
 transformLocalMeshM44 trs (LocalMesh (verts, inds)) =  LocalMesh (map mapfn verts, inds) where
     mapfn = mul_M44_V3 trs
+
+
+-- TODO rename this because it can't be used in C directly :(
+data CMesh a = CMesh {
+  cm_vertices :: V.Vector (V3 a)
+  , cm_faces  :: V.Vector Face
+}
+
+toCMesh :: (V.Storable a) => LocalMesh a -> CMesh a
+toCMesh (LocalMesh (verts, faces)) = CMesh verts' faces' where
+  verts' = V.unfoldr L.uncons verts
+  faces' = V.unfoldr L.uncons faces
+
+
+
+
+-- prob can delete this
+data MutableCMesh s a = MutableCMesh {
+  mcm_vertices :: V.MVector s (V3 a)
+  , mcm_faces  :: V.MVector s Face
+}
+freezeMutableCMesh :: (V.Storable a, PrimMonad m) => MutableCMesh (PrimState m) a -> m (CMesh a)
+freezeMutableCMesh (MutableCMesh v f) = CMesh <$> V.freeze v <*> V.freeze f
+thawCMesh :: (V.Storable a, PrimMonad m) => CMesh a -> m (MutableCMesh (PrimState m) a)
+thawCMesh (CMesh v f) = MutableCMesh <$> V.thaw v <*> V.thaw f
