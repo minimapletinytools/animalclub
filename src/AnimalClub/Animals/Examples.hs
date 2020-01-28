@@ -14,6 +14,6 @@ import           AnimalClub.Skellygen.Mesh
 -- | write the example skeletons
 writeExampleObjs :: IO ()
 writeExampleObjs = do
-    writeFile "goat.obj" . meshToObj . generateMesh . animalNodeToSkellyNode $ goat
+    writeFile "goat.obj" . meshToObj . generateMesh . animalNodeToSkellyNode $ goatAnimalNode
     writeFile "worm.obj" . meshToObj . generateMesh . animalNodeToSkellyNode $ worm
     writeFile "worm2.obj" . meshToObj . generateMesh . animalNodeToSkellyNode $ worm2

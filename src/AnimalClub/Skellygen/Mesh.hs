@@ -4,6 +4,8 @@
 
 module AnimalClub.Skellygen.Mesh (
     Mesh(..),
+    CMesh(..),
+    toCMesh,
     emptyMesh,
     meshToObj,
     transformMesh,
@@ -17,16 +19,29 @@ import           Control.DeepSeq
 import           Control.Monad.Writer.Lazy   (Writer, execWriter, tell)
 import           GHC.Generics                (Generic)
 
-import           Data.Monoid                 (Monoid, mappend)
-import           Data.Semigroup              (Semigroup, (<>))
-import qualified Data.Vector.Storable        as S
-
 import           AnimalClub.Skellygen.Linear
 import           AnimalClub.Skellygen.TRS
+import qualified Data.List                   as L
+import           Data.Monoid                 (Monoid, mappend)
+import           Data.Semigroup              (Semigroup, (<>))
+import qualified Data.Vector.Storable        as V
+import           Foreign.Storable.Tuple
 
 
+type Face = (Int,Int,Int)
 
-data Mesh a = Mesh ([V3 a], [(Int,Int,Int)]) deriving (Generic, NFData)
+-- TODO get rid of this and use CMesh only
+data Mesh a = Mesh ([V3 a], [Face]) deriving (Generic, NFData)
+
+data CMesh a = CMesh {
+  cmesh_vertices :: V.Vector (V3 a)
+  , cmesh_faces  :: V.Vector Face
+}
+
+toCMesh :: (V.Storable a) => Mesh a -> CMesh a
+toCMesh (Mesh (verts, faces)) = CMesh verts' faces' where
+  verts' = V.unfoldr L.uncons verts
+  faces' = V.unfoldr L.uncons faces
 
 emptyMesh :: Mesh a
 emptyMesh = Mesh ([],[])

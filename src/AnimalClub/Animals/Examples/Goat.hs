@@ -1,5 +1,5 @@
 module AnimalClub.Animals.Examples.Goat (
-    goat
+    goatAnimalNode
     , goatPropertyList
 
     -- for feeding goats
@@ -54,8 +54,8 @@ goatBackRightLeg = asPhantom $
                 [manf "toe" [BF_Right, BF_Back] (relV3 (-0.1) 0 0) (Rel 0.4) []]]]
 
 -- | goat!
-goat :: AnimalNode Float
-goat = asPhantom $
+goatAnimalNode :: AnimalNode Float
+goatAnimalNode = asPhantom $
     mans "root" (relV3 0 0 0) (Abs 0.2)
         [mans "neck" (relV3 (-0.07) (0.3) 0) (Rel 0.75)
             [mans "head" (relV3 (-0.07) (0.04) 0) (Rel 1.2) []]
