@@ -11,9 +11,9 @@ struct Mesh {
 
 extern "C" std::string printMesh(Mesh);
 
-extern "C" void init(void);
+extern "C" void my_init(void);
 
-extern "C" void exit(void);
+extern "C" void my_exit(void);
 
 extern "C" void breed(uint32_t seed, char* dna1, char* dna2, char* outdna, uint32_t size);
 

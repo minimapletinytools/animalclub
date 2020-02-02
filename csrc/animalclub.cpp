@@ -7,7 +7,7 @@
 #include "animalclub.h"
 #include "AnimalClub/ForeignBindings_stub.h"
 
-void init(void){
+void my_init(void){
   int argc = 2;
   char *argv[] = { (char *)"+RTS", (char *)"-A32m", NULL };
   char **pargv = argv;
@@ -16,7 +16,7 @@ void init(void){
   hs_init(&argc, &pargv);
 }
 
-void exit(void){
+void my_exit(void){
   hs_exit();
 }
 
