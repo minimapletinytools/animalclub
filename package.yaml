@@ -29,19 +29,40 @@ ghc-options:
 #- -Werror
 
 default-extensions:
-- InstanceSigs
-- LambdaCase
-- OverloadedStrings
-- GADTs
-- DeriveFunctor
+- ApplicativeDo
+- BangPatterns
+- DataKinds
+- ConstraintKinds
 - DeriveFoldable
+- DeriveFunctor
 - DeriveTraversable
-- FlexibleInstances
+- DeriveGeneric
+- DeriveLift
+- DeriveTraversable
+- DerivingStrategies
+- EmptyCase
+- ExistentialQuantification
 - FlexibleContexts
-- ScopedTypeVariables
-- MultiWayIf
-- TupleSections
+- FlexibleInstances
+- FunctionalDependencies
+- GADTs
+- GeneralizedNewtypeDeriving
+- InstanceSigs
+- KindSignatures
+- LambdaCase
 - MultiParamTypeClasses
+- MultiWayIf
+- NamedFieldPuns
+- OverloadedStrings
+- PatternSynonyms
+- RankNTypes
+- ScopedTypeVariables
+- StandaloneDeriving
+- TupleSections
+- TypeApplications
+- TypeFamilies
+- TypeFamilyDependencies
+- TypeOperators
 
 dependencies:
 - base >= 4.7 && < 5

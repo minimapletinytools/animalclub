@@ -23,11 +23,10 @@ ifeq ($(UNAME), Darwin)
 	install_name_tool -add_rpath @executable_path/. test_all
 endif
 
-
 test: test_all
 	./test_all
 
 clean:
 	rm -rf *.o *.a test_all
 
-.PHONY: clean test test_all
+.PHONY: clean test

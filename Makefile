@@ -6,12 +6,12 @@ stack: src package.yaml stack.yaml
 	find .stack-work/ -name 'libanimalclub.*' -exec cp {} ./ctest/ \;
 
 ctest: stack
-	cd ctest && make
+	cd ctest && $(MAKE)
 
 test: stack
-	cd ctest && make test
+	cd ctest && $(MAKE) test
 
 clean:
 	stack clean && cd ctest && make clean
 
-.PHONY: all clean
+.PHONY: all clean stack ctest test
