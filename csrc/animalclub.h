@@ -9,7 +9,7 @@ struct Mesh {
   uint32_t face_count;
 };
 
-extern "C" std::string printMesh(Mesh);
+std::string printMesh(Mesh);
 
 extern "C" void my_init(void);
 

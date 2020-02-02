@@ -61,12 +61,12 @@ TEST_CASE( "basic breed", "genetics" ) {
 
 int main( int argc, char* argv[] ) {
   // global setup...
-  init();
+  my_init();
 
   int result = Catch::Session().run( argc, argv );
 
   // global clean-up...
-  exit();
+  my_exit();
 
   return result;
 }
