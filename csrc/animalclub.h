@@ -9,17 +9,17 @@ struct Mesh {
   uint32_t face_count;
 };
 
-std::string printMesh(Mesh);
+extern "C" std::string printMesh(Mesh);
 
-void init(void);
+extern "C" void init(void);
 
-void exit(void);
+extern "C" void exit(void);
 
-void breed(uint32_t seed, char* dna1, char* dna2, char* outdna, uint32_t size);
+extern "C" void breed(uint32_t seed, char* dna1, char* dna2, char* outdna, uint32_t size);
 
-GoatSpecimenPtr random_goat();
-void free_goat(GoatSpecimenPtr goat);
-GoatSpecimenPtr breed_goat(GoatSpecimenPtr, GoatSpecimenPtr);
-Mesh* goat_mesh(GoatSpecimenPtr);
-void free_goat_mesh(Mesh*);
-void dump_goat(GoatSpecimenPtr);
+extern "C" GoatSpecimenPtr random_goat();
+extern "C" void free_goat(GoatSpecimenPtr goat);
+extern "C" GoatSpecimenPtr breed_goat(GoatSpecimenPtr, GoatSpecimenPtr);
+extern "C" Mesh* goat_mesh(GoatSpecimenPtr);
+extern "C" void free_goat_mesh(Mesh*);
+extern "C" void dump_goat(GoatSpecimenPtr);
