@@ -1,7 +1,6 @@
 all: ctest
 
 stack: src package.yaml stack.yaml
-	rm animalclub.cabal
 	stack build
 	find .stack-work/ -name 'libanimalclub.*' -exec cp {} ./ctest/ \;
 
