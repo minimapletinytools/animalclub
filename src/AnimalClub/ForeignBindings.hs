@@ -113,11 +113,21 @@ free_goat_mesh_hs ptr = do
   free pt2
   free ptr
 
+dump_goat_hs :: StablePtr DNA -> IO ()
+dump_goat_hs goatPtr = do
+  dna <- deRefStablePtr goatPtr
+  let
+    goatProps = generateAnimalProperties (makeBoneIdList goatAnimalNode) $ evalGenome goatGenome dna
+    skelly = animalNodeToSkellyNodeWithProps goatProps goatAnimalNode
+    mesh = generateLocalMesh $ skelly
+  print mesh
+
 foreign export ccall random_goat_hs :: IO (StablePtr DNA)
 foreign export ccall free_goat_hs :: StablePtr DNA -> IO ()
 foreign export ccall breed_goat_hs :: StablePtr DNA -> StablePtr DNA -> IO (StablePtr DNA)
 foreign export ccall goat_mesh_hs :: StablePtr DNA -> IO (Ptr CCMesh)
 foreign export ccall free_goat_mesh_hs :: Ptr CCMesh -> IO ()
+foreign export ccall dump_goat_hs :: StablePtr DNA -> IO ()
 
 
 --goatObj :: StablePtr Goat -> IO

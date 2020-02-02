@@ -22,3 +22,4 @@ void free_goat(GoatSpecimenPtr goat);
 GoatSpecimenPtr breed_goat(GoatSpecimenPtr, GoatSpecimenPtr);
 Mesh* goat_mesh(GoatSpecimenPtr);
 void free_goat_mesh(Mesh*);
+void dump_goat(GoatSpecimenPtr);

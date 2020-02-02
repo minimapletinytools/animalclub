@@ -40,7 +40,7 @@ import qualified Data.Vector.Storable.Mutable as V
 type Face = (Int32,Int32,Int32)
 
 -- TODO maybe get rid of this and use CMesh only
-data LocalMesh a = LocalMesh ([V3 a], [Face]) deriving (Generic, NFData)
+data LocalMesh a = LocalMesh ([V3 a], [Face]) deriving (Show, Generic, NFData)
 
 emptyLocalMesh :: LocalMesh a
 emptyLocalMesh = LocalMesh ([],[])

@@ -54,3 +54,7 @@ Mesh* goat_mesh(GoatSpecimenPtr ptr) {
 void free_goat_mesh(Mesh* ptr) {
   free_goat_mesh_hs((HsPtr)ptr);
 }
+
+void dump_goat(GoatSpecimenPtr ptr) {
+  dump_goat_hs(ptr);
+}
