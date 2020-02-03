@@ -1,4 +1,5 @@
 ::TODO::
+-figure out why applicative do causes things to crash
 -switch LocalMesh to use storabel vector
 -switch indentation to 2 spaces
 -fix missing-home-module warning

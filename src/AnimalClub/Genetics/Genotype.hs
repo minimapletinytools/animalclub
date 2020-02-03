@@ -47,8 +47,8 @@ import           Control.Monad.Identity
 import           Control.Monad.Parallel   (MonadParallel (..))
 import           Control.Monad.Random
 import           Control.Monad.Writer
+import           Debug.Trace
 import           Lens.Micro.Platform      (over, _1)
---import Debug.Trace
 
 -- | this is just `StateT DNA (WriterT w (RandT g m))` unrolled
 -- Genotype is a Writer monad taking an taking an RNG and DNA as inputs
@@ -135,6 +135,7 @@ instance forall w g m. (Monoid w, RandomGen g, MonadParallel m) => MonadParallel
             --else ra `par` rb `pseq` bindM2 f ra rb where
             else bindM2 f ra rb where
                 -- make generators
+                --(g', g'') = trace "split g" $ split g
                 (g', g'') = split g
                 -- parallel evaluate a and b to produce c
                 ra = unGenotypeT ma g' dna

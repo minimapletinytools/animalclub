@@ -28,7 +28,7 @@ import           Control.Monad.Random
 -- TODO test that this actually works
 instance {-# OVERLAPPING #-} (Monoid w, RandomGen g) => Applicative (GenotypeT g w Identity) where
     --liftA2 f = bindM2 (\a b -> return (f a b))
-    (<*>) = bindM2 (\a b -> return (id a b))
+    (<*>) = bindM2 (\f a -> return (f a))
     pure a = GenotypeT (\g _ -> return (a, g, mempty))
 
 -- |
@@ -36,11 +36,12 @@ instance {-# OVERLAPPING #-} (Monoid w, RandomGen g) => Applicative (GenotypeT g
 -- TODO test that this actually works
 instance {-# OVERLAPPING #-} (Monoid w, RandomGen g) => Applicative (GenotypeT g w IO) where
     --liftA2 f = bindM2 (\a b -> return (f a b))
-    (<*>) = bindM2 (\a b -> return (id a b))
+    (<*>) = bindM2 (\f a -> return (f a))
     pure a = GenotypeT (\g _ -> return (a, g, mempty))
 
 
 -- |
+-- TODO make a type constraint and do this becaues it's better than overlapping instances above
 -- implemented using bindM2 for automatic parallelization using ApplicativeDo
 -- this forces the RandomGen g and MonadParallel m instance to be used everywhere
 -- that should really just need Monad m so we don't do this. Actually I think this is
