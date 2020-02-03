@@ -69,33 +69,21 @@ evalGeneBuilderT m s g = do
 evalGeneBuilder :: Genotype g w a -> DNA -> g -> w
 evalGeneBuilder m s g = runIdentity $ evalGeneBuilderT m s g
 
--- |
 instance (Functor m) => Functor (GenotypeT g w m) where
     fmap f n = GenotypeT $ \g dna -> fmap (over _1 f) (unGenotypeT n g dna)
 
--- |
--- implemented using Monad m to ensure that (<*>) = ap (TEST)
-instance (Monoid w, Monad m) => Applicative (GenotypeT g w m) where
-    pure a = GenotypeT (\g _ -> pure (a, g, mempty))
-    (<*>) mf ma = do
-        f <- mf
-        a <- ma
-        return $ f a
-{- doesn't seem to be in older version of GHC
-    liftA2 f ma mb = do
-        a <- ma
-        b <- mb
-        return $ f a b
--}
-
--- |
 instance (Monoid w, Monad m) => Monad (GenotypeT g w m) where
-    return = pure
+    return a = GenotypeT (\g _ -> pure (a, g, mempty))
     ma >>= f = GenotypeT func where
         func g dna = do
             (a, g', w1) <- unGenotypeT ma g dna
             (b, g'', w2) <- unGenotypeT (f a) g' dna
             return (b, g'', mappend w1 w2)
+
+instance (Monoid w, Monad m) => Applicative (GenotypeT g w m) where
+    -- need definition here to avoid infinite loop with ApplicativeDo
+    (<*>) mf ma = mf >>= (\f -> ma >>= \a -> return (f a))
+    pure = return
 
 instance (Monoid w) => MonadTrans (GenotypeT g w) where
     lift m = GenotypeT (\g _ -> m >>= (\a -> return (a, g, mempty)))

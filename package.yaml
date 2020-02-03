@@ -30,7 +30,7 @@ ghc-options:
 
 
 default-extensions:
-# - ApplicativeDo
+- ApplicativeDo
 - BangPatterns
 - DataKinds
 - ConstraintKinds
