@@ -28,8 +28,9 @@ ghc-options:
 - -Wredundant-constraints
 #- -Werror
 
+
 default-extensions:
-- ApplicativeDo
+# - ApplicativeDo
 - BangPatterns
 - DataKinds
 - ConstraintKinds
