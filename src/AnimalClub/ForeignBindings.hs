@@ -120,7 +120,7 @@ dump_goat_hs goatPtr = do
     goatProps = generateAnimalProperties (makeBoneIdList goatAnimalNode) $ evalGenome goatGenome dna
     skelly = animalNodeToSkellyNodeWithProps goatProps goatAnimalNode
     mesh = generateLocalMesh $ skelly
-  print mesh
+  putStrLn (meshToObj mesh)
 
 foreign export ccall random_goat_hs :: IO (StablePtr DNA)
 foreign export ccall free_goat_hs :: StablePtr DNA -> IO ()
