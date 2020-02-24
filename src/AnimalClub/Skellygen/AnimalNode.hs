@@ -19,27 +19,27 @@ Stability   : experimental
 -- AnimalNode.hs
 
 module AnimalClub.Skellygen.AnimalNode (
-    AbsOrRel(..),
+  AbsOrRel(..),
 
-    BoneFlag(..),
-    BoneId(..),
+  BoneFlag(..),
+  BoneId(..),
 
-    BoneMatcher,
-    idMatcher,
-    nameMatcher,
-    flagMatcher,
-    nameFlagMatcher,
+  BoneMatcher,
+  idMatcher,
+  nameMatcher,
+  flagMatcher,
+  nameFlagMatcher,
 
-    FlagTrans,
-    defTransFlag,
+  FlagTrans,
+  defTransFlag,
 
-    BoneTrans(..),
-    composeBoneTrans,
-    applyBoneTrans,
+  BoneTrans(..),
+  composeBoneTrans,
+  applyBoneTrans,
 
-    AnimalNode(..),
-    makeBoneIdList,
-    flipAnimalNode,
+  AnimalNode(..),
+  makeBoneIdList,
+  flipAnimalNode,
 ) where
 
 import           Control.DeepSeq
@@ -65,10 +65,10 @@ unAbsOrRel (Rel a) = a
 -- | flag bones to distinguish them
 -- some built-in flags are provided for common use cases
 data BoneFlag =
-  BF_Front | BF_Back | BF_Left | BF_Right | BF_Top | BF_Bottom
-  | BF_CustomS T.Text | BF_CustomI Int
-  deriving
-    (Eq, Ord, Show)
+ BF_Front | BF_Back | BF_Left | BF_Right | BF_Top | BF_Bottom
+ | BF_CustomS T.Text | BF_CustomI Int
+ deriving
+  (Eq, Ord, Show)
 
 -- | BoneId is an identifier for a given bone
 -- the name is a basic non-unique identifier
@@ -123,11 +123,11 @@ defTransFlag (ArbTrans _) _       = error "don't do this"
 data BoneTrans a = Same | ReflX | ReflY | ReflZ | ArbTrans (TRS a -> TRS a)
 
 instance Show (BoneTrans a) where
-    show Same         = "Same"
-    show ReflX        = "ReflX"
-    show ReflY        = "ReflY"
-    show ReflZ        = "ReflZ"
-    show (ArbTrans _) = "ArbTrans"
+  show Same         = "Same"
+  show ReflX        = "ReflX"
+  show ReflY        = "ReflY"
+  show ReflZ        = "ReflZ"
+  show (ArbTrans _) = "ArbTrans"
 
 -- | combine two BoneTrans together
 composeBoneTrans :: (AnimalFloat a) => BoneTrans a -> BoneTrans a -> BoneTrans a
@@ -169,13 +169,13 @@ applyBoneTrans (ArbTrans f) = f
 -- this allows us to create animals with symmetrical parts and only defining the transformation on one part
 --
 data AnimalNode a = AnimalNode {
-    _name      :: BoneId, -- ^ name and transformation if relevant
-    _boneTrans :: BoneTrans a,
-    _pos       :: AbsOrRel (V3 a), -- ^ position, relative to parent if rel, 'BoneTrans' in 'BoneName' is applied to this
-    _thickness :: AbsOrRel a, -- ^ base thickness, relative to parent thickness if rel
-    _isPhantom    :: Bool, -- ^ if this is true, this node will be invisible (won't create a mesh)
-    _children  :: [AnimalNode a]
-    -- _nodeOrientation :: NodeOrientation
+  _name      :: BoneId, -- ^ name and transformation if relevant
+  _boneTrans :: BoneTrans a,
+  _pos       :: AbsOrRel (V3 a), -- ^ position, relative to parent if rel, 'BoneTrans' in 'BoneName' is applied to this
+  _thickness :: AbsOrRel a, -- ^ base thickness, relative to parent thickness if rel
+  _isPhantom :: Bool, -- ^ if this is true, this node will be invisible (won't create a mesh)
+  _children  :: [AnimalNode a]
+  -- _nodeOrientation :: NodeOrientation
 }
 
 makeLenses ''AnimalNode
@@ -196,11 +196,11 @@ makeBoneIdList = foldAnimalNode (\bids an ->  _name an:bids) []
 -- flipAnimalNodeFancy :: BoneTrans -> [Int] -> AnimalNode -> AnimalNode
 --
 flipAnimalNode ::
-  (AnimalFloat a)
-  => BoneTrans a -- ^ the BoneTrans we want to apply
-  -> FlagTrans -- ^ how to modify the flags of the Bone (and all its children)
-  -> AnimalNode a -- ^ the node we want to apply the BoneTrans to
-  -> AnimalNode a -- ^ the node with BoneTrans applied to it
+ (AnimalFloat a)
+ => BoneTrans a -- ^ the BoneTrans we want to apply
+ -> FlagTrans -- ^ how to modify the flags of the Bone (and all its children)
+ -> AnimalNode a -- ^ the node we want to apply the BoneTrans to
+ -> AnimalNode a -- ^ the node with BoneTrans applied to it
 flipAnimalNode bt ft an = set children newChildren $ set boneTrans newBoneTrans an where
-  newBoneTrans = composeBoneTrans bt (_boneTrans an)
-  newChildren = map (flipAnimalNode Same ft) (_children an)
+ newBoneTrans = composeBoneTrans bt (_boneTrans an)
+ newChildren = map (flipAnimalNode Same ft) (_children an)

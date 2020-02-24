@@ -14,10 +14,10 @@ Stability   : experimental
 --{-# OPTIONS_GHC -fno-warn-unused-top-binds #-}
 
 module ExamplesLib.Worm (
-  worm,
-  wormGenome,
-  testWorm,
-  breedAndSelectWormPool
+ worm,
+ wormGenome,
+ testWorm,
+ breedAndSelectWormPool
 ) where
 
 import           AnimalClub.Animals
@@ -50,24 +50,24 @@ worm segs = asPhantom $ mans (showT (segs-1)) (Rel 0) (Abs 0.1) [wormNode (segs-
 
 wormGenome' :: (RandomGen g) => Int -> Int -> Genotype g [AnimalExp Float] ()
 wormGenome' segs dnaPerSeg = do forM_ [0..(segs-1)] wormSeg where
-    --dnaPerSegOver4 = dnaPerSeg `div` 4
-    dnaPerSegOver2 = dnaPerSeg `div` 2
-    wormSeg i = do
-        --gbPush $ Gene (dnaPerSeg*i) dnaPerSeg
-        usingGene (Gene (dnaPerSeg*i) dnaPerSegOver2) $ do
-            x <- gbSumRange (-1.0, 6.0) -- using gbTypical here doesn't work very well for some reason :(
-            --x <- gbSumRange (0.1, 4.5)
-            tellSkellyFunc (WithBoneId (BoneId (showT i) []) (Thickness x)) --[x*0.5+0.75]
-        --gbPush $ Gene (dnaPerSeg*i + dnaPerSegOver4*2) (dnaPerSegOver4*2)
-        usingGene (Gene (dnaPerSeg*i + dnaPerSegOver2) (dnaPerSegOver2)) $ do
-            orients <- gbRandomRanges (replicate 3 (-1.5,1.5))
-            tellSkellyFunc (WithBoneId (BoneId (showT i) []) (addValuesToBoneMethod defOrientation orients))
+  --dnaPerSegOver4 = dnaPerSeg `div` 4
+  dnaPerSegOver2 = dnaPerSeg `div` 2
+  wormSeg i = do
+    --gbPush $ Gene (dnaPerSeg*i) dnaPerSeg
+    usingGene (Gene (dnaPerSeg*i) dnaPerSegOver2) $ do
+      x <- gbSumRange (-1.0, 6.0) -- using gbTypical here doesn't work very well for some reason :(
+      --x <- gbSumRange (0.1, 4.5)
+      tellSkellyFunc (WithBoneId (BoneId (showT i) []) (Thickness x)) --[x*0.5+0.75]
+    --gbPush $ Gene (dnaPerSeg*i + dnaPerSegOver4*2) (dnaPerSegOver4*2)
+    usingGene (Gene (dnaPerSeg*i + dnaPerSegOver2) (dnaPerSegOver2)) $ do
+      orients <- gbRandomRanges (replicate 3 (-1.5,1.5))
+      tellSkellyFunc (WithBoneId (BoneId (showT i) []) (addValuesToBoneMethod defOrientation orients))
 
 -- | generate the genome of a worm
 wormGenome ::
-  Int -- ^ number of segments
-  -> Int -- ^ DNA length of each segment
-  -> Genome StdGen [AnimalExp Float]
+ Int -- ^ number of segments
+ -> Int -- ^ DNA length of each segment
+ -> Genome StdGen [AnimalExp Float]
 wormGenome segs dnaPerSeg = Genome (segs*dnaPerSeg) (wormGenome' segs dnaPerSeg) (mkStdGen 0)
 
 
@@ -75,48 +75,48 @@ wormGenome segs dnaPerSeg = Genome (segs*dnaPerSeg) (wormGenome' segs dnaPerSeg)
 -- the definition of ideal worms changes as cultural expectations evolve
 -- a brief history of this evolution is available through `git blame`
 testWorm ::
-  Int -- ^ number of segments
-  -> AnimalPropertyMap Float -- ^ the worm's AnimalPropertyMap
-  -> Float
+ Int -- ^ number of segments
+ -> AnimalPropertyMap Float -- ^ the worm's AnimalPropertyMap
+ -> Float
 testWorm segs props = score where
-    --desiredThick i =  (fromIntegral i / fromIntegral segs) * 3 + 0.5
-    desiredThick i =  (cos ((fromIntegral i / fromIntegral segs) * pi * 2 * 2)*3 + 1.2)
-    --desiredOrient _ = fromEulerXYZ (V3 (pi/20) (pi/3) 0.0)
-    desiredOrient _ = fromEulerXYZ (V3 0 (pi/6) 0)
-    name i = BoneId (showT i) []
-    -- find the segment in the worm's AnimalPropertyMap
-    prop i = Map.findWithDefault (error $ "could not find " ++ show (name i)) (name i) props
-    thick i = _skinParams $ prop i
-    orient i = _orientation $ prop i
-    off i = (thick i - desiredThick i) + 5*(distance (orient i) (desiredOrient i))
-    score = sqrt $ sum [off x * off x | x <- [0..(segs-1)]]
+  --desiredThick i =  (fromIntegral i / fromIntegral segs) * 3 + 0.5
+  desiredThick i =  (cos ((fromIntegral i / fromIntegral segs) * pi * 2 * 2)*3 + 1.2)
+  --desiredOrient _ = fromEulerXYZ (V3 (pi/20) (pi/3) 0.0)
+  desiredOrient _ = fromEulerXYZ (V3 0 (pi/6) 0)
+  name i = BoneId (showT i) []
+  -- find the segment in the worm's AnimalPropertyMap
+  prop i = Map.findWithDefault (error $ "could not find " ++ show (name i)) (name i) props
+  thick i = _skinParams $ prop i
+  orient i = _orientation $ prop i
+  off i = (thick i - desiredThick i) + 5*(distance (orient i) (desiredOrient i))
+  score = sqrt $ sum [off x * off x | x <- [0..(segs-1)]]
 
 -- | breedAndSelectWormPool breeds worms in a pool targetting the ideal form
 -- TODO use breedAndSelectPool in DNA <-- I can't remember what this means anymore
 breedAndSelectWormPool :: (RandomGen g) =>
-    (AnimalPropertyMap Float -> Float) -- ^ test function
-    -- TODO consider packing this into its own type since they are used together a lot
-    -> ([BoneId], Genome StdGen [AnimalExp Float]) -- ^ worm
-    -> Float -- ^ mutation chance
-    -> g -- ^ random generator
-    -> (Int, Int) -- ^ size, # winners to go to next generation
-    -> [DNA] -- ^ parent pool
-    -> ([DNA], g) -- ^ best children and new generator
+  (AnimalPropertyMap Float -> Float) -- ^ test function
+  -- TODO consider packing this into its own type since they are used together a lot
+  -> ([BoneId], Genome StdGen [AnimalExp Float]) -- ^ worm
+  -> Float -- ^ mutation chance
+  -> g -- ^ random generator
+  -> (Int, Int) -- ^ size, # winners to go to next generation
+  -> [DNA] -- ^ parent pool
+  -> ([DNA], g) -- ^ best children and new generator
 breedAndSelectWormPool testfn (bids, genome) mChance g (size, winners) dnas = Debug.trace (show (testfn (wormProps r'))) (r, outg) where
-    inputs = length dnas
-    (g', g'') = split g
-    moms = randomRs (0,inputs-1) g'
-    dads = randomRs (0,inputs-1) g''
-    parents = take size $ zip moms dads
-    (outg, worms) = mapAccumL (\acc_g x -> (snd (next acc_g), breedAndMutate mChance acc_g (dnas !! fst x ) (dnas !! snd x))) g parents
-    wormProps dna' = generateAnimalProperties bids $ evalGenome genome dna'
-    r = take winners $ sortBy (comparing (\x -> testfn (wormProps x))) worms
-    r' = head r
+  inputs = length dnas
+  (g', g'') = split g
+  moms = randomRs (0,inputs-1) g'
+  dads = randomRs (0,inputs-1) g''
+  parents = take size $ zip moms dads
+  (outg, worms) = mapAccumL (\acc_g x -> (snd (next acc_g), breedAndMutate mChance acc_g (dnas !! fst x ) (dnas !! snd x))) g parents
+  wormProps dna' = generateAnimalProperties bids $ evalGenome genome dna'
+  r = take winners $ sortBy (comparing (\x -> testfn (wormProps x))) worms
+  r' = head r
 
 {-
 -- | delete me
 breedAndSelectSingle :: (RandomGen g) => g -> Int -> DNA -> (DNA, g)
 breedAndSelectSingle breedg n dna = Debug.trace (show $ testWorm (wormProps r)) (r, outbreedg) where
-    (outbreedg, worms) = mapAccumL (\g' _ -> (snd (next g'), breed g' dna dna)) breedg [0..(n-1)]
-    wormProps dna' = generateAnimalProperties $ evalGenome wormGenome dna'
-    r = maximumBy (comparing (\x -> (-1) * testWorm (wormProps x))) worms-}
+  (outbreedg, worms) = mapAccumL (\g' _ -> (snd (next g'), breed g' dna dna)) breedg [0..(n-1)]
+  wormProps dna' = generateAnimalProperties $ evalGenome wormGenome dna'
+  r = maximumBy (comparing (\x -> (-1) * testWorm (wormProps x))) worms-}

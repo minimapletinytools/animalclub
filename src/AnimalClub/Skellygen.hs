@@ -11,8 +11,8 @@ TODO add comment explaining how Skellygen works
 
 
 module AnimalClub.Skellygen (
-  module AnimalClub.Skellygen.AnimalScript,
-  module AnimalClub.Skellygen.Skellygen
+ module AnimalClub.Skellygen.AnimalScript,
+ module AnimalClub.Skellygen.Skellygen
 ) where
 
 import AnimalClub.Skellygen.AnimalScript

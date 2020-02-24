@@ -15,40 +15,40 @@ Stability   : experimental
 
 
 module AnimalClub.Skellygen.TRS
-  (
-  AnimalFloat
+ (
+ AnimalFloat
 
-  -- TRS components
-  , Translation
-  , Rotation
-  , Scale
-  , conv_V3_Scale
+ -- TRS components
+ , Translation
+ , Rotation
+ , Scale
+ , conv_V3_Scale
 
-  -- TRS
-  , TRS(..)
-  , trans, rot, scale
-  , identityTRS
+ -- TRS
+ , TRS(..)
+ , trans, rot, scale
+ , identityTRS
 
-  -- TRS operations
-  , conv_TRS_M44
-  , mul_TRS_V3
-  , mul_TRS_V4
-  , potatoMul
+ -- TRS operations
+ , conv_TRS_M44
+ , mul_TRS_V3
+ , mul_TRS_V4
+ , potatoMul
 
-  -- matrix helper
-  , mul_M44_V3
+ -- matrix helper
+ , mul_M44_V3
 
-  -- quaternion/rotation helper stuff
-  , identityRotation
-  , rotationInverse
-  , conv_Rotation_M33
-  , conv_Rotation_M44
-  , fromTo
-  , fromEulerXYZ
-  --lookAt, -- BUGS
-  , lookAtDefaultUp -- BUGS
+ -- quaternion/rotation helper stuff
+ , identityRotation
+ , rotationInverse
+ , conv_Rotation_M33
+ , conv_Rotation_M44
+ , fromTo
+ , fromEulerXYZ
+ --lookAt, -- BUGS
+ , lookAtDefaultUp -- BUGS
 
-  ) where
+ ) where
 
 
 
@@ -71,13 +71,13 @@ type Scale a = M33 a
 -- | matrix::M44 = T * R * S
 -- represents affine transformation in R3
 data TRS a = TRS
-  {
-  -- TODO rename to _translation or _pos
-  _trans   :: Translation a
-  -- TODO rename to _rotation
-  , _rot   :: Rotation a
-  , _scale :: Scale a -- ^ in actuality, a scale + shear matirx
-  } deriving (Show, Generic, NFData)
+ {
+ -- TODO rename to _translation or _pos
+ _trans   :: Translation a
+ -- TODO rename to _rotation
+ , _rot   :: Rotation a
+ , _scale :: Scale a -- ^ in actuality, a scale + shear matirx
+ } deriving (Show, Generic, NFData)
 
 makeLenses ''TRS
 
@@ -107,14 +107,14 @@ conv_V3_Scale (V3 x y z) = V3 (V3 x 0 0) (V3 0 y 0) (V3 0 0 z)
 
 m33_to_homogenous_m44 :: (Num a) => M33 a -> M44 a
 m33_to_homogenous_m44 (V3 (V3 a b c) (V3 d e f) (V3 g h i)) =
-    V4  (V4 a b c 0)
-        (V4 d e f 0)
-        (V4 g h i 0)
-        (V4 0 0 0 1)
+  V4  (V4 a b c 0)
+    (V4 d e f 0)
+    (V4 g h i 0)
+    (V4 0 0 0 1)
 
 fromTranslation :: (RealFloat a) => Translation a -> M44 a
 fromTranslation (V3 x y z) =
-  V4 (V4 1 0 0 x) (V4 0 1 0 y) (V4 0 0 1 z) (V4 0 0 0 1)
+ V4 (V4 1 0 0 x) (V4 0 1 0 y) (V4 0 0 1 z) (V4 0 0 0 1)
 
 
 mul_M44_V3 :: (RealFloat a) => M44 a -> V3 a -> V3 a
@@ -154,10 +154,10 @@ mul_TRS_V4 trs v = conv_TRS_M44 trs !* v
 -- $$S$$ will not be a diagonal matrix in general
 potatoMul :: (AnimalFloat a) => TRS a -> TRS a -> TRS a
 potatoMul (TRS pt pr ps) (TRS ct cr cs) =
-  TRS
-    (pt ^+^ (pr `rotate` (ps !* ct)))
-    (pr * cr)
-    (conv_Rotation_M33 (rotationInverse cr) !*! ps !*! conv_Rotation_M33 cr !*! cs)
+ TRS
+  (pt ^+^ (pr `rotate` (ps !* ct)))
+  (pr * cr)
+  (conv_Rotation_M33 (rotationInverse cr) !*! ps !*! conv_Rotation_M33 cr !*! cs)
 
 
 
@@ -187,15 +187,15 @@ conv_Rotation_M44 q = set (_w . _w) 1 (m33_to_m44 $ conv_Rotation_M33 q)
 -- how is this even compiling?
 _orthogonal :: (Num a, Ord a) => V3 a -> V3 a
 _orthogonal v@(V3 x y z) = cross v other
-  where
-    other =
-        if abs x < abs y
-            then if abs x < abs z
-                     then V3 1 0 0
-                     else V3 0 0 1
-            else if abs y < abs z
-                     then V3 0 1 0
-                     else V3 0 0 1
+ where
+  other =
+    if abs x < abs y
+      then if abs x < abs z
+          then V3 1 0 0
+          else V3 0 0 1
+      else if abs y < abs z
+          then V3 0 1 0
+          else V3 0 0 1
 
 --_radiansBetween :: (Metric f) => f a -> f a -> a
 --_radiansBetween a b = undefined -- acos $ (a `dot` b) / (norm a * norm b)
@@ -204,45 +204,45 @@ _orthogonal v@(V3 x y z) = cross v other
 -- TODO finish
 -- TODO wtf is tis interface...
 lookAt ::
-       (RealFloat a, Epsilon a)
-    => V3 a -- ^ up vector
-    -> V3 a -- ^ fallback up vector
-    -> V3 a -- ^ direction to look at
-    -> Quaternion a -- ^ output
+   (RealFloat a, Epsilon a)
+  => V3 a -- ^ up vector
+  -> V3 a -- ^ fallback up vector
+  -> V3 a -- ^ direction to look at
+  -> Quaternion a -- ^ output
 lookAt _ _ d = q2 * q
-        --zup = V3 0 1 0
-        --up = if nearZero (d-u) then fu else u
-        --q2 = axisAngle d (_radiansBetween d up)
-  where
-    q2 = identityRotation -- TODO finish this function is a pain...
-    q = fromTo (V3 1 0 0) d
+    --zup = V3 0 1 0
+    --up = if nearZero (d-u) then fu else u
+    --q2 = axisAngle d (_radiansBetween d up)
+ where
+  q2 = identityRotation -- TODO finish this function is a pain...
+  q = fromTo (V3 1 0 0) d
 
 -- TODO rename this
 lookAtDefaultUp ::
-       (RealFloat a, Epsilon a)
-    => V3 a -- ^ direction to look at
-    -> Quaternion a -- ^ output
+   (RealFloat a, Epsilon a)
+  => V3 a -- ^ direction to look at
+  -> Quaternion a -- ^ output
 lookAtDefaultUp = lookAt (V3 0 1 0) (V3 1 0 0)
 
 -- | from -> to -> rotation
 fromTo :: (RealFloat a, Epsilon a) => V3 a -> V3 a -> Quaternion a
 fromTo fromv tov =
-    if nearZero (u + v)
-        then fallback
-        else if nearZero (u - v)
-                 then identityRotation
-                 else output
-  where
-    u = normalize fromv
-    v = normalize tov
-    half = normalize (u + v)
-    fallback = Quaternion 0 (normalize $ _orthogonal u)
-    output = Quaternion (dot u half) (cross u half)
+  if nearZero (u + v)
+    then fallback
+    else if nearZero (u - v)
+        then identityRotation
+        else output
+ where
+  u = normalize fromv
+  v = normalize tov
+  half = normalize (u + v)
+  fallback = Quaternion 0 (normalize $ _orthogonal u)
+  output = Quaternion (dot u half) (cross u half)
 
 -- FUTURE make fancy version that is fromEuler :: XYZ -> V3 a -> Quternion a
 -- | x y z rotation order
 fromEulerXYZ :: (RealFloat a, Epsilon a) => V3 a -> Quaternion a
 fromEulerXYZ (V3 x y z) =
-  (axisAngle (V3 0 0 1) z)
-  * (axisAngle (V3 0 1 0) y)
-  * (axisAngle (V3 1 0 0) x)
+ (axisAngle (V3 0 0 1) z)
+ * (axisAngle (V3 0 1 0) y)
+ * (axisAngle (V3 1 0 0) x)

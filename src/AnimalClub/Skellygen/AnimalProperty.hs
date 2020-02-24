@@ -5,21 +5,21 @@
 
 
 module AnimalClub.Skellygen.AnimalProperty (
-    BoneMethod(..),
-    defThickness, defLength, defOrientation, defColor,
+  BoneMethod(..),
+  defThickness, defLength, defOrientation, defColor,
 
-    SkellyFunc(..),
-    PrioritizedSkellyFunc(..),
+  SkellyFunc(..),
+  PrioritizedSkellyFunc(..),
 
-    addValuesToBoneMethod, addValuesToSkellyFunc,
+  addValuesToBoneMethod, addValuesToSkellyFunc,
 
-    AnimalProperty(..),
-    orientation, distance, skinParams,
-    AnimalPropertyMap,
-    makeStartingAnimalPropertyMap,
+  AnimalProperty(..),
+  orientation, distance, skinParams,
+  AnimalPropertyMap,
+  makeStartingAnimalPropertyMap,
 
-    getAnimalProperty,
-    generateAnimalProperties_
+  getAnimalProperty,
+  generateAnimalProperties_
 ) where
 
 import           Control.DeepSeq
@@ -70,12 +70,12 @@ defColor = Color ()
 
 -- | internal version carries actual values of method
 data SkellyFunc a where
-  WithBoneId :: BoneId -> BoneMethod a -> SkellyFunc a
-  WithBoneMatcher :: BoneMatcher -> BoneMethod a -> SkellyFunc a
+ WithBoneId :: BoneId -> BoneMethod a -> SkellyFunc a
+ WithBoneMatcher :: BoneMatcher -> BoneMethod a -> SkellyFunc a
 
 instance (Show a) => Show (SkellyFunc a) where
-  show (WithBoneId bid m) = "with BoneId " ++ show bid ++ " " ++ show m
-  show (WithBoneMatcher matech m) = "with matcher " ++ show m
+ show (WithBoneId bid m) = "with BoneId " ++ show bid ++ " " ++ show m
+ show (WithBoneMatcher matech m) = "with matcher " ++ show m
 
 -- | bone matchers are applied in ascending order of its priority
 newtype PrioritizedSkellyFunc a = PrioritizedSkellyFunc{ unPrioritizedSkellyFunc :: (Int, SkellyFunc a) }
@@ -86,13 +86,13 @@ newtype PrioritizedSkellyFunc a = PrioritizedSkellyFunc{ unPrioritizedSkellyFunc
 -- N.B this does no error checking on length of list being passed in
 addValuesToBoneMethod :: (AnimalFloat a) => BoneMethod a -> [a] -> BoneMethod a
 addValuesToBoneMethod m vals = case m of
-  Orientation x ->
-    Orientation $ x * fromEulerXYZ (V3 (vals !! 0) (vals !! 1) (vals !! 2))
-  Length x ->
-    Length $ x * (vals !! 0)
-  Thickness x ->
-    Thickness $ x * (vals !! 0)
-  Color x -> Color x
+ Orientation x ->
+  Orientation $ x * fromEulerXYZ (V3 (vals !! 0) (vals !! 1) (vals !! 2))
+ Length x ->
+  Length $ x * (vals !! 0)
+ Thickness x ->
+  Thickness $ x * (vals !! 0)
+ Color x -> Color x
 
 -- | adds values to parameters in BoneMethod inside SkellyFunc
 -- N.B this does no error checking on length of list being passed in
@@ -103,12 +103,12 @@ addValuesToSkellyFunc (WithBoneMatcher matcher m) vals = WithBoneMatcher matcher
 -- | used for generating skelly over each bone of the base skelly
 -- these are mapped to properties in SkellyNode
 data AnimalProperty a = AnimalProperty {
-    _orientation :: Rotation a, -- ^ combines multiplicatively
-    _distance    :: a, -- ^ combines multiplicatively
-    _skinParams  :: a -- ^ combines multiplicatively
-    -- mesh + UV style
-    -- UV map properties
-    -- texture name, stretch shift,
+  _orientation :: Rotation a, -- ^ combines multiplicatively
+  _distance    :: a, -- ^ combines multiplicatively
+  _skinParams  :: a -- ^ combines multiplicatively
+  -- mesh + UV style
+  -- UV map properties
+  -- texture name, stretch shift,
 } deriving (Show, Generic, NFData)
 
 makeLenses ''AnimalProperty
@@ -117,9 +117,9 @@ makeLenses ''AnimalProperty
 -- | the identityTRS AnimalProperty
 defaultAnimalProperty :: (AnimalFloat a) => AnimalProperty a
 defaultAnimalProperty = AnimalProperty {
-    _orientation = identityRotation,
-    _distance = 1,
-    _skinParams = 1
+  _orientation = identityRotation,
+  _distance = 1,
+  _skinParams = 1
 }
 
 
@@ -134,44 +134,44 @@ makeStartingAnimalPropertyMap = M.fromList . map (\bid -> (bid,defaultAnimalProp
 
 -- |
 generateAnimalPropertiesInternal_ ::
-  (AnimalFloat a)
-  => AnimalPropertyMap a -- ^ accumulating map of properties.
-  -> [PrioritizedSkellyFunc a] -- ^ list of properties
-  -> AnimalPropertyMap a -- ^ output map list of properties
+ (AnimalFloat a)
+ => AnimalPropertyMap a -- ^ accumulating map of properties.
+ -> [PrioritizedSkellyFunc a] -- ^ list of properties
+ -> AnimalPropertyMap a -- ^ output map list of properties
 generateAnimalPropertiesInternal_ props psfs = foldl addProp props sorted_psfs where
-  -- sort psfs by priority
-  sorted_psfs = L.sortOn (fst . unPrioritizedSkellyFunc) psfs
+ -- sort psfs by priority
+ sorted_psfs = L.sortOn (fst . unPrioritizedSkellyFunc) psfs
 
-  -- add a property to the map
-  addProp :: (AnimalFloat a) => AnimalPropertyMap a -> PrioritizedSkellyFunc a -> AnimalPropertyMap a
-  addProp accProp (PrioritizedSkellyFunc (_,sf)) = r where
-    (matched, method) = case sf of
-      WithBoneId bid method -> (fromMaybe M.empty $ accProp M.!? bid >>= \a -> return (M.singleton bid a), method)
-      WithBoneMatcher matcher method -> (M.filterWithKey (\k _ -> matcher k) accProp, method)
+ -- add a property to the map
+ addProp :: (AnimalFloat a) => AnimalPropertyMap a -> PrioritizedSkellyFunc a -> AnimalPropertyMap a
+ addProp accProp (PrioritizedSkellyFunc (_,sf)) = r where
+  (matched, method) = case sf of
+   WithBoneId bid method -> (fromMaybe M.empty $ accProp M.!? bid >>= \a -> return (M.singleton bid a), method)
+   WithBoneMatcher matcher method -> (M.filterWithKey (\k _ -> matcher k) accProp, method)
 
-    -- apply the current SkellyFunc to all matched bones
-    mapfn _ oldProp = case method of
-      Orientation x ->
-          over orientation (x*) oldProp
-      Length x ->
-          over distance (x*) oldProp
-      Thickness x ->
-          over skinParams (x*) oldProp
-      -- TODO
-      Color _ -> oldProp
-    changedPropMap = M.mapWithKey mapfn matched
+  -- apply the current SkellyFunc to all matched bones
+  mapfn _ oldProp = case method of
+   Orientation x ->
+     over orientation (x*) oldProp
+   Length x ->
+     over distance (x*) oldProp
+   Thickness x ->
+     over skinParams (x*) oldProp
+   -- TODO
+   Color _ -> oldProp
+  changedPropMap = M.mapWithKey mapfn matched
 
-    -- union will replace oldProps with newProps
-    r = M.union changedPropMap accProp
+  -- union will replace oldProps with newProps
+  r = M.union changedPropMap accProp
 
 
 
 -- If we were really awesome, we could clean out all the BoneIds that are untouched (and thus have defaultAnimalProperty) for performance but whatever
 generateAnimalProperties_ ::
-    (AnimalFloat a)
-    => [BoneId] -- ^ list of all bones (will be given default property in the map)
-    -> [PrioritizedSkellyFunc a] -- ^ list of all SkellyFunc
-    -> AnimalPropertyMap a -- ^ output accumulated map of properties. EnumBone' property will override AllBone' property
+  (AnimalFloat a)
+  => [BoneId] -- ^ list of all bones (will be given default property in the map)
+  -> [PrioritizedSkellyFunc a] -- ^ list of all SkellyFunc
+  -> AnimalPropertyMap a -- ^ output accumulated map of properties. EnumBone' property will override AllBone' property
 generateAnimalProperties_ bids = generateAnimalPropertiesInternal_ (makeStartingAnimalPropertyMap bids)
 
 -- | property access helpers

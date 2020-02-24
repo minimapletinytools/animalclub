@@ -10,10 +10,10 @@ TODO add comment explaining how genetics works
 -}
 
 module AnimalClub.Genetics (
-    module AnimalClub.Genetics.DNA,
-    module AnimalClub.Genetics.Gene,
-    module AnimalClub.Genetics.Genotype,
-    module AnimalClub.Genetics.Genome
+  module AnimalClub.Genetics.DNA,
+  module AnimalClub.Genetics.Gene,
+  module AnimalClub.Genetics.Genotype,
+  module AnimalClub.Genetics.Genome
 ) where
 
 import AnimalClub.Genetics.DNA

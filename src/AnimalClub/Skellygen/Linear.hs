@@ -1,14 +1,14 @@
 -- rexport some Linear stuff for convenience
 
 module AnimalClub.Skellygen.Linear
-  (
-  module Linear.Matrix
-  , module Linear.Quaternion
-  , module Linear.Metric
-  , module Linear.V3
-  , module Linear.V4
-  , module Linear.Vector
-  , module Linear.Epsilon
+ (
+ module Linear.Matrix
+ , module Linear.Quaternion
+ , module Linear.Metric
+ , module Linear.V3
+ , module Linear.V4
+ , module Linear.Vector
+ , module Linear.Epsilon
 ) where
 
 import           Linear.Matrix
