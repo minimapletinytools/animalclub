@@ -27,17 +27,17 @@ import           Control.Monad.Random
 -- explicitly override applicative to use bindM2
 -- TODO test that this actually works
 instance {-# OVERLAPPING #-} (Monoid w, RandomGen g) => Applicative (GenotypeT g w Identity) where
-    --liftA2 f = bindM2 (\a b -> return (f a b))
-    (<*>) = bindM2 (\f a -> return (f a))
-    pure a = GenotypeT (\g _ -> return (a, g, mempty))
+  --liftA2 f = bindM2 (\a b -> return (f a b))
+  (<*>) = bindM2 (\f a -> return (f a))
+  pure a = GenotypeT (\g _ -> return (a, g, mempty))
 
 -- |
 -- explicitly override applicative to use bindM2
 -- TODO test that this actually works
 instance {-# OVERLAPPING #-} (Monoid w, RandomGen g) => Applicative (GenotypeT g w IO) where
-    --liftA2 f = bindM2 (\a b -> return (f a b))
-    (<*>) = bindM2 (\f a -> return (f a))
-    pure a = GenotypeT (\g _ -> return (a, g, mempty))
+  --liftA2 f = bindM2 (\a b -> return (f a b))
+  (<*>) = bindM2 (\f a -> return (f a))
+  pure a = GenotypeT (\g _ -> return (a, g, mempty))
 
 
 -- |

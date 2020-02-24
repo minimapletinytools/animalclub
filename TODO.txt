@@ -1,7 +1,9 @@
 ::TODO::
+-look into adding type level size parameter to DNA
 DONE-figure out why applicative do causes things to crash
 -switch LocalMesh to use storable vector
 -switch indentation to 2 spaces
+  -in vim: :%s;^\(\s\+\);\=repeat(' ', len(submatch(0))/2);g
 -fix missing-home-module warning
 -finish lookAt function, and make its interface less weird
 DONE-switch to hspec
@@ -15,7 +17,6 @@ DONE-switch to hspec
 -change scale to V3 instead of M33
   -see comments in reduceBoneTrans in AnimalScript.hs
 -consider moving parts of Builder.hs into Genetics
--look into adding type level size parameter to DNA
 DONE-look into switching DNA to use fixed vector (type level dimension)
   -it's not compatible with Data.Vector.Storable and not intended for large dimensions
 DONE-refactor

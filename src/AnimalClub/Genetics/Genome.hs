@@ -11,8 +11,8 @@ TODO add GenomeT versions
 -}
 
 module AnimalClub.Genetics.Genome (
-    Genome(..),
-    evalGenome
+  Genome(..),
+  evalGenome
 ) where
 
 import AnimalClub.Genetics.DNA
