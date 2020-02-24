@@ -41,7 +41,7 @@ packages:
 # (e.g., acme-missiles-0.3)
 extra-deps:
 - github: pdlla/linear-tests
-  commit: b2e02ed037a100c4a046652a56b8b0f2d2988760 
+  commit: 5f9fe85b15e60409d8e833eb54605286f14c400b 
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

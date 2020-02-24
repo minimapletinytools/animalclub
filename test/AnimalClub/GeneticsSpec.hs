@@ -1,7 +1,13 @@
-{-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
+module AnimalClub.GeneticsSpec (
+  spec
+) where
+
 import           AnimalClub.Genetics
+
+import           Test.Hspec
+import           Test.QuickCheck
 
 import           Control.Monad.Writer (tell)
 import           Data.Bits
@@ -11,7 +17,7 @@ import qualified Data.Text            as T
 import qualified Data.Vector.Storable as V
 import           Data.Word
 import           System.Random
-import           Test.QuickCheck
+
 
 
 -- |
@@ -38,8 +44,8 @@ extractFirstValue :: [(a, [b])] -> b
 extractFirstValue = head . snd . head
 
 {- Breeding tests -}
-prop_basicbreedingtest :: Bool
-prop_basicbreedingtest =
+basicbreedingtest :: Expectation
+basicbreedingtest =
     let n = 10
         firstDNA = V.replicate n (0x00 :: Word8) --all recessive
         secondDNA = V.replicate n (0xFF :: Word8) --all dominant
@@ -51,7 +57,7 @@ prop_basicbreedingtest =
                 (gbSum >>= tellGene "" . fromIntegral)
                 bread
                 dummyGen
-    in sm == fromIntegral n * 4
+    in sm `shouldBe` fromIntegral n * 4
 
 {- GeneBuilder tests -}
 prop_gbNormalizedSum_test :: DNA -> Bool
@@ -191,9 +197,25 @@ prop_convergence seed = pass
     --pass = trace ("took " ++ show generations ++ " to pass " ++ (show seed) ++ "\n") $ generations < maxGenerations
     pass = generations < maxGenerations
 
---Template haskell nonsense to run all properties prefixed with "prop_" in this file
-return []
 
-main :: IO Bool
-main = $quickCheckAll
---main = $verboseCheckAll
+spec :: Spec
+spec = do
+  describe "Genetics" $ do
+    describe "Breeding" $ do
+      it "satisfied passes basic breeding test" $
+        basicbreedingtest
+    describe "GeneBuilder" $ do
+      it "gbNormalizedSum" $
+        property $ prop_gbNormalizedSum_test
+      it "gbSum" $
+        property $ prop_gbSum_test
+      it "gbTypical" $
+        property $ prop_gbTypical
+      it "gbRandomRanges" $
+        property $ prop_gbRandomRanges
+      it "gbByteSample1" $
+        property $ prop_gbByteSample1
+      it "gbBytePattern" $
+        property $ prop_gbBytePattern_test1
+    it "satsifies convergence property" $
+      property $ prop_convergence

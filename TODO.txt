@@ -1,9 +1,10 @@
 ::TODO::
 DONE-figure out why applicative do causes things to crash
--switch LocalMesh to use storabel vector
+-switch LocalMesh to use storable vector
 -switch indentation to 2 spaces
 -fix missing-home-module warning
 -finish lookAt function, and make its interface less weird
+DONE-switch to hspec
 -basic test cases
 -finish goat breeding app MVP
   -just randomly breed and see what happens?
