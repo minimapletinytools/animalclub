@@ -1,3 +1,7 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE DataKinds           #-}
+
+
 {-|
 Module      : Gene
 Description : Functions and types pertaining to Genes
@@ -20,33 +24,34 @@ module AnimalClub.Genetics.Gene (
 
 import           AnimalClub.Genetics.DNA
 
-import qualified Data.Vector.Generic as G
-import qualified Data.Vector.Storable as V
+import           GHC.TypeLits
 
+import qualified Data.Vector.Generic     as G
+import qualified Data.Vector.Storable    as V
+
+-- TODO delete parameters, it's all stored at type level now
 -- | represents a genotype as a start index and length
 -- indices are on 8-bit (Word8) intervals
-data Gene = Gene {
+data Gene (s :: Nat) (c :: Nat) = Gene {
   _start :: Int,
   _count :: Int
 } deriving (Show)
 
 -- | combine 2 Genes
 -- where gt2 is sub index set of gt1
-combineGene :: Gene -- ^ child
-  -> Gene -- ^ parent
-  -> Gene -- ^ combined
-combineGene gt2 gt1 =
-  if _start gt2 + _count gt2 > _count gt1
-    then error $ "parent child mismatch " ++ (show $ gt1) ++ " " ++ (show $ gt2)
-    else Gene (_start gt1 + _start gt2) (_count gt2)
+combineGene :: Gene cs cc -- ^ child
+  -> Gene ps pc -- ^ parent
+  -> Gene (cs + ps) pc -- ^ combined
+combineGene gt2 gt1 = Gene (_start gt1 + _start gt2) (_count gt2)
 
 -- | extractDNA extracts a Gene from DNA producing a new DNA that is the subsection of the original DNA as defined by the Gene
 -- will throw an error if Gene is out of bounds of DNA being operated on
 extractDNA ::
- Gene -- ^ Gene to extract
- -> DNA -- ^ DNA to extract from
- -> DNA
-extractDNA (Gene i n) = G.slice i n
+  (s+c <= n, c <= n)
+  => Gene s c -- ^ Gene to extract
+  -> DNA n -- ^ DNA to extract from
+  -> DNA c
+extractDNA (Gene i n) (DNA dna) = DNA $ G.slice i n dna
 
 {-
 -- |
@@ -70,7 +75,7 @@ fastGeneSumInternalAlleles' dna i (cnt, a) =
 -}
 
 -- | length of genotype in bytes
-geneLength :: Gene -> Int
+geneLength :: (KnownNat c) => Gene s c -> Int
 geneLength = _count
 
 -- | sum all bits of the genotype given its host DNA
@@ -82,9 +87,9 @@ tryGeneSum dna gt =
     else geneSum dna gt-}
 
 -- | sum of all bit pairs in this genotype
-geneSum :: DNA -> Gene -> Int
-geneSum dna gt = dnaSum $ G.slice (_start gt) (_count gt) dna
+geneSum :: (s+c<=n) => DNA n -> Gene s c -> Int
+geneSum (DNA dna) gt = dnaSum . DNA $ G.slice (_start gt) (_count gt) dna
 
 -- | returns an 8 length array that counts occurrence of each bit
-geneBitCount :: DNA -> Gene -> V.Vector Int
-geneBitCount dna gt = dnaBitCount $ G.slice (_start gt) (_count gt) dna
+geneBitCount :: (s+c<=n) => DNA n -> Gene s c -> V.Vector Int
+geneBitCount (DNA dna) gt = dnaBitCount . DNA $ G.slice (_start gt) (_count gt) dna

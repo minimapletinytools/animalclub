@@ -50,23 +50,23 @@ module AnimalClub.Genetics.Internal.Unused.DNAMWC (
 
 import qualified AnimalClub.Genetics.DNA as DNA
 import           Data.Bits
-import qualified Data.Vector.Storable         as S
-import qualified Data.Vector                 as V
-import qualified Data.Vector.Generic         as G
-import Data.List (sortBy)
-import           Data.Ord                        (comparing)
+import           Data.List               (sortBy)
+import           Data.Ord                (comparing)
+import qualified Data.Vector             as V
+import qualified Data.Vector.Generic     as G
+import qualified Data.Vector.Storable    as S
 import           Data.Word
-import System.Random.MWC
+import           System.Random.MWC
 
-import Control.Monad.Primitive
+import           Control.Monad.Primitive
 
 -- | create random DNA with given dnaLength
 -- length must be multiple of 4
-makeRandDNA :: (PrimMonad m) => Gen (PrimState m) -> Int -> m DNA.DNA
+makeRandDNA :: (PrimMonad m) => Gen (PrimState m) -> Int -> m (DNA.DNA n)
 makeRandDNA g c = uniformVector g c
 
 -- | breed 2 DNA with given random generator
-breed :: forall m. (PrimMonad m) => Gen (PrimState m) -> DNA.DNA -> DNA.DNA -> m DNA.DNA
+breed :: forall m. (PrimMonad m) => Gen (PrimState m) -> (DNA.DNA n) -> (DNA.DNA n) -> m (DNA.DNA n)
 breed g a b = do
   rands <- uniformVector g (G.length a) :: m (S.Vector Word8)
   return $ G.map choose (G.zip3 a b rands)
@@ -100,7 +100,7 @@ uniformVectorR range gen n = G.replicateM n (uniformR range gen)
 
 -- |
 -- chance is chance of one bit mutating per byte
-mutate :: forall m. (PrimMonad m) => Float -> Gen (PrimState m) -> DNA.DNA -> m DNA.DNA
+mutate :: forall m. (PrimMonad m) => Float -> Gen (PrimState m) -> (DNA.DNA n) -> m (DNA.DNA n)
 mutate chance g dna = do
   rands <- uniformVectorR (0, 1.0) g (G.length dna)
   let
@@ -110,18 +110,18 @@ mutate chance g dna = do
   return $ S.accumulate_ mutateBit dna indices bitRands
 
 
-breedAndMutate :: (PrimMonad m) => Float -> Gen (PrimState m) -> DNA.DNA -> DNA.DNA -> m DNA.DNA
+breedAndMutate :: (PrimMonad m) => Float -> Gen (PrimState m) -> (DNA.DNA n) -> (DNA.DNA n) -> m (DNA.DNA n)
 breedAndMutate chance g a b = do
   dna' <- breed g a b
   mutate chance g dna'
 
 breedAndSelectPool :: forall m. (PrimMonad m) =>
-  (DNA.DNA -> Float) -- ^ test function
+  ((DNA.DNA n) -> Float) -- ^ test function
   -> Float -- ^ mutation chance
   -> Gen (PrimState m) -- ^ random generator
   -> (Int, Int) -- ^ size, winner
-  -> [DNA.DNA] -- ^ parent pool
-  -> m [DNA.DNA] -- ^ best children and new generator
+  -> [(DNA.DNA n)] -- ^ parent pool
+  -> m [(DNA.DNA n)] -- ^ best children and new generator
 breedAndSelectPool testfn chance g (size, winners) dnas = do
   let inputs = length dnas
   moms <- uniformVectorR (0,inputs-1) g size :: m (V.Vector Int)

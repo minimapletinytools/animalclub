@@ -109,7 +109,6 @@ library:
     - AnimalClub.Animals.Examples
 
     # Hidden stuff that's only here for testing reasons
-    - AnimalClub.Genetics.Internal.Unused.Genotype
     # - AnimalClub.Genetics.Internal.Unused.DNAMWC
 
 

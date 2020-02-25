@@ -1,22 +1,26 @@
 ::TODO::
 -look into adding type level size parameter to DNA
-DONE-figure out why applicative do causes things to crash
+
 -switch LocalMesh to use storable vector
--switch indentation to 2 spaces
-  -in vim: :%s;^\(\s\+\);\=repeat(' ', len(submatch(0))/2);g
+
 -fix missing-home-module warning
 -finish lookAt function, and make its interface less weird
-DONE-switch to hspec
+
 -basic test cases
 -finish goat breeding app MVP
   -just randomly breed and see what happens?
     -I think I did this already
   -try breeding to maximize volume and see what happens
   -try breeding to maximize bending joints and see what happens
--finish exporting genetics stuff to C++
 -change scale to V3 instead of M33
   -see comments in reduceBoneTrans in AnimalScript.hs
 -consider moving parts of Builder.hs into Genetics
+
+DONE-figure out why applicative do causes things to crash
+DONE-switch indentation to 2 spaces
+  -in vim: :%s;^\(\s\+\);\=repeat(' ', len(submatch(0))/2);g
+DONE-switch to hspec
+IGNORE-finish exporting genetics stuff to C++
 DONE-look into switching DNA to use fixed vector (type level dimension)
   -it's not compatible with Data.Vector.Storable and not intended for large dimensions
 DONE-refactor

@@ -1,3 +1,6 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE DataKinds           #-}
+
 {-|
 Module      : Genotype
 Description : Monad for building genes
@@ -39,62 +42,72 @@ module AnimalClub.Genetics.Genotype (
 import           AnimalClub.Genetics.DNA
 import           AnimalClub.Genetics.Gene
 
-import           Data.Bits
-import qualified Data.Vector.Generic      as G
-import           Data.Word
-
 import           Control.Monad.Identity
 import           Control.Monad.Parallel   (MonadParallel (..))
 import           Control.Monad.Random
 import           Control.Monad.Writer
+import           Data.Bits
+import qualified Data.Vector.Generic      as G
+import           Data.Word
 import           Debug.Trace
+import           GHC.TypeLits
 import           Lens.Micro.Platform      (over, _1)
 
 -- | this is just `StateT DNA (WriterT w (RandT g m))` unrolled
 -- Genotype is a Writer monad taking an taking an RNG and DNA as inputs
-newtype GenotypeT g w m a = GenotypeT { unGenotypeT :: g -> DNA -> m (a, g, w) }
-type Genotype g w = GenotypeT g w Identity
+newtype GenotypeT (n0 :: Nat) g w m a = GenotypeT { unGenotypeT :: forall (n1 :: Nat). (KnownNat n1, n0 <= n1) => g -> DNA n1 -> m (a, g, w) }
+type Genotype n0 g w = GenotypeT n0 g w Identity
 
+-- TODO switch argumnet order to be consistent
 -- | evalute the builder and obtain its output
-unGenotype :: Genotype g w a -> DNA -> g -> (a, g, w)
+unGenotype :: (KnownNat n1, n0 <= n1) => Genotype n0 g w a -> DNA n1 -> g -> (a, g, w)
 unGenotype m s g = runIdentity $  unGenotypeT m g s
 
 -- | evalute the builder and obtain its output
-evalGeneBuilderT :: (Monad m) => GenotypeT g w m a -> DNA -> g -> m w
+evalGeneBuilderT :: (Monad m, KnownNat n1, n0 <= n1) => GenotypeT n0 g w m a -> DNA n1 -> g -> m w
 evalGeneBuilderT m s g = do
   (_,_,w) <- unGenotypeT m g s
   return w
 
 -- | evalute the builder and obtain its output
-evalGeneBuilder :: Genotype g w a -> DNA -> g -> w
+evalGeneBuilder :: (KnownNat n1, n0 <= n1) => Genotype n0 g w a -> DNA n1 -> g -> w
 evalGeneBuilder m s g = runIdentity $ evalGeneBuilderT m s g
 
-instance (Functor m) => Functor (GenotypeT g w m) where
+instance (Functor m) => Functor (GenotypeT n0 g w m) where
   fmap f n = GenotypeT $ \g dna -> fmap (over _1 f) (unGenotypeT n g dna)
 
-instance (Monoid w, Monad m) => Monad (GenotypeT g w m) where
+instance (Monoid w, Monad m) => Monad (GenotypeT n0 g w m) where
   return a = GenotypeT (\g _ -> pure (a, g, mempty))
-  ma >>= f = GenotypeT func where
+
+  (>>=) :: forall a b. GenotypeT n0 g w m a -> (a -> GenotypeT n0 g w m b) -> GenotypeT n0 g w m b
+  (>>=) ma f = GenotypeT func where
+    func :: forall (n1 :: Nat). (KnownNat n1, n0 <= n1) => g -> DNA n1 -> m (b, g, w)
     func g dna = do
       (a, g', w1) <- unGenotypeT ma g dna
       (b, g'', w2) <- unGenotypeT (f a) g' dna
       return (b, g'', mappend w1 w2)
 
-instance (Monoid w, Monad m) => Applicative (GenotypeT g w m) where
+instance (Monoid w, Monad m) => Applicative (GenotypeT n0 g w m) where
   -- need definition here to avoid infinite loop with ApplicativeDo
   (<*>) mf ma = mf >>= (\f -> ma >>= \a -> return (f a))
   pure = return
 
-instance (Monoid w) => MonadTrans (GenotypeT g w) where
+instance (Monoid w) => MonadTrans (GenotypeT n0 g w) where
   lift m = GenotypeT (\g _ -> m >>= (\a -> return (a, g, mempty)))
 
-instance (Monoid w, Monad m) => MonadWriter w (GenotypeT g w m) where
+instance (Monoid w, Monad m) => MonadWriter w (GenotypeT n0 g w m) where
   tell w = GenotypeT $ \g _ -> return ((), g, w)
+
+  listen :: forall a. GenotypeT n0 g w m a -> GenotypeT n0 g w m (a, w)
   listen ma = GenotypeT func where
+    func :: forall (n1 :: Nat). (KnownNat n1, n0 <= n1) => g -> DNA n1 ->  m ((a, w), g, w)
     func g dna = do
       (a, g', w) <- unGenotypeT ma g dna
       return ((a, w), g', w)
+
+  pass :: forall a. GenotypeT n0 g w m (a, w -> w) -> GenotypeT n0 g w m a
   pass ma = GenotypeT func where
+    func :: forall (n1 :: Nat). (KnownNat n1, n0 <= n1) => g -> DNA n1 ->  m (a, g, w)
     func g dna = do
       ((a, f), g', w) <- unGenotypeT ma g dna
       return (a, g', f w)
@@ -113,10 +126,12 @@ genotypeParMin = 10
 -- I think we can fix this by changing instance definition of Monad Genotype but why bother
 -- TODO/NOTE this is currently not actually creating any sparks or when it does they all GC D:
 -- It might be because it evaluate the output tuple to only whnf?
-instance forall w g m. (Monoid w, RandomGen g, MonadParallel m) => MonadParallel (GenotypeT g w m) where
+instance forall n0 g w m. (RandomGen g, Monoid w, MonadParallel m) => MonadParallel (GenotypeT n0 g w m) where
+  bindM2 :: forall a b c. (a -> b -> GenotypeT n0 g w m c) -> GenotypeT n0 g w m a -> GenotypeT n0 g w m b -> GenotypeT n0 g w m c
   bindM2 f' ma mb = GenotypeT func where
     -- sequential evaluation for small domains, see comments in genotypeParMin
     bindM2Serial f ma' mb' = do { a <- ma'; b <- mb'; f a b }
+    func :: forall (n1 :: Nat). (KnownNat n1, n0 <= n1) => g -> DNA n1 -> m (c, g, w)
     func g dna = if dnaLength dna <= genotypeParMin
       then unGenotypeT (bindM2Serial f' ma mb) g dna
       -- the inner monad should spark ra and rb :\
@@ -140,11 +155,13 @@ instance forall w g m. (Monoid w, RandomGen g, MonadParallel m) => MonadParallel
 
 -- |
 -- constraints needed to satisfy Monad instance
-instance (Monoid w, RandomGen g, Monad m) => MonadRandom (GenotypeT g w m) where
+instance (Monoid w, RandomGen g, Monad m) => MonadRandom (GenotypeT n0 g w m) where
   getRandom = GenotypeT func where
     func g _ = return (a,g',mempty) where
       (a,g') = random g
+  getRandomR :: forall a. (Random a) => (a,a) -> GenotypeT n0 g w m a
   getRandomR r = GenotypeT func where
+    func :: forall (n1 :: Nat). (KnownNat n1, n0 <= n1) => g -> DNA n1 -> m (a, g, w)
     func g _ = return (a,g',mempty) where
       (a,g') = randomR r g
   -- TODO
@@ -154,23 +171,28 @@ instance (Monoid w, RandomGen g, Monad m) => MonadRandom (GenotypeT g w m) where
 -- | apply a computation on a Gene
 -- this creates a new computation where DNA is the subsection of the original DNA as defined by the gene
 -- will throw an error if Gene is out of bounds of DNA being operated on
-usingGene :: Gene -> GenotypeT g w m a -> GenotypeT g w m a
-usingGene gene gt = GenotypeT $ \g dna -> unGenotypeT gt g (extractDNA gene dna)
+usingGene :: forall s c n0 g w m a. (s+c <= n0, c <= n0) => Gene s c -> GenotypeT c g w m a -> GenotypeT n0 g w m a
+usingGene gene gt = GenotypeT func where
+  func :: forall (n1 :: Nat). (KnownNat n1, n0git  <= n1) => g -> DNA n1 -> m (a, g, w)
+  func g dna = unGenotypeT gt g (extractDNA gene dna)
 
+
+
+-- TODO I guess drop the DNA wrapper and return a Vector to avoid type issues
 -- | return the DNA so you can do whatever on it
-gbDNA :: (Monoid w, Monad m) => GenotypeT g w m DNA
-gbDNA = GenotypeT $ \g dna -> return (dna, g, mempty)
+--gbDNA :: (Monoid w, Monad m) => GenotypeT g w m DNA
+--gbDNA = GenotypeT $ \g dna -> return (dna, g, mempty)
 
 -- | return length of DNA being computed on
-gbDNALength :: (Monoid w, Monad m) => GenotypeT g w m Int
+gbDNALength :: (Monoid w, Monad m) => GenotypeT n0 g w m Int
 gbDNALength = GenotypeT $ \g dna -> return (dnaLength dna, g, mempty)
 
 -- | Computation that adds all genes of current genotype
-gbSum :: (Num a, Monoid w, Monad m) => GenotypeT g w m a
+gbSum :: (Num a, Monoid w, Monad m) => GenotypeT n0 g w m a
 gbSum = GenotypeT $ \g dna -> return (dnaSum dna, g, mempty)
 
 -- | gbSum normalized to [0,1]
-gbNormalizedSum :: (Fractional a, Monoid w, Monad m) => GenotypeT g w m a
+gbNormalizedSum :: (Fractional a, Monoid w, Monad m) => GenotypeT n0 g w m a
 gbNormalizedSum = do
   s <- gbSum
   l <- gbDNALength
@@ -181,13 +203,13 @@ gbNormalizedSum = do
 --gbNormalizedSum = liftA2 (\s l -> 0.125 * fromIntegral s / fromIntegral l) gbSum gbDNALength
 
 -- | Computation returns True if gbNormalizedSum > thresh, False otherwise
-gbSumRange :: (Fractional a, Monoid w, Monad m) => (a,a) -> GenotypeT g w m a
+gbSumRange :: (Fractional a, Monoid w, Monad m) => (a,a) -> GenotypeT n0 g w m a
 gbSumRange (min',max') = do
   s <- gbNormalizedSum
   return $ min' + s * (max'-min')
 
 -- | Computation returns True if gbNormalizedSum > thresh, False otherwise
-gbNormalizedThresh :: (Monoid w, Monad m) => Float -> GenotypeT g w m Bool
+gbNormalizedThresh :: (Monoid w, Monad m) => Float -> GenotypeT n0 g w m Bool
 gbNormalizedThresh thresh = do
   s <- gbNormalizedSum
   return $ s > thresh
@@ -196,7 +218,7 @@ gbNormalizedThresh thresh = do
 
 -- | Computation that sums a gene in two parts, treating the first part as a multiplier of the second part
 -- first 1/4 is multiplicative, last 3/4 is additive.
-gbTypical :: (Monoid w, Monad m) => (Float, Float) -> GenotypeT g w m Float
+gbTypical :: (Monoid w, Monad m) => (Float, Float) -> GenotypeT n0 g w m Float
 gbTypical (min_, max_) = do
   l <- gbDNALength
   let
@@ -207,7 +229,7 @@ gbTypical (min_, max_) = do
 
 
 -- | Computation that randomly creates several genes fitting the input range
-gbRandomRanges :: (RandomGen g, Monoid w, Monad m) => [(Float, Float)] -> GenotypeT g w m [Float]
+gbRandomRanges :: (RandomGen g, Monoid w, Monad m) => [(Float, Float)] -> GenotypeT n0 g w m [Float]
 gbRandomRanges ranges = do
   gl <- gbDNALength
   let
@@ -224,7 +246,7 @@ gbRandomRanges ranges = do
       if l < 20 || rn then short else long
 
 -- | returns an 8 length array that counts occurrence of each bit
-gbByteSample1 :: (Monoid w, Monad m) => GenotypeT g w m [Int]
+gbByteSample1 :: (Monoid w, Monad m) => GenotypeT n0 g w m [Int]
 gbByteSample1 = GenotypeT (\g dna -> return (G.toList (dnaBitCount dna), g, mempty))
 
 {-
@@ -245,7 +267,7 @@ gbBytePattern4 p = GenotypeT f where
 -}
 
 -- | counts occurrence of given pattern on non-overlapping intervals of 8 bits
-gbBytePattern :: (Monoid w, Monad m) => Word8 -> GenotypeT g w m Int
+gbBytePattern :: (Monoid w, Monad m) => Word8 -> GenotypeT n0 g w m Int
 gbBytePattern p = GenotypeT f where
   f g dna = return (G.foldl' ff 0 dna, g, mempty) where
     ff acc x = if p `xor` x == 0 then acc + 1 else acc

@@ -1,19 +1,19 @@
 {-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 --{-# OPTIONS_GHC -fno-warn-unused-top-binds #-}
 
-import AnimalClub.Genetics
+import           AnimalClub.Genetics
 import qualified AnimalClub.Genetics.Internal.Unused.Genotype as Old
-import System.Random
+import           System.Random
 
-import qualified Control.Monad.Parallel as Par
-import qualified Control.Monad as Seq
-import Control.Monad.Writer (tell)
-import Control.Monad.State (get)
+import qualified Control.Monad                                as Seq
+import qualified Control.Monad.Parallel                       as Par
+import           Control.Monad.State                          (get)
+import           Control.Monad.Writer                         (tell)
 
-import Criterion.Main
+import           Criterion.Main
 
-import Data.Time.Clock
-import Control.DeepSeq
+import           Control.DeepSeq
+import           Data.Time.Clock
 
 splitCount :: Int
 splitCount = 40
@@ -27,33 +27,12 @@ gbComplicated = do
     z <- gbNormalizedSum
     return $ round $ x + y + z
 
-gbComplicatedOld :: Old.Genotype StdGen [Int] Int
-gbComplicatedOld = do
-    x <- Old.gbSumRange (0, 99)
-    y <- Old.gbTypical (0, 99)
-    z <- Old.gbNormalizedSum
-    return $ round $ x + y + z
-
-
-benchgtold :: Old.Genotype StdGen [Int] [Int]
-benchgtold = do
-    (dna,_) <- get
-    let
-        dnal = dnaLength dna
-        ml = dnal `quot` splitCount
-    Seq.forM [i*ml | i <- [0..(splitCount-1)]] $ \x -> do
-        Old.gbPush (Gene x ml)
-        r <- gbComplicatedOld
-        Old.gbPop
-        return r
-
 benchgtseq :: Genotype StdGen [Int] [Int]
 benchgtseq = do
     dnal <- gbDNALength
     let
         ml = dnal `quot` splitCount
     Seq.forM [i*ml | i <- [0..(splitCount-1)]] (\x -> usingGene (Gene x ml) gbComplicated)
-
 
 benchgtpar :: Genotype StdGen [Int] [Int]
 benchgtpar = do
@@ -88,10 +67,6 @@ main = do
     r2 <- return $ evalGeneBuilder (benchgtseq >>= tell) dna g
     r2 `deepseq` return ()
     t3 <- markTime "seq" t2
-
-    r3 <- return $ Old.evalGeneBuilder (benchgtold >>= tell) (dna, []) g
-    r3 `deepseq` return ()
-    t4 <- markTime "old" t3
 
     return ()
 

@@ -1,3 +1,7 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE DataKinds           #-}
+{-# LANGUAGE MagicHash           #-}
+
 {-|
 Module      : DNA
 Description : Functions and types pertaining to DNA
@@ -10,7 +14,7 @@ Stability   : experimental
 
 module AnimalClub.Genetics.DNA (
   -- * Types
-  DNA,
+  DNA(..),
   -- * Functions
   makeZeroDNA,
   makeRandDNA,
@@ -34,6 +38,8 @@ import qualified Data.Vector.Generic    as G
 import qualified Data.Vector.Storable   as V
 import           Data.Word
 import           Foreign.Storable.Tuple ()
+import           GHC.Exts
+import           GHC.TypeLits
 import           System.Random
 
 -- we don't use repa because repa uses Vector.Unboxed as its underlying type which is not tightly packed
@@ -46,35 +52,38 @@ import           System.Random
 type Allele4 = Word8
 
 -- | DNA host genetic information for all gene transformations in this module
+-- N.B. type level size is not enforced in underlying vector
 -- DNA is an array of 'Allele4'
-type DNA = V.Vector Allele4
+newtype DNA (n :: Nat) = DNA { unDNA :: V.Vector Allele4 }
 
 -- | number of Allele4 in DNA
 -- that is to say, length in in 8-bit intervals
-dnaLength :: (Num a) => DNA -> a
-dnaLength = fromIntegral . V.length
+dnaLength :: forall n. (KnownNat n) => DNA n -> Int
+dnaLength _ = fromIntegral $ natVal' (undefined :: Proxy# n)
+-- TODO test it's always equal to this
+--dnaLength = fromIntegral . V.length
 
 -- | sum of all bits in DNA
-dnaSum :: (Num a) => DNA -> a
-dnaSum = V.foldl' (\acc x -> acc + fromIntegral (popCount x)) 0
+dnaSum :: (Num a) => DNA n -> a
+dnaSum (DNA dna) = V.foldl' (\acc x -> acc + fromIntegral (popCount x)) 0 dna
 
 -- | returns an 8 length array that counts occurrence of each bit
-dnaBitCount :: DNA -> V.Vector Int
-dnaBitCount = V.foldl' f (V.replicate 8 0) where
+dnaBitCount :: DNA n -> V.Vector Int
+dnaBitCount (DNA dna) = V.foldl' f (V.replicate 8 0) dna where
   f acc x = V.imap (\i a -> if ((unsafeShiftL 0x01 i) .&. x) /= 0 then a+1 else a) acc
 
 -- | create DNA of all 0s with given dnaLength
-makeZeroDNA :: Int -> DNA
-makeZeroDNA c = V.generate c (const 0)
+makeZeroDNA :: Int -> DNA n
+makeZeroDNA c = DNA $ V.generate c (const 0)
 
 -- | create random DNA with given dnaLength
-makeRandDNA :: (RandomGen g) => g -> Int -> DNA
-makeRandDNA g c = V.unfoldrN c (Just . random) g
+makeRandDNA :: forall n g. (KnownNat n, RandomGen g) => g -> DNA n
+makeRandDNA g = DNA $ V.unfoldrN (fromIntegral $ natVal' (undefined :: Proxy# n)) (Just . random) g
 
 -- | breed 2 DNAs with given random generator
 -- TODO write a version that takes a seed instead and uses the faster RNG maybe?
-breed :: (RandomGen g) => g -> DNA -> DNA -> DNA
-breed g a b = V.map choose (G.zip3 a b rands) where
+breed :: (RandomGen g) => g -> DNA n -> DNA n -> DNA n
+breed g (DNA a) (DNA b) = DNA $ V.map choose (G.zip3 a b rands) where
   rands = V.fromList . take (V.length a) . randoms $ g
   choose :: (Allele4, Allele4, Word8) -> Allele4
   choose (geneA, geneB, r) = mated where
@@ -99,8 +108,8 @@ findIndices f v = G.unfoldr findNext 0 where
 
 -- |
 -- chance is chance of one bit mutating per byte
-mutate :: (RandomGen g) => Float -> g -> DNA -> DNA
-mutate chance g dna = V.accumulate_ mutateBit dna indices bitRands where
+mutate :: (RandomGen g) => Float -> g -> DNA n -> DNA n
+mutate chance g (DNA dna) = DNA $ V.accumulate_ mutateBit dna indices bitRands where
   rands = V.fromList . take (V.length dna) . randomRs (0, 1.0) $ g
   indices = findIndices (< chance) rands
   bitRands = V.fromList . take (V.length indices) . randomRs (0,7) $ g
@@ -108,8 +117,8 @@ mutate chance g dna = V.accumulate_ mutateBit dna indices bitRands where
 
 -- | old inefficient implementation, left for peformance testing reasons
 -- chance is chance of one bit mutating per byte
-mutateOld :: (RandomGen g) => Float -> g -> DNA -> DNA
-mutateOld chance g dna = V.zipWith zipFunc rands dna where
+mutateOld :: (RandomGen g) => Float -> g -> DNA n -> DNA n
+mutateOld chance g (DNA dna) = DNA $ V.zipWith zipFunc rands dna where
   -- TODO running random twice here is very inefficient
   -- you really want to mapAccumL a single generator over the dna
   -- and only evaluate a second time when there is a mutation
@@ -119,7 +128,7 @@ mutateOld chance g dna = V.zipWith zipFunc rands dna where
     (c, gx') = randomR (0,1.0) (mkStdGen gx)
     r = if c < chance then mutateBit gx' x else x
 
-breedAndMutate :: (RandomGen g) => Float -> g -> DNA -> DNA -> DNA
+breedAndMutate :: (RandomGen g) => Float -> g -> DNA n -> DNA n -> DNA n
 breedAndMutate chance g a b = dna where
   (g',g'') = split g
   dna' = breed g' a b
@@ -127,14 +136,14 @@ breedAndMutate chance g a b = dna where
 
 -- TODO separate this out to a different file
 -- e.g. Fitness.hs or something
-type FitnessFunc = DNA -> Float
+type FitnessFunc n = DNA n -> Float
 breedAndSelectPool :: (RandomGen g) =>
-  FitnessFunc -- ^ test function
+  FitnessFunc n -- ^ test function
   -> Float -- ^ mutation chance
   -> g -- ^ random generator
   -> (Int, Int) -- ^ size, winner
-  -> [DNA] -- ^ parent pool
-  -> ([DNA], g) -- ^ best children and new generator
+  -> [DNA n] -- ^ parent pool
+  -> ([DNA n], g) -- ^ best children and new generator
 breedAndSelectPool testfn mChance g (size, winners) dnas = (r, outg) where
   inputs = length dnas
   (g', g'') = split g
