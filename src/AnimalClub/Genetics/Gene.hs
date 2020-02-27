@@ -1,6 +1,6 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds           #-}
-
+{-# LANGUAGE MagicHash           #-}
 
 {-|
 Module      : Gene
@@ -17,6 +17,7 @@ module AnimalClub.Genetics.Gene (
   Gene(..),
   combineGene,
   extractDNA,
+  truncateDNA,
   geneLength,
   geneSum,
   geneBitCount
@@ -24,6 +25,7 @@ module AnimalClub.Genetics.Gene (
 
 import           AnimalClub.Genetics.DNA
 
+import           GHC.Exts
 import           GHC.TypeLits
 
 import qualified Data.Vector.Generic     as G
@@ -47,11 +49,18 @@ combineGene gt2 gt1 = Gene (_start gt1 + _start gt2) (_count gt2)
 -- | extractDNA extracts a Gene from DNA producing a new DNA that is the subsection of the original DNA as defined by the Gene
 -- will throw an error if Gene is out of bounds of DNA being operated on
 extractDNA ::
-  (s+c <= n, c <= n)
+  (s+c <= n)
   => Gene s c -- ^ Gene to extract
   -> DNA n -- ^ DNA to extract from
   -> DNA c
 extractDNA (Gene i n) (DNA dna) = DNA $ G.slice i n dna
+
+-- |
+truncateDNA ::
+  forall m n. (KnownNat m, m <= n)
+  => DNA n
+  -> DNA m
+truncateDNA (DNA dna) = DNA $ G.take (fromIntegral $ natVal' (undefined :: Proxy# m)) dna
 
 {-
 -- |

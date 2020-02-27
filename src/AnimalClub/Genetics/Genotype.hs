@@ -1,5 +1,6 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds           #-}
+{-# LANGUAGE MagicHash           #-}
 
 {-|
 Module      : Genotype
@@ -50,8 +51,11 @@ import           Data.Bits
 import qualified Data.Vector.Generic      as G
 import           Data.Word
 import           Debug.Trace
-import           GHC.TypeLits
 import           Lens.Micro.Platform      (over, _1)
+
+import           GHC.Exts
+import           GHC.TypeLits
+import           GHC.TypeLits.Extra
 
 -- | this is just `StateT DNA (WriterT w (RandT g m))` unrolled
 -- Genotype is a Writer monad taking an taking an RNG and DNA as inputs
@@ -171,11 +175,11 @@ instance (Monoid w, RandomGen g, Monad m) => MonadRandom (GenotypeT n0 g w m) wh
 -- | apply a computation on a Gene
 -- this creates a new computation where DNA is the subsection of the original DNA as defined by the gene
 -- will throw an error if Gene is out of bounds of DNA being operated on
-usingGene :: forall s c n0 g w m a. (s+c <= n0, c <= n0) => Gene s c -> GenotypeT c g w m a -> GenotypeT n0 g w m a
+usingGene :: forall s c n0 g w m a. (KnownNat c, KnownNat n0, s+c <= n0) => Gene s c -> GenotypeT c g w m a -> GenotypeT n0 g w m a
 usingGene gene gt = GenotypeT func where
-  func :: forall (n1 :: Nat). (KnownNat n1, n0git  <= n1) => g -> DNA n1 -> m (a, g, w)
-  func g dna = unGenotypeT gt g (extractDNA gene dna)
-
+  -- `truncateDNA` is needed here as we can't decude `s+c <= n1` knowing `n0 <= n1` due to lack of transitivity :(
+  func :: forall (n1 :: Nat). (KnownNat n1, n0 <= n1) => g -> DNA n1 -> m (a, g, w)
+  func g dna = unGenotypeT gt g (extractDNA gene (truncateDNA dna :: DNA n0))
 
 
 -- TODO I guess drop the DNA wrapper and return a Vector to avoid type issues
@@ -183,16 +187,18 @@ usingGene gene gt = GenotypeT func where
 --gbDNA :: (Monoid w, Monad m) => GenotypeT g w m DNA
 --gbDNA = GenotypeT $ \g dna -> return (dna, g, mempty)
 
+-- TODO rename to GenotypeLength probably?
 -- | return length of DNA being computed on
-gbDNALength :: (Monoid w, Monad m) => GenotypeT n0 g w m Int
-gbDNALength = GenotypeT $ \g dna -> return (dnaLength dna, g, mempty)
+gbDNALength :: forall n0 g w m. (KnownNat n0, Monoid w, Monad m) => GenotypeT n0 g w m Int
+--gbDNALength = GenotypeT $ \g dna -> return (dnaLength dna, g, mempty)
+gbDNALength = GenotypeT $ \g dna -> return (fromIntegral $ natVal' (undefined :: Proxy# n0), g, mempty)
 
 -- | Computation that adds all genes of current genotype
 gbSum :: (Num a, Monoid w, Monad m) => GenotypeT n0 g w m a
 gbSum = GenotypeT $ \g dna -> return (dnaSum dna, g, mempty)
 
 -- | gbSum normalized to [0,1]
-gbNormalizedSum :: (Fractional a, Monoid w, Monad m) => GenotypeT n0 g w m a
+gbNormalizedSum :: (KnownNat n0, Fractional a, Monoid w, Monad m) => GenotypeT n0 g w m a
 gbNormalizedSum = do
   s <- gbSum
   l <- gbDNALength
@@ -203,13 +209,13 @@ gbNormalizedSum = do
 --gbNormalizedSum = liftA2 (\s l -> 0.125 * fromIntegral s / fromIntegral l) gbSum gbDNALength
 
 -- | Computation returns True if gbNormalizedSum > thresh, False otherwise
-gbSumRange :: (Fractional a, Monoid w, Monad m) => (a,a) -> GenotypeT n0 g w m a
+gbSumRange :: (KnownNat n0, Fractional a, Monoid w, Monad m) => (a,a) -> GenotypeT n0 g w m a
 gbSumRange (min',max') = do
   s <- gbNormalizedSum
   return $ min' + s * (max'-min')
 
 -- | Computation returns True if gbNormalizedSum > thresh, False otherwise
-gbNormalizedThresh :: (Monoid w, Monad m) => Float -> GenotypeT n0 g w m Bool
+gbNormalizedThresh :: (KnownNat n0, Monoid w, Monad m) => Float -> GenotypeT n0 g w m Bool
 gbNormalizedThresh thresh = do
   s <- gbNormalizedSum
   return $ s > thresh
@@ -218,13 +224,15 @@ gbNormalizedThresh thresh = do
 
 -- | Computation that sums a gene in two parts, treating the first part as a multiplier of the second part
 -- first 1/4 is multiplicative, last 3/4 is additive.
-gbTypical :: (Monoid w, Monad m) => (Float, Float) -> GenotypeT n0 g w m Float
+gbTypical :: forall n0 g w m. (Monoid w, Monad m) => (Float, Float) -> GenotypeT n0 g w m Float
 gbTypical (min_, max_) = do
   l <- gbDNALength
   let
     ml = l `quot` 4
-  x <- usingGene (Gene 0 ml) gbNormalizedSum
-  y <- usingGene (Gene ml (l-ml)) gbNormalizedSum
+    geneOne = Gene 0 ml :: Gene 0 (Div n0 4)
+    geneTwo = Gene ml (l-ml) :: Gene (Div n0 4) (n0 - Div n0 4)
+  x <- usingGene geneOne gbNormalizedSum
+  y <- usingGene geneTwo gbNormalizedSum
   return $ min_ + x * y * (max_ - min_)
 
 
@@ -241,7 +249,8 @@ gbRandomRanges ranges = do
       (min_, max_) = ranges !! i
       short = gbNormalizedSum >>= \x -> return $ min_ + (max_-min_) * x
       long = gbTypical (min_, max_)
-    usingGene (Gene (i*l) l) $ do
+      gene = Gene (i*l) l :: Gene (i * (Div n0 l0)) l0
+    usingGene gene $ do
       rn <- getRandom
       if l < 20 || rn then short else long
 
