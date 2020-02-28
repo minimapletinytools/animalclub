@@ -1,6 +1,7 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds           #-}
 {-# LANGUAGE MagicHash           #-}
+{-# OPTIONS_GHC -fplugin GHC.TypeLits.KnownNat.Solver #-}
 
 {-|
 Module      : Genotype
@@ -50,12 +51,15 @@ import           Control.Monad.Writer
 import           Data.Bits
 import qualified Data.Vector.Generic      as G
 import           Data.Word
+import Data.Coerce
 import           Debug.Trace
 import           Lens.Micro.Platform      (over, _1)
 
 import           GHC.Exts
 import           GHC.TypeLits
 import           GHC.TypeLits.Extra
+import Data.Constraint.Unsafe
+import Data.Constraint
 
 -- | this is just `StateT DNA (WriterT w (RandT g m))` unrolled
 -- Genotype is a Writer monad taking an taking an RNG and DNA as inputs
@@ -181,6 +185,12 @@ usingGene gene gt = GenotypeT func where
   func :: forall (n1 :: Nat). (KnownNat n1, n0 <= n1) => g -> DNA n1 -> m (a, g, w)
   func g dna = unGenotypeT gt g (extractDNA gene (truncateDNA dna :: DNA n0))
 
+-- | same as above except bounds are check at runtime rather then compile time
+-- thus hard to satisfy constraints are dropped
+usingGeneUnsafe :: forall s c n0 g w m a. (KnownNat c) => Gene s c -> GenotypeT c g w m a -> GenotypeT n0 g w m a
+usingGeneUnsafe gene gt = GenotypeT func where
+  func :: forall (n1 :: Nat). (KnownNat n1, n0 <= n1) => g -> DNA n1 -> m (a, g, w)
+  func g dna = unGenotypeT gt g (extractDNAUnsafe gene dna)
 
 -- TODO I guess drop the DNA wrapper and return a Vector to avoid type issues
 -- | return the DNA so you can do whatever on it
@@ -220,24 +230,29 @@ gbNormalizedThresh thresh = do
   s <- gbNormalizedSum
   return $ s > thresh
 
-
+-- doesn't seem to work :(
+instDivn04 :: KnownNat n0 :- (Div n0 4 <= n0)
+instDivn04 = unsafeCoerceConstraint :: KnownNat n0 :- (Div n0 4 <= n0)
 
 -- | Computation that sums a gene in two parts, treating the first part as a multiplier of the second part
 -- first 1/4 is multiplicative, last 3/4 is additive.
-gbTypical :: forall n0 g w m. (Monoid w, Monad m) => (Float, Float) -> GenotypeT n0 g w m Float
+gbTypical :: forall n0 g w m. (KnownNat n0, Monoid w, Monad m) => (Float, Float) -> GenotypeT n0 g w m Float
 gbTypical (min_, max_) = do
   l <- gbDNALength
   let
     ml = l `quot` 4
     geneOne = Gene 0 ml :: Gene 0 (Div n0 4)
     geneTwo = Gene ml (l-ml) :: Gene (Div n0 4) (n0 - Div n0 4)
-  x <- usingGene geneOne gbNormalizedSum
-  y <- usingGene geneTwo gbNormalizedSum
+
+  x <- usingGeneUnsafe geneOne gbNormalizedSum
+  y <- usingGeneUnsafe geneTwo gbNormalizedSum
   return $ min_ + x * y * (max_ - min_)
 
 
+
+
 -- | Computation that randomly creates several genes fitting the input range
-gbRandomRanges :: (RandomGen g, Monoid w, Monad m) => [(Float, Float)] -> GenotypeT n0 g w m [Float]
+gbRandomRanges :: (KnownNat n0, RandomGen g, Monoid w, Monad m) => [(Float, Float)] -> GenotypeT n0 g w m [Float]
 gbRandomRanges ranges = do
   gl <- gbDNALength
   let

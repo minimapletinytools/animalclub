@@ -89,6 +89,8 @@ dependencies:
 - storable-tuple
 - convertible
 - ghc-typelits-extra
+- ghc-typelits-knownnat
+- constraints
 
 library:
   source-dirs: src
@@ -203,19 +205,21 @@ verbatim: |
       mod-def-file: AnimalClubLib.def
     other-modules:       AnimalClub.ForeignBindings
     -- copy this part from library default-extensions section of hpack generated cabal file
-    default-extensions: InstanceSigs LambdaCase OverloadedStrings GADTs DeriveFunctor DeriveFoldable DeriveTraversable FlexibleInstances FlexibleContexts ScopedTypeVariables MultiWayIf TupleSections MultiParamTypeClasses
+    default-extensions: ApplicativeDo BangPatterns DataKinds ConstraintKinds DeriveFoldable DeriveFunctor DeriveTraversable DeriveGeneric DeriveLift DeriveTraversable DerivingStrategies EmptyCase ExistentialQuantification FlexibleContexts FlexibleInstances FunctionalDependencies GADTs GeneralizedNewtypeDeriving InstanceSigs KindSignatures LambdaCase MultiParamTypeClasses MultiWayIf NamedFieldPuns OverloadedStrings PatternSynonyms RankNTypes ScopedTypeVariables StandaloneDeriving TupleSections TypeApplications TypeFamilies TypeFamilyDependencies TypeOperators
     -- copy this part from library build-depends section of hpack generated cabal file
     build-depends:
-      MonadRandom
-      , QuickCheck
+        MonadRandom
       , adjunctions
       , array
       , base >=4.7 && <5
       , bytestring
       , clock
       , containers
+      , convertible
       , deepseq
       , formatting
+      , ghc-typelits-extra
+      , ghc-typelits-knownnat
       , linear
       , microlens-platform
       , monad-parallel
@@ -228,7 +232,7 @@ verbatim: |
       , text
       , time
       , vector
-      , convertible
+      , constraints
     hs-source-dirs:      src
     c-sources:
       csrc/animalclub.cpp

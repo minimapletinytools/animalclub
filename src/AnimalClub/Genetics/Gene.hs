@@ -17,6 +17,7 @@ module AnimalClub.Genetics.Gene (
   Gene(..),
   combineGene,
   extractDNA,
+  extractDNAUnsafe,
   truncateDNA,
   geneLength,
   geneSum,
@@ -47,13 +48,19 @@ combineGene :: Gene cs cc -- ^ child
 combineGene gt2 gt1 = Gene (_start gt1 + _start gt2) (_count gt2)
 
 -- | extractDNA extracts a Gene from DNA producing a new DNA that is the subsection of the original DNA as defined by the Gene
--- will throw an error if Gene is out of bounds of DNA being operated on
 extractDNA ::
   (s+c <= n)
   => Gene s c -- ^ Gene to extract
   -> DNA n -- ^ DNA to extract from
   -> DNA c
 extractDNA (Gene i n) (DNA dna) = DNA $ G.slice i n dna
+
+-- | same as above except bounds are checked at runtime
+extractDNAUnsafe ::
+  Gene s c -- ^ Gene to extract
+  -> DNA n -- ^ DNA to extract from
+  -> DNA c
+extractDNAUnsafe (Gene i n) (DNA dna) = DNA $ G.slice i n dna
 
 -- |
 truncateDNA ::
