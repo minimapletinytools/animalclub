@@ -90,6 +90,7 @@ dependencies:
 - convertible
 - ghc-typelits-extra
 - ghc-typelits-knownnat
+- ghc-typelits-natnormalise
 - constraints
 
 library:
@@ -220,6 +221,7 @@ verbatim: |
       , formatting
       , ghc-typelits-extra
       , ghc-typelits-knownnat
+      , ghc-typelits-natnormalise
       , linear
       , microlens-platform
       , monad-parallel

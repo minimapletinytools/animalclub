@@ -2,6 +2,7 @@
 {-# LANGUAGE DataKinds           #-}
 {-# LANGUAGE MagicHash           #-}
 {-# OPTIONS_GHC -fplugin GHC.TypeLits.KnownNat.Solver #-}
+{-# OPTIONS_GHC -fplugin GHC.TypeLits.Normalise #-}
 
 {-|
 Module      : Genotype
@@ -192,6 +193,7 @@ usingGeneUnsafe gene gt = GenotypeT func where
   func :: forall (n1 :: Nat). (KnownNat n1, n0 <= n1) => g -> DNA n1 -> m (a, g, w)
   func g dna = unGenotypeT gt g (extractDNAUnsafe gene dna)
 
+
 -- TODO I guess drop the DNA wrapper and return a Vector to avoid type issues
 -- | return the DNA so you can do whatever on it
 --gbDNA :: (Monoid w, Monad m) => GenotypeT g w m DNA
@@ -230,9 +232,6 @@ gbNormalizedThresh thresh = do
   s <- gbNormalizedSum
   return $ s > thresh
 
--- doesn't seem to work :(
-instDivn04 :: KnownNat n0 :- (Div n0 4 <= n0)
-instDivn04 = unsafeCoerceConstraint :: KnownNat n0 :- (Div n0 4 <= n0)
 
 -- | Computation that sums a gene in two parts, treating the first part as a multiplier of the second part
 -- first 1/4 is multiplicative, last 3/4 is additive.
@@ -244,8 +243,8 @@ gbTypical (min_, max_) = do
     geneOne = Gene 0 ml :: Gene 0 (Div n0 4)
     geneTwo = Gene ml (l-ml) :: Gene (Div n0 4) (n0 - Div n0 4)
 
-  x <- usingGeneUnsafe geneOne gbNormalizedSum
-  y <- usingGeneUnsafe geneTwo gbNormalizedSum
+  x <- usingGene geneOne gbNormalizedSum
+  y <- usingGene geneTwo gbNormalizedSum
   return $ min_ + x * y * (max_ - min_)
 
 
