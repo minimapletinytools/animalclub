@@ -18,23 +18,20 @@ module AnimalClub.Skellygen.Mesh (
 
 ) where
 
-import qualified AnimalClub.Skellygen.TRS     as TRS
-
 import           Control.DeepSeq
-import           Control.Monad.Writer.Lazy    (Writer, execWriter, tell)
-import           GHC.Generics                 (Generic)
+import           Control.Monad.Writer.Lazy   (Writer, execWriter, tell)
+import           GHC.Generics                (Generic)
 
 import           AnimalClub.Skellygen.Linear
 import           AnimalClub.Skellygen.TRS
-import           Data.Int                     (Int32)
-import qualified Data.List                    as L
-import           Data.Monoid                  (Monoid, mappend)
-import           Data.Semigroup               (Semigroup, (<>))
-import qualified Data.Vector.Storable         as V
-import           Foreign.Storable.Tuple
+import           Data.Int                    (Int32)
+import qualified Data.List                   as L
+import           Data.Monoid                 (Monoid, mappend)
+import           Data.Semigroup              (Semigroup, (<>))
+import qualified Data.Vector.Storable        as V
+import           Foreign.Storable.Tuple      ()
 
 import           Control.Monad.Primitive
-import qualified Data.Vector.Storable.Mutable as V
 
 
 type Face = (Int32,Int32,Int32)

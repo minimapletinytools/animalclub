@@ -1,8 +1,8 @@
 ::TODO::
--look into adding type level size parameter to DNA
+DONE/FAIL-look into adding type level size parameter to DNA
 DONE-figure out why applicative do causes things to crash
 -switch LocalMesh to use storable vector
--switch indentation to 2 spaces
+DONE-switch indentation to 2 spaces
   -in vim: :%s;^\(\s\+\);\=repeat(' ', len(submatch(0))/2);g
 -fix missing-home-module warning
 -finish lookAt function, and make its interface less weird

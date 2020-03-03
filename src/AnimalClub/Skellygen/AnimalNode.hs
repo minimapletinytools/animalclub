@@ -8,7 +8,7 @@ Stability   : experimental
 
 -}
 
---{-# OPTIONS_GHC -fno-warn-unused-top-binds #-}
+{-# OPTIONS_GHC -fno-warn-unused-top-binds #-}
 --{-# OPTIONS_GHC -fno-warn-unused-imports #-}
 
 {-# LANGUAGE TemplateHaskell #-}
@@ -20,6 +20,7 @@ Stability   : experimental
 
 module AnimalClub.Skellygen.AnimalNode (
   AbsOrRel(..),
+  unAbsOrRel,
 
   BoneFlag(..),
   BoneId(..),
@@ -42,10 +43,8 @@ module AnimalClub.Skellygen.AnimalNode (
   flipAnimalNode,
 ) where
 
-import           Control.DeepSeq
 import qualified Data.List                as L
 import qualified Data.Text                as T
-import           GHC.Generics             (Generic)
 import           Lens.Micro.Platform      (makeLenses, set)
 
 --import qualified Debug.Trace as Debug
@@ -106,7 +105,7 @@ defTransFlag ReflZ (BF_Left:xs)   = BF_Right:defTransFlag ReflZ xs
 defTransFlag ReflZ (BF_Right:xs)  = BF_Left:defTransFlag ReflZ xs
 defTransFlag ReflZ (x:xs)         = x:defTransFlag ReflZ xs
 defTransFlag ReflX (BF_Front:xs)  = BF_Back:defTransFlag ReflX xs
-defTransFlag ReflX (BF_Front:xs)  = BF_Back:defTransFlag ReflX xs
+defTransFlag ReflX (BF_Back:xs)   = BF_Front:defTransFlag ReflX xs
 defTransFlag ReflX (x:xs)         = x:defTransFlag ReflX xs
 defTransFlag ReflY (BF_Top:xs)    = BF_Bottom:defTransFlag ReflZ xs
 defTransFlag ReflY (BF_Bottom:xs) = BF_Top:defTransFlag ReflZ xs

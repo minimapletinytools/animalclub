@@ -17,7 +17,6 @@ module AnimalClub.Genetics.GenotypePar (
 
 import           AnimalClub.Genetics.Genotype
 
-import           Control.Applicative
 import           Control.Monad.Identity
 import           Control.Monad.Parallel
 import           Control.Monad.Random

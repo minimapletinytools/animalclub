@@ -74,8 +74,8 @@ data SkellyFunc a where
  WithBoneMatcher :: BoneMatcher -> BoneMethod a -> SkellyFunc a
 
 instance (Show a) => Show (SkellyFunc a) where
- show (WithBoneId bid m) = "with BoneId " ++ show bid ++ " " ++ show m
- show (WithBoneMatcher matech m) = "with matcher " ++ show m
+ show (WithBoneId bid m)        = "with BoneId " ++ show bid ++ " " ++ show m
+ show (WithBoneMatcher match m) = "with matcher " ++ show m
 
 -- | bone matchers are applied in ascending order of its priority
 newtype PrioritizedSkellyFunc a = PrioritizedSkellyFunc{ unPrioritizedSkellyFunc :: (Int, SkellyFunc a) }

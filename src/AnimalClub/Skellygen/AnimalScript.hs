@@ -35,7 +35,7 @@ data AnimalNode' a = AnimalNode' {
   , _m44Abs'    :: M44 a -- ^ absolute
   , _trs'       :: TRS a -- ^ rel to parent
   , _thickness' :: a -- ^rel to _trans
-  , _isPhantom'    :: Bool
+  , _isPhantom' :: Bool
   , _children'  :: [AnimalNode' a]
 }
 
@@ -110,10 +110,6 @@ applyAnimalPropertyMap ::
   -> AnimalNode' a -- ^ output
 applyAnimalPropertyMap props pn cn = outan where
   p_abs_m44 = _m44Abs' pn
-  p_abs_m44_inv = inv44 p_abs_m44
-
-  --p_abs_rot = _rot p_abs_trs
-  --p_abs_rot_inv = rotationInverse p_abs_rot
 
   c_rel_trs = _trs' cn
   c_rel_pos = _trans c_rel_trs
@@ -129,8 +125,6 @@ applyAnimalPropertyMap props pn cn = outan where
   --    c_rel_pos ^* ((bDist + _distance prop) / bDist)
 
   -- compute new rotation
-  --orient = fromEulerXYZ (V3 (pi/6) 0.0 0.0)
-  --orient = fromEulerXYZ (V3 0.0 (pi/6) 0.0)
   orient = _orientation prop
 
   c_rel_pos'' = rotate orient c_rel_pos'

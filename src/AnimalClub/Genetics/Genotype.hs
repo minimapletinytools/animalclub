@@ -47,7 +47,6 @@ import           Control.Monad.Identity
 import           Control.Monad.Parallel   (MonadParallel (..))
 import           Control.Monad.Random
 import           Control.Monad.Writer
-import           Debug.Trace
 import           Lens.Micro.Platform      (over, _1)
 
 -- | this is just `StateT DNA (WriterT w (RandT g m))` unrolled
@@ -172,7 +171,7 @@ gbSum = GenotypeT $ \g dna -> return (dnaSum dna, g, mempty)
 -- | gbSum normalized to [0,1]
 gbNormalizedSum :: (Fractional a, Monoid w, Monad m) => GenotypeT g w m a
 gbNormalizedSum = do
-  s <- gbSum
+  s :: Int <- gbSum
   l <- gbDNALength
   return $ if l == 0 then 0 else 0.125 * fromIntegral s / fromIntegral l
 

@@ -57,7 +57,6 @@ import           Control.DeepSeq
 import           GHC.Generics                (Generic)
 import           Lens.Micro.Platform
 import           Linear.Conjugate
-import           Linear.Epsilon
 
 -- | constraint kind needed for math operations to work properly (just use Float or Double in practice)
 type AnimalFloat a = (Conjugate a, RealFloat a, Epsilon a)
@@ -181,7 +180,7 @@ conv_Rotation_M33 :: (Num a) => Quaternion a -> M33 a
 conv_Rotation_M33 = fromQuaternion
 
 
-conv_Rotation_M44 :: (RealFloat a, Conjugate a) => Quaternion a -> M44 a
+conv_Rotation_M44 :: (RealFloat a) => Quaternion a -> M44 a
 conv_Rotation_M44 q = set (_w . _w) 1 (m33_to_m44 $ conv_Rotation_M33 q)
 
 -- how is this even compiling?
