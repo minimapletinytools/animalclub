@@ -74,7 +74,7 @@ applyFirstPass pn' cn = outan' where
   c_rel_rot = lookAtDefaultUp c_rel_pos
 
   -- put it all together for the final relative trs of the current child node
-  c_trs = TRS c_rel_pos c_rel_rot (conv_V3_Scale $ V3 1 1 1)
+  c_trs = TRS c_rel_pos c_rel_rot identityScale
 
   outan' = AnimalNode' {
     _name' = _name cn,

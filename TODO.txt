@@ -1,5 +1,4 @@
 ::TODO::
--switch LocalMesh to use storable vector
 -fix missing-home-module warning
 -finish lookAt function, and make its interface less weird
 -basic test cases
@@ -8,10 +7,12 @@
     -I think I did this already
   -try breeding to maximize volume and see what happens
   -try breeding to maximize bending joints and see what happens
--finish exporting genetics stuff to C++
 -change scale to V3 instead of M33
   -see comments in reduceBoneTrans in AnimalScript.hs
 -consider moving parts of Builder.hs into Genetics
+IGNORE-switch LocalMesh to use storable vector
+  -not really worth doing right now, needs a little extra work to actually make it more performant
+DONE-finish exporting genetics stuff to C++
 DONE-switch to hspec
 DONE/FAIL-look into adding type level size parameter to DNA
 DONE-figure out why applicative do causes things to crash

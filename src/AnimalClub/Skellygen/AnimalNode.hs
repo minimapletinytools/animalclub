@@ -137,12 +137,15 @@ composeBoneTrans ReflY ReflY = Same
 composeBoneTrans ReflZ ReflZ = Same
 composeBoneTrans x y         = ArbTrans $ applyBoneTrans x . applyBoneTrans y
 
+-- TODO change this to BoneTrans a -> M44 a -> M44 a
 -- | applies BoneTrans to a TRS
+-- note this is implemented using lossyScaleTRS so shear components are discarded
+-- this won't be an issue if the symmetries are well behaved (i.e. only reflection and scaling in a single axis before/after any rotations)
 applyBoneTrans :: (AnimalFloat a) => BoneTrans a -> TRS a -> TRS a
-applyBoneTrans Same = id
-applyBoneTrans ReflX = potatoMul (set scale (conv_V3_Scale $ V3 (-1) 1 1) identityTRS)
-applyBoneTrans ReflY = potatoMul (set scale (conv_V3_Scale $ V3 1 (-1) 1) identityTRS)
-applyBoneTrans ReflZ = potatoMul (set scale (conv_V3_Scale $ V3 1 1 (-1)) identityTRS)
+applyBoneTrans Same         = id
+applyBoneTrans ReflX        = lossyScaleTRS (V3 (-1) 1 1)
+applyBoneTrans ReflY        = lossyScaleTRS (V3 1 (-1) 1)
+applyBoneTrans ReflZ        = lossyScaleTRS (V3 1 1 (-1))
 applyBoneTrans (ArbTrans f) = f
 
 
