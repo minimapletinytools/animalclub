@@ -1,4 +1,8 @@
 ::TODO::
+-new test cases
+  -verify results of SkellyNode on worm test
+    -verify reflected sides are indeed reflections of each other locally
+    -verify that reflected sides are indeed reflections when parents are centered
 -fix missing-home-module warning
 -finish lookAt function, and make its interface less weird
 -basic test cases
@@ -7,9 +11,9 @@
     -I think I did this already
   -try breeding to maximize volume and see what happens
   -try breeding to maximize bending joints and see what happens
--change scale to V3 instead of M33
-  -see comments in reduceBoneTrans in AnimalScript.hs
 -consider moving parts of Builder.hs into Genetics
+DONE-change scale to V3 instead of M33
+  -see comments in reduceBoneTrans in AnimalScript.hs
 IGNORE-switch LocalMesh to use storable vector
   -not really worth doing right now, needs a little extra work to actually make it more performant
 DONE-finish exporting genetics stuff to C++

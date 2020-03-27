@@ -51,6 +51,7 @@ import           Lens.Micro.Platform      (makeLenses, set)
 
 import           AnimalClub.Skellygen.TRS
 
+import           Linear.Matrix            (M44)
 import           Linear.V3
 
 
@@ -119,7 +120,7 @@ defTransFlag (ArbTrans _) _       = error "don't do this"
 -- e.g. if you have two legs, you only need to add ReflX at the hips
 -- BoneTrans is applied to _trs'/_pos of AnimalNode'/AnimalNode respectively
 -- and by extension it also affects _orientation of AnimalProperty
-data BoneTrans a = Same | ReflX | ReflY | ReflZ | ArbTrans (TRS a -> TRS a)
+data BoneTrans a = Same | ReflX | ReflY | ReflZ | ArbTrans (M44 a -> M44 a)
 
 instance Show (BoneTrans a) where
   show Same         = "Same"
@@ -141,11 +142,11 @@ composeBoneTrans x y         = ArbTrans $ applyBoneTrans x . applyBoneTrans y
 -- | applies BoneTrans to a TRS
 -- note this is implemented using lossyScaleTRS so shear components are discarded
 -- this won't be an issue if the symmetries are well behaved (i.e. only reflection and scaling in a single axis before/after any rotations)
-applyBoneTrans :: (AnimalFloat a) => BoneTrans a -> TRS a -> TRS a
+applyBoneTrans :: (AnimalFloat a) => BoneTrans a -> M44 a -> M44 a
 applyBoneTrans Same         = id
-applyBoneTrans ReflX        = lossyScaleTRS (V3 (-1) 1 1)
-applyBoneTrans ReflY        = lossyScaleTRS (V3 1 (-1) 1)
-applyBoneTrans ReflZ        = lossyScaleTRS (V3 1 1 (-1))
+applyBoneTrans ReflX        = mul_Scale_M44 (V3 (-1) 1 1)
+applyBoneTrans ReflY        = mul_Scale_M44 (V3 1 (-1) 1)
+applyBoneTrans ReflZ        = mul_Scale_M44 (V3 1 1 (-1))
 applyBoneTrans (ArbTrans f) = f
 
 

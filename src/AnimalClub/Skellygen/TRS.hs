@@ -40,6 +40,7 @@ module AnimalClub.Skellygen.TRS
   -- scale operations
   , identityScale
   , conv_Scale_M33
+  , mul_Scale_M44
 
   -- quaternion/rotation operations
   , identityRotation
@@ -61,7 +62,7 @@ import           Lens.Micro.Platform
 import           Linear.Conjugate
 
 -- | constraint kind needed for math operations to work properly (just use Float or Double in practice)
-type AnimalFloat a = (Conjugate a, RealFloat a, Epsilon a)
+type AnimalFloat a = (Conjugate a, RealFloat a, Epsilon a, Show a)
 
 -- TODO you can probably get rid of these
 type Translation a = V3 a
@@ -113,7 +114,6 @@ fromTranslation :: (RealFloat a) => Translation a -> M44 a
 fromTranslation (V3 x y z) =
  V4 (V4 1 0 0 x) (V4 0 1 0 y) (V4 0 0 1 z) (V4 0 0 0 1)
 
-
 mul_M44_V3 :: (RealFloat a) => M44 a -> V3 a -> V3 a
 mul_M44_V3 m v =  normalizePoint $ m !* (point v)
 
@@ -126,8 +126,8 @@ mul_TRS_V3 trs (V3 x y z) = V3 x' y' z' where V4 x' y' z' _ = mul_TRS_V4 trs (V4
 mul_TRS_V4 :: (RealFloat a) => TRS a -> V4 a -> V4 a
 mul_TRS_V4 trs v = conv_TRS_M44 trs !* v
 
-
-
+mul_Scale_M44 :: (RealFloat a) => Scale a -> M44 a -> M44 a
+mul_Scale_M44 (V3 x y z) (V4 c1 c2 c3 c4) = V4 (x*^c1) (y*^c2) (z*^c3) c4
 
 
 identityScale :: (Num a) => Scale a

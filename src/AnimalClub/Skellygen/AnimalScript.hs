@@ -30,20 +30,21 @@ import           AnimalClub.Skellygen.TRS
 -- internal, converted from AnimalNode
 data AnimalNode' a = AnimalNode' {
   -- TODO rename this field
-  _name'        :: BoneId -- ^ name
-  , _boneTrans' :: BoneTrans a
-  , _m44Abs'    :: M44 a -- ^ absolute
-  , _trs'       :: TRS a -- ^ rel to parent
-  , _thickness' :: a -- ^rel to _trans
-  , _isPhantom' :: Bool
-  , _children'  :: [AnimalNode' a]
+  _name'          :: BoneId -- ^ name
+  , _boneTrans'   :: BoneTrans a
+  , _m44Abs'      :: M44 a -- ^ absolute
+  , _m44RelFinal' :: M44 a -- ^ relative and includes BoneTrans
+  , _trs'         :: TRS a -- ^ rel to parent, does not include BoneTrans
+  , _thickness'   :: a -- ^rel to _trans
+  , _isPhantom'   :: Bool
+  , _children'    :: [AnimalNode' a]
 }
 
 makeLenses ''AnimalNode'
 
 -- | sometimes helpful for root node cases
 dummyAnimalNode' :: (AnimalFloat a) => AnimalNode' a
-dummyAnimalNode' = AnimalNode' (BoneId "" []) Same identity identityTRS 1 True []
+dummyAnimalNode' = AnimalNode' (BoneId "" []) Same identity identity identityTRS 1 True []
 
 -- | converts AnimalNode to internal format superficially
 -- i.e. this takes care of converting the '_pos' parameter into the internal '_trs'' and '_m44Abs''
@@ -132,6 +133,8 @@ applyAnimalPropertyMap props pn cn = outan where
   -- update with new distance and rotation
   c_rel_trs_new = set rot (lookAtDefaultUp c_rel_pos'') (set trans c_rel_pos'' c_rel_trs)
 
+  c_rel_m44_new = conv_TRS_M44 c_rel_trs_new
+
   -- TODO at least switch to parMap
   -- inefficient recursion in recursion to update abs trans
   updatedChildren = map (update_m44Abs outan) (_children' cn)
@@ -146,7 +149,8 @@ applyAnimalPropertyMap props pn cn = outan where
     _isPhantom' = _isPhantom' cn,
     -- new stuff
     _trs' = c_rel_trs_new,
-    _m44Abs' = p_abs_m44 !*! conv_TRS_M44 c_rel_trs_new,
+    _m44Abs' = p_abs_m44 !*! c_rel_m44_new,
+    _m44RelFinal' = c_rel_m44_new, -- this will get updated with BoneTrans in the next pass
     _children' = map (applyAnimalPropertyMap props outan) updatedChildren
   }
 
@@ -163,18 +167,18 @@ reduceBoneTrans p c = c_new where
   -- apply BoneTrans to c
   p_abs_m44 = _m44Abs' p
   bt = _boneTrans' c
-  -- TODO switch to M44 here and create a new AnimalNode' type or something so we can switch TRS scale to just V3 instead of M33
+
   btf = applyBoneTrans bt
-  c_rel_trs_new = btf $ _trs' c
+  c_rel_m44_new = btf $ _m44RelFinal' c
 
   -- TODO copy toAnimalNode'' recursive call, it's cleaner IMO maybe not..
   -- just make it consistent...
 
   -- update absTrs in all nodes
   -- N.B, this step is not necessary as we currently aren't using absTrs after this point, but we still do it to future proof our data
-  -- first set abs and rel trs for current node
-  c_new' = set m44Abs' (p_abs_m44 !*! conv_TRS_M44 c_rel_trs_new) $ set trs' c_rel_trs_new c
-  -- then recompute abstrs in children
+  -- first set abs and rel m44 for current node
+  c_new' = set m44Abs' (p_abs_m44 !*! c_rel_m44_new) $ set m44RelFinal' c_rel_m44_new c
+  -- then recompute abs m44 in children
   c_new'' = set children' (map (update_m44Abs c_new') (_children' c_new')) c_new'
   -- for performance, don't bother doing anything in the Same case
   c_new''' = case _boneTrans' c of
@@ -212,15 +216,12 @@ toSkellyNode ::
   -> SN.SkellyNode a -- ^ skellygen node for current node
 toSkellyNode props cn =  outsn where
   prop = getAnimalProperty (_name' cn) props
-  cn_rel_trs = _trs' cn
   skellyChildren = map (toSkellyNode props) (_children' cn)
   outsn = SN.SkellyNode {
     SN._snDebugName = show (_name' cn),
     SN._snIsPhantom = _isPhantom' cn,
     SN._snChildren = skellyChildren,
-    SN._snTrs = cn_rel_trs,
-    --SN._trs = Debug.trace ("rel: " ++ show cn_rel_trs) cn_rel_trs,
-    --SN._trs = Debug.trace ("abs: " ++ show (_trsAbs' cn)) cn_rel_trs,
+    SN._snM44Rel = _m44RelFinal' cn,
     SN._snThickness = _skinParams prop * _thickness' cn -- combine with base thickness multiplicatively
   }
 
