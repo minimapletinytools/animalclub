@@ -48,7 +48,7 @@ wormNode n = mans (showT n) (Rel $ V3 0.5 0 0) (Rel 1) [wormNode (n-1)]
 worm :: (AnimalFloat a) => Int -> AnimalNode a
 worm segs = asPhantom $ mans (showT (segs-1)) (Rel 0) (Abs 0.1) [wormNode (segs-1)]
 
-wormGenome' :: (RandomGen g) => Int -> Int -> Genotype g [AnimalExp Float] ()
+wormGenome' :: (RandomGen g) => Int -> Int -> Genotype g [AnimalExp Float [Float]] ()
 wormGenome' segs dnaPerSeg = do forM_ [0..(segs-1)] wormSeg where
   --dnaPerSegOver4 = dnaPerSeg `div` 4
   dnaPerSegOver2 = dnaPerSeg `div` 2
@@ -67,7 +67,7 @@ wormGenome' segs dnaPerSeg = do forM_ [0..(segs-1)] wormSeg where
 wormGenome ::
  Int -- ^ number of segments
  -> Int -- ^ DNA length of each segment
- -> Genome StdGen [AnimalExp Float]
+ -> Genome StdGen [AnimalExp Float [Float]]
 wormGenome segs dnaPerSeg = Genome (segs*dnaPerSeg) (wormGenome' segs dnaPerSeg) (mkStdGen 0)
 
 
@@ -96,7 +96,7 @@ testWorm segs props = score where
 breedAndSelectWormPool :: (RandomGen g) =>
   (AnimalPropertyMap Float -> Float) -- ^ test function
   -- TODO consider packing this into its own type since they are used together a lot
-  -> ([BoneId], Genome StdGen [AnimalExp Float]) -- ^ worm
+  -> ([BoneId], Genome StdGen [AnimalExp Float [Float]]) -- ^ worm
   -> Float -- ^ mutation chance
   -> g -- ^ random generator
   -> (Int, Int) -- ^ size, # winners to go to next generation

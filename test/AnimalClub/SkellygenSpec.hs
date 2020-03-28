@@ -53,20 +53,14 @@ instance (Arbitrary a, AnimalFloat a) => Arbitrary (TRS a) where
   arbitrary = do
     t <- arbitrary
     r <- arbitrary
-    DiagM33 s <- arbitrary `suchThat` (not . nearZero . det33 . unDiagM33)
+    NonZeroV3 s <- arbitrary
     return $ TRS t r s
 
 prop_mul_TRS_V3 :: TRS Double -> V3 Double -> Bool
 prop_mul_TRS_V3 trs v = pass where
-  mul_TRS_V3' (TRS pt pr ps) ct = pt ^+^ (pr `rotate` (ps !* ct))
+  mul_TRS_V3' (TRS pt pr ps) ct = pt ^+^ (pr `rotate` (conv_Scale_M33 ps !* ct))
   p = mul_TRS_V3 trs v
   p' = mul_TRS_V3' trs v
-  pass = nearZero (p-p')
-
-prop_potatoMul :: TRS Double -> TRS Double -> Bool
-prop_potatoMul trs1 trs2 = pass where
-  p = conv_TRS_M44 $ potatoMul trs1 trs2
-  p' = conv_TRS_M44 trs1 !*! conv_TRS_M44 trs2
   pass = nearZero (p-p')
 
 prop_fromTo :: V3 Double -> V3 Double -> Bool
@@ -93,8 +87,6 @@ spec = do
   describe "TRS" $ do
     it "mul_TRS_V3 works as expected" $ property $
       prop_mul_TRS_V3
-    it "potatoMul works as expected" $ property $
-      prop_potatoMul
     it "fromTo works as expected" $ property $
       prop_fromTo
     describe "fromEulerXYZ" $

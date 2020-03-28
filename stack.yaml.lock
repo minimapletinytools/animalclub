@@ -5,19 +5,19 @@
 
 packages:
 - completed:
-    size: 6969
-    url: https://github.com/pdlla/linear-tests/archive/5f9fe85b15e60409d8e833eb54605286f14c400b.tar.gz
+    size: 7175
+    url: https://github.com/pdlla/linear-tests/archive/2b9d1e946d0329be6f2f6da2559ee7790b84f200.tar.gz
     cabal-file:
-      size: 1608
-      sha256: b5676a432a65560f85555ef61c63bdefd8b1290ff09ad19014f97a1bb4a9e1c5
+      size: 1678
+      sha256: 3178ff714bac0a405691ae5c211295046e88a7c5cfe96949846b4c78b0640251
     name: linear-tests
     version: 0.1.1.0
-    sha256: 15e73582200294e5d1b26a144303e551c7cc80ecde6ab04da08dd01c7d8cad01
+    sha256: ecd15ae9f61eba12e1ef2f03b251cda1157b1fd5742ef491369906defa4a9911
     pantry-tree:
-      size: 1117
-      sha256: 8b515270839b39fabbe1d2e10317814c7fe0b24ea3063adcaed9a201187e992a
+      size: 1119
+      sha256: cd6d5721c9cbce093994c927d8083c75f0b9b43785253b4676de8ba59750020a
   original:
-    url: https://github.com/pdlla/linear-tests/archive/5f9fe85b15e60409d8e833eb54605286f14c400b.tar.gz
+    url: https://github.com/pdlla/linear-tests/archive/2b9d1e946d0329be6f2f6da2559ee7790b84f200.tar.gz
 snapshots:
 - completed:
     size: 524799

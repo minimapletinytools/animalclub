@@ -44,6 +44,7 @@ data ATree a = ATree ((Either T.Text (SkellyFunc a), AutoGeneMethod a), [(DepFun
 
 
 -- | defines parameters for automatically creating genes
+-- genes express themselves as `AnimalExp a [a]`
 data AutoGeneMethod a =
   Normal (a, a) Int -- ^ normal distribution: (min, max) num_outputs
   deriving (Generic, NFData)
@@ -68,15 +69,14 @@ sfAutoGenome bmf (l,t,o)= [
  , (bmf defOrientation, Normal o 3)
  ]
 
--- FUTURE make it so that number of params are enforced at type level in (SkellyFunc, AutoGeneMethod)
 -- | automatically create genome from given lists of properties
--- this version does no overlap. All properties are independent
+-- this version does no overlap genes. All properties are independent
 makeGenomeFromPropertiesSimple ::
   (AnimalFloat a)
   => Int -- ^ DNA length (vector length / 4)
   -> [(T.Text, AutoGeneMethod a)] -- ^ other properties
   -> [(SkellyFunc a, AutoGeneMethod a)] -- ^ skellygen properties, values in SkellyFunc are used as starting values
-  -> Genome StdGen [AnimalExp a] -- ^ output genome
+  -> Genome StdGen [AnimalExp a [a]] -- ^ output genome
 makeGenomeFromPropertiesSimple dnasz ops sfps = Genome dnasz geneBuilder (mkStdGen 0) where
   -- combine other properties and skellygen properties into a single list
   aps = map (over _1 Left) ops ++ map (over _1 Right) sfps
@@ -97,5 +97,5 @@ makeGenomeFromPropertiesSimple dnasz ops sfps = Genome dnasz geneBuilder (mkStdG
             --trace ((show $ n * gtsize `div` cnt) ++ " ! " ++ (show $ gtsize `div` cnt)) $  gbPush (Gene (n * gtsize `div` cnt) (gtsize `div` cnt))
             usingGene (Gene (n * gtsize `div` cnt) (gtsize `div` cnt)) $ gbSumRange range
           case x of
-            Left t   -> tell [ExpFloats t vals]
+            Left t   -> tell [ExpUser t vals]
             Right sf -> tell [ExpSkellyFunc (addValuesToSkellyFunc sf vals)]

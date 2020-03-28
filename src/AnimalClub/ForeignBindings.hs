@@ -67,7 +67,7 @@ foreign export ccall breed_hs :: CInt -> Ptr CChar -> Ptr CChar -> Ptr CChar -> 
 goatSize :: Int
 goatSize = 10000
 
-goatGenome :: Genome StdGen [AnimalExp Float]
+goatGenome :: Genome StdGen [AnimalExp Float [Float]]
 goatGenome = makeGenomeFromPropertiesSimple goatSize [] goatPropertyList
 
 random_goat_hs :: IO (StablePtr DNA)

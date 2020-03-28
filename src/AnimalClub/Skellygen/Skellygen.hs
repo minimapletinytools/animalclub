@@ -29,7 +29,7 @@ data SkellyNode a = SkellyNode
   _snDebugName   :: String
   , _snIsPhantom :: Bool
   , _snChildren  :: [SkellyNode a]
-  , _snTrs       :: TRS a -- ^ relative to parent
+  , _snM44Rel    :: M44 a -- ^ relative to parent
   , _snThickness :: a -- ^ base physical size of joint.
   } deriving (Show, Generic, NFData)
 
@@ -51,7 +51,7 @@ _normalize v = (1 / norm v) *^ v
 -- TODO it's better to write this function where it takes a thickness square at the origin facing neutral and apply the transformation to it
 generateSingleLocalMesh ::
   (AnimalFloat a)
-  => TRS a -- ^ input node transform
+  => M44 a -- ^ input node transform
   -> a -- ^ input thickness
   -> a -- ^ node parent thickness
   -> LocalMesh a -- ^ output mesh
@@ -60,8 +60,8 @@ generateSingleLocalMesh pos ct pt =
   then LocalMesh ([], [])
   else LocalMesh (startPoints ++ endPoints, sides ++ caps)
  where
+  end' = view translation pos
   start' = V3 0 0 0
-  end' = _trans pos
   length' = norm (end' - start')
   normalized = _normalize $ end' - start'
   start = start' --  - ex *^ normalized
@@ -90,13 +90,13 @@ _generateLocalMesh ::
   -> LocalMesh a -- ^ output mesh
 _generateLocalMesh p_snM44 p_thick skn = selfLocalMesh <> mconcat cmeshes where
  thick = _snThickness skn
- reltrs = _snTrs skn
+ relm44 = _snM44Rel skn
  --selfLocalMesh = Debug.trace ("skn: " ++ (show (_snDebugName skn)) ++ " p: " ++ show (_trans p_snTrs) ++ " c: " ++ show (_trans reltrs)) $
  --selfLocalMesh = Debug.trace ("sknabs: " ++ show abstrs ++ " p: " ++ show (_rot p_snTrs) ++ " c: " ++ show (_rot reltrs)) $
  selfLocalMesh = if _snIsPhantom skn
   then emptyLocalMesh
-  else transformLocalMeshM44 p_snM44 $ generateSingleLocalMesh reltrs thick p_thick
- absM44 = p_snM44 !*! conv_TRS_M44 reltrs
+  else transformLocalMeshM44 p_snM44 $ generateSingleLocalMesh relm44 thick p_thick
+ absM44 = p_snM44 !*! relm44
  cmeshes = map (_generateLocalMesh absM44 thick) (_snChildren skn)
 
 
