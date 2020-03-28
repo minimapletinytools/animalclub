@@ -1,4 +1,5 @@
 ::TODO::
+-fix circleci [![CircleCI](https://circleci.com/gh/pdlla/animalclub.svg?style=svg)](https://circleci.com/gh/pdlla/animalclub)
 -new test cases
   -verify results of SkellyNode on worm test
     -verify reflected sides are indeed reflections of each other locally

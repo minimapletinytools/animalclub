@@ -1,15 +1,11 @@
-[![CircleCI](https://circleci.com/gh/pdlla/animalclub.svg?style=svg)](https://circleci.com/gh/pdlla/animalclub)
+# animalclub (WIP)
 
-
-# animalclub
-
-_Animal Club_ (_AC_) is still in development. I'm working hard on a first release!! Each "animal" is made of _DNA_ and several _Genotypes_ written in a special purpose Monad. Using the _Skellygen_ and _Animal_ module, the animal's _Genome_ can be mapped onto a parameterized mesh generator to create unique 3D meshes for each genetic expression of the animal.
+_Animal Club_ (AC) is still in development. Each "animal" is made of `DNA` and several `Genotype`s written in a special purpose monad. Using the `Skellygen` and `Animal` module, the animal's `Genome` can be mapped onto a parameterized mesh generator to create unique 3D meshes for each genetic expression of the animal.
 
 # genetics
+`Genetics` is a general purpose genetic expression module. `DNA` is a bit array. When breeding two `DNA`s, 1 bit out of every 2 from each parent is randomly chosen and put together to be the the 2 new bits of child's `DNA`.
 
-The _Animal Club_  _Genetics_ module is a general purpose genetic expression library written in Haskell. _DNA_ is a bit array. When breeding two _DNAs_, 1 bit out of every 2 from each parent is randomly chosen and put together to be the the 2 new bits of child's _DNA_.
-
-_Gene_ is a computation on an indexed subset of _DNA_. The _Genotype_ monad is a Writer / State monad for creating computations on _Genes_. _AC_ includes several basic computations for either strategically or randomly creating these computations. The State portion contains hierarchical info about what part of the _DNA_ (_Genes_) to operate on. The writer portion is where the user writes out computed values with string labels to be read by another program. A typical usage might look something like this:
+`Gene` is a computation on an indexed subset of `DNA`. The `Genotype` monad is a Writer / State monad for creating computations on `Genes`. AC includes several basic computations for either strategically or randomly creating these computations. The State portion contains hierarchical info about what part of the `DNA` (Genes) to operate on. The writer portion is where the user writes out computed values with string labels to be read by another program. A typical usage might look something like this:
 
 ```haskell
 import           AnimalClub.Genetics
@@ -25,17 +21,29 @@ example = do
     gbRandomRanges [(0,1) | _ <-[(0::Int)..9]] >>= tellGenes "Some Label 3"
 ```
 
-![worm bread to curl in a circle with sinusoidal girth](worm.png)
+This is a worm that was bred to curl into a circle with sinusoidal growth:
+
+![worm bred to curl in a circle with sinusoidal girth](worm.png)
 
 # skellygen
 
-The _Skellygen_ module contains a special parameterizable mesh generating data structure. It's rather esoteric but works.
+The `Skellygen` module contains a special parametrizable mesh generating data structure. It's rather esoteric but totally works.
+
+Here is a goat generated using `Skellygen`
 
 ![goat generated using skellygen](goat.png)
 
 # animals
+The `Animals` module bridges `Genetics` and `Skellygen`.
 
-The _Animals_ module bridges _Genetics_ and _Skellygen_. It also contains several helper methods for automatically generating _Genotypes_ by specifying only a high level overview.
+It has two components.
+
+`Animal` contains methods for creating a base skeleton upon which phenotypes from `Genetics` are then applied.
+
+`Builders` contains methods for automatically generating `Genotype`s based on a high level specification.
+
+# foreign bindings
+The `ForeignBindings` module creates a dynamically linked C library that exposes some methods in `Genetics` and `Skellygen`.
 
 # roadmap
-Coming soon ~~_AC_ comes with relevant C bindings. You'll still need to write and compile your animals in Haskell and these can be manipulated from C.~~
+Next step is to finish [goatbreeder](https://github.com/pdlla/goatbreeder) which is is the example use case and testing environment for `AnimalClub`. It lets you click to choose which goats you want to breed.
