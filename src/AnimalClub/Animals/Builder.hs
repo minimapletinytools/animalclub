@@ -69,9 +69,8 @@ sfAutoGenome bmf (l,t,o)= [
  , (bmf defOrientation, Normal o 3)
  ]
 
--- FUTURE make it so that number of params are enforced at type level in (SkellyFunc, AutoGeneMethod)
 -- | automatically create genome from given lists of properties
--- this version does no overlap. All properties are independent
+-- this version does no overlap genes. All properties are independent
 makeGenomeFromPropertiesSimple ::
   (AnimalFloat a)
   => Int -- ^ DNA length (vector length / 4)

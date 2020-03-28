@@ -71,7 +71,7 @@ manbt ::
 manbt n f bt p t c = AnimalNode (BoneId n f) bt p t False c
 
 
--- TODO add something like ExpSkellyFuncPrioritized
+-- TODO add something like ExpSkellyFuncPrioritized (and I guess ExpSkellyFunc can have priority 0)
 -- | various output expression of an animal genotype
 data AnimalExp a b =
   -- built in data type for bytestrings
