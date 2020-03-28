@@ -14,7 +14,7 @@ import           Text.Printf                 (printf)
 
 main :: IO ()
 main = do
- --writeExampleObjs
+ writeExampleObjs
  printf "Breeding goats...\n" :: IO ()
  gen <- getStdGen
  let

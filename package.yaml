@@ -92,6 +92,7 @@ dependencies:
 library:
   source-dirs: src
   exposed-modules:
+    - AnimalClub
     # Genetics
     - AnimalClub.Genetics
     - AnimalClub.Genetics.DNA
