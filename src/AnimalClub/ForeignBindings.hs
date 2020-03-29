@@ -36,25 +36,25 @@ import           System.Random
 import           Debug.Trace
 
 breed_hs ::
- CInt -- ^ random seed
- -> Ptr CChar -- ^ DNA bytes 1
- -> Ptr CChar -- ^ DNA bytes 2
- -> Ptr CChar -- ^ DNA output
- -> CSize -- ^ DNA size
- -> IO () -- ^ 😱
+  CInt -- ^ random seed
+  -> Ptr CChar -- ^ DNA bytes 1
+  -> Ptr CChar -- ^ DNA bytes 2
+  -> Ptr CChar -- ^ DNA output
+  -> CSize -- ^ DNA size
+  -> IO () -- ^ 😱
 breed_hs seed dna1' dna2' outdna' size = do
- dna1 <- newForeignPtr_ . castPtr $ dna1'
- dna2 <- newForeignPtr_ . castPtr $ dna2'
- outdna <-  newForeignPtr_ . castPtr $ outdna'
- let
-  gen = mkStdGen (convert seed)
-  dna1v = V.unsafeFromForeignPtr0 dna1 (convert size) :: DNA
-  dna2v = V.unsafeFromForeignPtr0 dna2 (convert size) :: DNA
-  outdnav = V.unsafeFromForeignPtr0 outdna (convert size) :: DNA
-  -- TODO implement an MVector version of breed that stores results in place
-  newdna = breed gen dna1v dna2v
- outdnamv <- V.unsafeThaw outdnav
- V.copy outdnamv newdna
+  dna1 <- newForeignPtr_ . castPtr $ dna1'
+  dna2 <- newForeignPtr_ . castPtr $ dna2'
+  outdna <-  newForeignPtr_ . castPtr $ outdna'
+  let
+    gen = mkStdGen (convert seed)
+    dna1v = V.unsafeFromForeignPtr0 dna1 (convert size) :: DNA
+    dna2v = V.unsafeFromForeignPtr0 dna2 (convert size) :: DNA
+    outdnav = V.unsafeFromForeignPtr0 outdna (convert size) :: DNA
+    -- TODO implement an MVector version of breed that stores results in place
+    newdna = breed gen dna1v dna2v
+  outdnamv <- V.unsafeThaw outdnav
+  V.copy outdnamv newdna
 
 foreign export ccall breed_hs :: CInt -> Ptr CChar -> Ptr CChar -> Ptr CChar -> CSize -> IO ()
 
@@ -72,55 +72,55 @@ goatGenome = makeGenomeFromPropertiesSimple goatSize [] goatPropertyList
 
 random_goat_hs :: IO (StablePtr DNA)
 random_goat_hs = do
- gen <- getStdGen
- newStablePtr (makeRandDNA gen goatSize)
+  gen <- getStdGen
+  newStablePtr (makeRandDNA gen goatSize)
 
 free_goat_hs :: StablePtr DNA -> IO ()
 free_goat_hs = freeStablePtr
 
 breed_goat_hs :: StablePtr DNA -> StablePtr DNA -> IO (StablePtr DNA)
 breed_goat_hs ptr1 ptr2 = do
- dna1 <- deRefStablePtr ptr1
- dna2 <- deRefStablePtr ptr2
- gen <- getStdGen
- newStablePtr $ breed gen dna1 dna2
+  dna1 <- deRefStablePtr ptr1
+  dna2 <- deRefStablePtr ptr2
+  gen <- getStdGen
+  newStablePtr $ breed gen dna1 dna2
 
 type CCMesh = (Ptr CFloat, CInt, Ptr CInt, CInt)
 
 -- | caller is responsible for freeing memory by calling free_goat_mesh_hs
 goat_mesh_hs :: StablePtr DNA -> IO (Ptr CCMesh)
 goat_mesh_hs goatPtr = do
- dna <- deRefStablePtr goatPtr
- let
-  goatProps = generateAnimalProperties (makeBoneIdList goatAnimalNode) $ evalGenome goatGenome dna
-  skelly = animalNodeToSkellyNodeWithProps goatProps goatAnimalNode
-  CMesh verts faces = toCMesh . generateLocalMesh $ skelly
-  vl = V.length verts
-  fl = V.length faces
- vptr <- mallocArray vl :: IO (Ptr (V3 Float))
- fptr <- mallocArray fl :: IO (Ptr (Int32,Int32,Int32))
- vfptr <- newForeignPtr_ vptr
- ffptr <- newForeignPtr_ fptr
- V.copy (MV.unsafeFromForeignPtr0 vfptr vl) verts
- V.copy (MV.unsafeFromForeignPtr0 ffptr fl) faces
- r <- new (castPtr vptr, convert vl * 3, castPtr fptr, convert fl * 3)
- return r
+  dna <- deRefStablePtr goatPtr
+  let
+    goatProps = generateAnimalProperties (makeBoneIdList goatAnimalNode) $ evalGenome goatGenome dna
+    skelly = animalNodeToSkellyNodeWithProps goatProps goatAnimalNode
+    CMesh verts faces = toCMesh . generateLocalMesh $ skelly
+    vl = V.length verts
+    fl = V.length faces
+  vptr <- mallocArray vl :: IO (Ptr (V3 Float))
+  fptr <- mallocArray fl :: IO (Ptr (Int32,Int32,Int32))
+  vfptr <- newForeignPtr_ vptr
+  ffptr <- newForeignPtr_ fptr
+  V.copy (MV.unsafeFromForeignPtr0 vfptr vl) verts
+  V.copy (MV.unsafeFromForeignPtr0 ffptr fl) faces
+  r <- new (castPtr vptr, convert vl * 3, castPtr fptr, convert fl * 3)
+  return r
 
 free_goat_mesh_hs :: Ptr CCMesh -> IO ()
 free_goat_mesh_hs ptr = do
- (pt1,_,pt2,_) <- peek ptr
- free pt1
- free pt2
- free ptr
+  (pt1,_,pt2,_) <- peek ptr
+  free pt1
+  free pt2
+  free ptr
 
 dump_goat_hs :: StablePtr DNA -> IO ()
 dump_goat_hs goatPtr = do
- dna <- deRefStablePtr goatPtr
- let
-  goatProps = generateAnimalProperties (makeBoneIdList goatAnimalNode) $ evalGenome goatGenome dna
-  skelly = animalNodeToSkellyNodeWithProps goatProps goatAnimalNode
-  mesh = generateLocalMesh $ skelly
- putStrLn (meshToObj mesh)
+  dna <- deRefStablePtr goatPtr
+  let
+    goatProps = generateAnimalProperties (makeBoneIdList goatAnimalNode) $ evalGenome goatGenome dna
+    skelly = animalNodeToSkellyNodeWithProps goatProps goatAnimalNode
+    mesh = generateLocalMesh $ skelly
+  putStrLn (meshToObj mesh)
 
 foreign export ccall random_goat_hs :: IO (StablePtr DNA)
 foreign export ccall free_goat_hs :: StablePtr DNA -> IO ()
