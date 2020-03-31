@@ -5,6 +5,8 @@
 module AnimalClub.Skellygen.Mesh (
   LocalMesh(..),
   emptyLocalMesh,
+  PotatoMesh(..),
+  emptyPotatoMesh,
   meshToObj,
   transformLocalMesh,
   transformLocalMeshM44,
@@ -28,6 +30,7 @@ import           Data.Int                    (Int32)
 import qualified Data.List                   as L
 import           Data.Monoid                 (Monoid, mappend)
 import           Data.Semigroup              (Semigroup, (<>))
+import qualified Data.Text                   as T
 import qualified Data.Vector.Storable        as V
 import           Foreign.Storable.Tuple      ()
 
@@ -42,6 +45,17 @@ data LocalMesh a = LocalMesh ([V3 a], [Face]) deriving (Show, Generic, NFData)
 emptyLocalMesh :: LocalMesh a
 emptyLocalMesh = LocalMesh ([],[])
 
+data PotatoMesh a = PotatoMesh {
+  positions   :: [V3 a]
+  , normals   :: [V3 a]
+  , texCoords :: [V2 a]
+  , indices   :: [Face]
+}
+
+emptyPotatoMesh = PotatoMesh [] [] [] []
+
+
+
 map3Tuple :: (a->b) -> (a,a,a) -> (b,b,b)
 map3Tuple f (a1,a2,a3) = (f a1, f a2, f a3)
 
@@ -53,18 +67,29 @@ instance Monoid (LocalMesh a) where
   mempty = LocalMesh ([],[])
   mappend = (<>)
 
-tellV3 :: (Show a) =>  V3 a -> Writer String ()
-tellV3 v = do
-  tell "v "
-  mapM_ (\tv -> tell $ show tv ++ " ") $ v
+showText :: Show a => a -> T.Text
+showText = T.pack . show
+
+tellV :: (Show a, Traversable t) => T.Text -> t a -> Writer T.Text ()
+tellV key v = do
+  tell (key <> " ")
+  mapM_ (\tv -> tell $ showText tv <> " ") $ v
   tell "\n"
 
--- TODO change this to Data.Text
-meshToObj :: (Show a) => LocalMesh a -> String
+
+meshToObj :: (Show a) => LocalMesh a -> T.Text
 meshToObj (LocalMesh m) = execWriter $ do
   tell "#beginning of mesh obj file \ng\n"
-  mapM_ tellV3 $ fst m
-  mapM_ (\(a1,a2,a3) -> tell $ "f " ++ show (a1+1) ++ " " ++ show (a2+1) ++ " " ++ show (a3+1) ++ "\n") . snd $ m
+  mapM_ (tellV "v") $ fst m
+  mapM_ (\(a1,a2,a3) -> tell $ "f " <> showText (a1+1) <> " " <> showText (a2+1) <> " " <> showText (a3+1) <> "\n") . snd $ m
+
+potatoMeshToObj :: (Show a) => PotatoMesh a -> T.Text
+potatoMeshToObj (PotatoMesh p n tc i) = execWriter $ do
+  tell "#beginning of mesh obj file \ng\n"
+  mapM_ (tellV "v") p
+  mapM_ (tellV "vn") n
+  mapM_ (tellV "vt") tc
+  mapM_ (\(a1,a2,a3) -> tell $ "f " <> showText (a1+1) <> " " <> showText (a2+1) <> " " <> showText (a3+1) <> "\n") $ i
 
 transformLocalMesh :: (AnimalFloat a) => TRS a -> LocalMesh a -> LocalMesh a
 transformLocalMesh trs (LocalMesh (verts, inds)) =  LocalMesh (map mapfn verts, inds) where
@@ -85,6 +110,7 @@ toCMesh :: (V.Storable a) => LocalMesh a -> CMesh a
 toCMesh (LocalMesh (verts, faces)) = CMesh verts' faces' where
  verts' = V.unfoldr L.uncons verts
  faces' = V.unfoldr L.uncons faces
+
 
 
 

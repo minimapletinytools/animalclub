@@ -7,7 +7,7 @@ module AnimalClubSpec (
 import           Test.Hspec
 import           Test.HUnit
 
--- test that symmetries are preserved
+-- TODO test that symmetries are preserved
 --spec_symmetry :: Spec
 --spec_symmetry = do
 

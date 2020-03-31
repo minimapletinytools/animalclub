@@ -15,6 +15,7 @@ import           AnimalClub.Skellygen
 import           AnimalClub.Skellygen.Mesh
 
 import           Data.List                 (unfoldr)
+import qualified Data.Text.IO              as T
 import           System.Random
 import           Text.Printf               (printf)
 
@@ -45,4 +46,4 @@ main = do
     bestWorm = last bestWorms
     bestWormProps = generateAnimalProperties wormBones $ evalGenome genome bestWorm
     skelly = animalNodeToSkellyNodeWithProps bestWormProps (baseWorm)
-  writeFile "wigglyworm.obj" . meshToObj . generateLocalMesh $ skelly
+  T.writeFile "wigglyworm.obj" . meshToObj . generateLocalMesh $ skelly

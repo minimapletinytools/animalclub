@@ -22,6 +22,40 @@ import           AnimalClub.Skellygen.TRS
 
 import qualified Debug.Trace                  as Debug
 
+
+
+{-
+  cube indexing for 'generateSingleLocalMesh' and 'generateSinglePotatoMesh'
+  coordinates interpreted looking in direction of limb (from parent to child)
+
+
+          start
+          0-------1
+        / |     / |
+       3-------2  |
+       |  4----|--5
+       | /     | /
+       7-------6
+           end
+
+           y
+           | z
+           |/
+       x---/
+
+  (actually the current implementation is offset by 45 degrees)
+
+  uv mapping of one face
+  (0,0)   (1,0)
+  0-------1
+  |       |
+  |       |
+  3-------2
+  (0,1)   (1,1)
+-}
+
+
+
 -- |
 -- prefixed names due to unfortunate naming conflict with AnimalNode
 data SkellyNode a = SkellyNode
@@ -57,7 +91,7 @@ generateSingleLocalMesh ::
   -> LocalMesh a -- ^ output mesh
 generateSingleLocalMesh pos ct pt =
  if length' < 1e-6
-  then LocalMesh ([], [])
+  then emptyLocalMesh
   else LocalMesh (startPoints ++ endPoints, sides ++ caps)
  where
   end' = view translation pos
@@ -79,8 +113,61 @@ generateSingleLocalMesh pos ct pt =
    mapfn a = end ^+^ normalAxis npt where
     npt = V3 (ct * cos a) 0 (ct * sin a)
 
-  sides = [(0, 4, 1), (1, 4, 5), (1, 5, 2), (2, 5, 6), (2, 6, 7), (3, 2, 7), (3, 7, 0), (0, 7, 4)]
-  caps = [(0, 1, 2), (2, 3, 0), (4, 5, 6), (6, 7, 4)]
+  sides = [(0, 1, 4), (5, 4, 1), (1, 2, 5), (6, 5, 2), (2, 3, 6), (7, 6, 3), (3, 0, 7), (4, 7, 0)]
+  caps = [(0, 1, 3), (2, 3, 1), (6, 7, 5), (4, 5, 7)]
+
+-- same as above but formats different and adds normals + uvs
+generateSinglePotatoMesh ::
+  (AnimalFloat a)
+  => M44 a -- ^ input node transform
+  -> a -- ^ input thickness
+  -> a -- ^ node parent thickness
+  -> PotatoMesh a -- ^ output mesh
+generateSinglePotatoMesh pos ct pt =
+ if length' < 1e-6
+  then emptyPotatoMesh
+  else r
+ where
+  end' = view translation pos
+  start' = V3 0 0 0
+  length' = norm (end' - start')
+  normalized = _normalize $ end' - start'
+  start = start' --  - ex *^ normalized
+  end = end' -- + ey *^ normalized
+
+  -- TODO normalAxis should use the up direction of pos
+  normalAxis = rotate (fromTo (V3 0 1 0) normalized)
+
+  startPoints = map mapfn [i * pi / 2.0 | i <- [0,1,2,3]] where
+   mapfn a = start ^+^ normalAxis npt where
+    npt = V3 (pt * cos a) 0 (pt * sin a)
+
+  endPoints = map mapfn [i * pi / 2.0 | i <- [0,1,2,3]] where
+   mapfn a = end ^+^ normalAxis npt where
+    npt = V3 (ct * cos a) 0 (ct * sin a)
+
+  allPoints = startPoints ++ endPoints
+
+  sides = [(0, 1, 4), (5, 4, 1), (1, 2, 5), (6, 5, 2), (2, 3, 6), (7, 6, 3), (3, 0, 7), (4, 7, 0)]
+  caps = [(0, 1, 3), (2, 3, 1), (6, 7, 5), (4, 5, 7)]
+  allIndices = sides ++ caps
+
+  sideNormals = [V3 0 0 1, V3 0 0 1, V3 (-1) 0 0, V3 (-1) 0 0, V3 1 0 0, V3 1 0 0, V3 1 0 0, V3 1 0 0]
+  capNormals = [V3 0 1 0, V3 0 1 0, V3 0 (-1) 0, V3 0 (-1) 0]
+  allNormals = sideNormals ++ capNormals
+
+  -- rendy requires same buffer indices for position, normal and tex coords
+  -- therefore we reindex everything and duplicate positions/normals
+  p = map (\(a,b,c) -> [(allPoints !! a), (allPoints !!b), (allPoints !!c)]) allIndices
+  n = map (\(a,b,c) -> [(allNormals !! a), (allNormals !!b), (allNormals !!c)]) allIndices
+  tc = take 6 . repeat $ [V2 0 0 , V2 1 0, V2 0 1, V2 1 1, V2 0 1, V2 1 0]
+  i = [(x+0, x+1, x+2)| y <- [0..11], let x = y*3]
+  r = PotatoMesh {
+      positions = mconcat p
+      , normals = mconcat n
+      , texCoords = mconcat tc
+      , indices = i
+    }
 
 _generateLocalMesh ::
   (AnimalFloat a)

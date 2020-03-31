@@ -6,15 +6,15 @@ module AnimalClub.Animals.Examples (
 ) where
 
 import           AnimalClub.Animals.Examples.Goat
-
 import           AnimalClub.Skellygen
 import           AnimalClub.Skellygen.Mesh
+import qualified Data.Text.IO                     as T
 
 
 -- | write the example skeletons
 writeExampleObjs :: IO ()
 writeExampleObjs = do
-    writeFile "goat.obj" . meshToObj . generateLocalMesh . animalNodeToSkellyNode $ goatAnimalNode
-    writeFile "worm.obj" . meshToObj . generateLocalMesh . animalNodeToSkellyNode $ worm
-    writeFile "worm2.obj" . meshToObj . generateLocalMesh . animalNodeToSkellyNode $ worm2
-    writeFile "octopus.obj" . meshToObj . generateLocalMesh . animalNodeToSkellyNode $ octopusWorm
+    T.writeFile "goat.obj" . meshToObj . generateLocalMesh . animalNodeToSkellyNode $ goatAnimalNode
+    T.writeFile "worm.obj" . meshToObj . generateLocalMesh . animalNodeToSkellyNode $ worm
+    T.writeFile "worm2.obj" . meshToObj . generateLocalMesh . animalNodeToSkellyNode $ worm2
+    T.writeFile "octopus.obj" . meshToObj . generateLocalMesh . animalNodeToSkellyNode $ octopusWorm

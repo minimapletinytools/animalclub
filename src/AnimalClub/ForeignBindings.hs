@@ -31,6 +31,7 @@ import qualified Data.Vector.Storable.Mutable as MV
 import           Foreign
 import           Foreign.C.Types
 --import           Foreign.Storable.Tuple
+import qualified Data.Text                    as T
 import           System.Random
 
 import           Debug.Trace
@@ -120,7 +121,7 @@ dump_goat_hs goatPtr = do
     goatProps = generateAnimalProperties (makeBoneIdList goatAnimalNode) $ evalGenome goatGenome dna
     skelly = animalNodeToSkellyNodeWithProps goatProps goatAnimalNode
     mesh = generateLocalMesh $ skelly
-  putStrLn (meshToObj mesh)
+  putStrLn $ T.unpack (meshToObj mesh)
 
 foreign export ccall random_goat_hs :: IO (StablePtr DNA)
 foreign export ccall free_goat_hs :: StablePtr DNA -> IO ()
