@@ -115,7 +115,7 @@ defTransFlag (ArbTrans _) _       = error "don't do this"
 
 
 -- | user friendly representation of a Bone transformation
--- applies a transformation relative to identityTRS TRS
+-- applies a transformation relative to identity
 -- the transformation effects all children
 -- e.g. if you have two legs, you only need to add ReflX at the hips
 -- BoneTrans is applied to _trs'/_pos of AnimalNode'/AnimalNode respectively
@@ -139,9 +139,7 @@ composeBoneTrans ReflZ ReflZ = Same
 composeBoneTrans x y         = ArbTrans $ applyBoneTrans x . applyBoneTrans y
 
 -- TODO change this to BoneTrans a -> M44 a -> M44 a
--- | applies BoneTrans to a TRS
--- note this is implemented using lossyScaleTRS so shear components are discarded
--- this won't be an issue if the symmetries are well behaved (i.e. only reflection and scaling in a single axis before/after any rotations)
+-- | applies BoneTrans to an M44
 applyBoneTrans :: (AnimalFloat a) => BoneTrans a -> M44 a -> M44 a
 applyBoneTrans Same         = id
 applyBoneTrans ReflX        = mul_Scale_M44 (V3 (-1) 1 1)

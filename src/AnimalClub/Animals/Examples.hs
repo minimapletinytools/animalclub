@@ -17,3 +17,4 @@ writeExampleObjs = do
     writeFile "goat.obj" . meshToObj . generateLocalMesh . animalNodeToSkellyNode $ goatAnimalNode
     writeFile "worm.obj" . meshToObj . generateLocalMesh . animalNodeToSkellyNode $ worm
     writeFile "worm2.obj" . meshToObj . generateLocalMesh . animalNodeToSkellyNode $ worm2
+    writeFile "octopus.obj" . meshToObj . generateLocalMesh . animalNodeToSkellyNode $ octopusWorm

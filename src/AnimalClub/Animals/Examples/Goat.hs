@@ -5,6 +5,7 @@ module AnimalClub.Animals.Examples.Goat (
   -- for feeding goats
   , worm
   , worm2
+  , octopusWorm
 ) where
 
 import           AnimalClub.Animals
@@ -105,9 +106,9 @@ worm = asPhantom $
 
 -- | a worm intended to be flipped that scales geometrically
 flipWorm =
-  mans "1" (relV3 1 0 0) (Rel 1.1)
+  mans "1" (relV3 0 1 0) (Rel 1.1)
     [mans "2" (relV3 0 0 1) (Rel 1.1)
-      [mans "3" (relV3 1 0 0) (Rel 1.1)
+      [mans "3" (relV3 0 1 0) (Rel 1.1)
         [mans "3" (relV3 0 0 1) (Rel 1.1) []]]]
 
 -- | worm made from flipping a flippable worm
@@ -116,3 +117,11 @@ worm2 = asPhantom $ mans "root" (relV3 0 0 0) (Abs 0.2)
   [flipWorm
   , flipAnimalNode ReflX (defTransFlag ReflX) flipWorm
   ]
+
+rotateArbTrans :: Float -> BoneTrans Float
+rotateArbTrans θ = ArbTrans (conv_Rotation_M44 (axisAngle (V3 0 1 0) θ) !*!)
+
+-- | worm made by rotating a flippable worm 8 times
+octopusWorm :: AnimalNode Float
+octopusWorm = asPhantom $ mans "root" (relV3 0 0 0) (Abs 0.2) $
+  map (\r -> flipAnimalNode (rotateArbTrans (r*2*pi/8)) (defTransFlag Same) flipWorm) [0..7]
