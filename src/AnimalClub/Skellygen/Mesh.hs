@@ -27,7 +27,6 @@ module AnimalClub.Skellygen.Mesh (
 
 import           Relude                      hiding (transpose)
 
-import           Control.DeepSeq
 import           Control.Monad.Writer.Lazy   (Writer, execWriter, tell)
 import           GHC.Generics                (Generic)
 
@@ -51,7 +50,7 @@ data PotatoMesh a = PotatoMesh {
   , normals   :: [V3 a]
   , texCoords :: [V2 a]
   , indices   :: [Face]
-}
+} deriving (Generic, NFData)
 
 map3Tuple :: (a->b) -> (a,a,a) -> (b,b,b)
 map3Tuple f (a1,a2,a3) = (f a1, f a2, f a3)

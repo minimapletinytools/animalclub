@@ -1,4 +1,5 @@
 ::TODO::
+-switch benchmarks to relude
 -add some punnet square sorta functions to genotype
 -do a package cleanup
 DONE-switch to relude FFS
