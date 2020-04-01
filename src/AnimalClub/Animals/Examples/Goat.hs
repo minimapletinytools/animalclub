@@ -6,6 +6,7 @@ module AnimalClub.Animals.Examples.Goat (
   , worm
   , worm2
   , octopusWorm
+  , cube
 ) where
 
 import           AnimalClub.Animals
@@ -125,3 +126,8 @@ rotateArbTrans θ = ArbTrans (conv_Rotation_M44 (axisAngle (V3 0 1 0) θ) !*!)
 octopusWorm :: AnimalNode Float
 octopusWorm = asPhantom $ mans "root" (relV3 0 0 0) (Abs 0.2) $
   map (\r -> flipAnimalNode (rotateArbTrans (r*2*pi/8)) (defTransFlag Same) flipWorm) [0..7]
+
+
+-- | Animalnode representation of canonical cube
+cube :: AnimalNode Float
+cube = asPhantom $ mans "root" (relV3 0 0 0) (Abs 1.0) [mans "end" (relV3 1 0 0) (Rel 1.0) []]

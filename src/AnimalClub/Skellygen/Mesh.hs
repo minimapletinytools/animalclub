@@ -4,12 +4,12 @@
 
 module AnimalClub.Skellygen.Mesh (
   LocalMesh(..),
-  emptyLocalMesh,
   PotatoMesh(..),
-  emptyPotatoMesh,
   meshToObj,
+  potatoMeshToObj,
   transformLocalMesh,
   transformLocalMeshM44,
+  transformPotatoMeshM44,
 
   CMesh(..),
   toCMesh,
@@ -42,17 +42,13 @@ type Face = (Int32,Int32,Int32)
 -- TODO maybe get rid of this and use CMesh only
 data LocalMesh a = LocalMesh ([V3 a], [Face]) deriving (Show, Generic, NFData)
 
-emptyLocalMesh :: LocalMesh a
-emptyLocalMesh = LocalMesh ([],[])
-
+-- indices index all the other data in this representation
 data PotatoMesh a = PotatoMesh {
   positions   :: [V3 a]
   , normals   :: [V3 a]
   , texCoords :: [V2 a]
   , indices   :: [Face]
 }
-
-emptyPotatoMesh = PotatoMesh [] [] [] []
 
 
 
@@ -65,6 +61,19 @@ instance Semigroup (LocalMesh a) where
 
 instance Monoid (LocalMesh a) where
   mempty = LocalMesh ([],[])
+  mappend = (<>)
+
+-- | semigroup instance offsets triangle indices appropriately
+instance Semigroup (PotatoMesh a) where
+  (<>) (PotatoMesh p1 n1 tc1 i1) (PotatoMesh p2 n2 tc2 i2) =
+    PotatoMesh
+      (p1++p2)
+      (n1++n2)
+      (tc1++tc2)
+      (i1 ++ map (map3Tuple (+fromIntegral (length p1))) i2)
+
+instance Monoid (PotatoMesh a) where
+  mempty = PotatoMesh [] [] [] []
   mappend = (<>)
 
 showText :: Show a => a -> T.Text
@@ -89,7 +98,10 @@ potatoMeshToObj (PotatoMesh p n tc i) = execWriter $ do
   mapM_ (tellV "v") p
   mapM_ (tellV "vn") n
   mapM_ (tellV "vt") tc
-  mapM_ (\(a1,a2,a3) -> tell $ "f " <> showText (a1+1) <> " " <> showText (a2+1) <> " " <> showText (a3+1) <> "\n") $ i
+  let
+    st a = showText (a+1)
+    sc a = st a <> "/" <> st a <> "/" <> st a
+  mapM_ (\(a1,a2,a3) -> tell $ "f " <> sc a1 <> " " <> sc a2 <> " " <> sc a3 <> "\n") $ i
 
 transformLocalMesh :: (AnimalFloat a) => TRS a -> LocalMesh a -> LocalMesh a
 transformLocalMesh trs (LocalMesh (verts, inds)) =  LocalMesh (map mapfn verts, inds) where
@@ -99,6 +111,15 @@ transformLocalMeshM44 :: (AnimalFloat a) => M44 a -> LocalMesh a -> LocalMesh a
 transformLocalMeshM44 trs (LocalMesh (verts, inds)) =  LocalMesh (map mapfn verts, inds) where
   mapfn = mul_M44_V3 trs
 
+transformPotatoMeshM44 :: (AnimalFloat a) => M44 a -> PotatoMesh a -> PotatoMesh a
+transformPotatoMeshM44 t (PotatoMesh p n tc i) = r where
+  -- transform the normal (drop translation and invert scale)
+  nt n' = signorm $ (transpose (inv33 $ conv_M44_M33_droptrans t)) !* n'
+  r = PotatoMesh
+    (map (mul_M44_V3 t) p)
+    (map nt n)
+    tc
+    i
 
 -- TODO rename this because it can't be used in C directly :(
 data CMesh a = CMesh {

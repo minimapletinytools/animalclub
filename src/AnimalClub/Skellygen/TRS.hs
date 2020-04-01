@@ -36,6 +36,7 @@ module AnimalClub.Skellygen.TRS
 
   -- matrix helper
   , mul_M44_V3
+  , conv_M44_M33_droptrans
 
   -- scale operations
   , identityScale
@@ -119,6 +120,10 @@ mul_M44_V3 m v =  normalizePoint $ m !* (point v)
 
 conv_TRS_M44 :: (RealFloat a) => TRS a -> M44 a
 conv_TRS_M44 (TRS t r s) = fromTranslation t !*! m33_to_homogenous_m44 (conv_Rotation_M33 r !*! conv_Scale_M33 s)
+
+-- | convert a homegenous M44 to M33 dropping all translation components
+conv_M44_M33_droptrans :: M44 a -> M33 a
+conv_M44_M33_droptrans = view _m33
 
 mul_TRS_V3 :: (RealFloat a) => TRS a -> V3 a -> V3 a
 mul_TRS_V3 trs (V3 x y z) = V3 x' y' z' where V4 x' y' z' _ = mul_TRS_V4 trs (V4 x y z 1)

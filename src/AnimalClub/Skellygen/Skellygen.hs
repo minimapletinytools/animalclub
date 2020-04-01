@@ -8,6 +8,7 @@
 module AnimalClub.Skellygen.Skellygen
   ( SkellyNode(..)
   , generateLocalMesh
+  , generatePotatoMesh
   ) where
 
 import           Control.DeepSeq
@@ -36,12 +37,14 @@ import qualified Debug.Trace                  as Debug
        |  4----|--5
        | /     | /
        7-------6
-           end
+           end (
 
-           y
-           | z
-           |/
        x---/
+          /|
+         z |
+           y
+
+
 
   (actually the current implementation is offset by 45 degrees)
 
@@ -91,7 +94,7 @@ generateSingleLocalMesh ::
   -> LocalMesh a -- ^ output mesh
 generateSingleLocalMesh pos ct pt =
  if length' < 1e-6
-  then emptyLocalMesh
+  then mempty
   else LocalMesh (startPoints ++ endPoints, sides ++ caps)
  where
   end' = view translation pos
@@ -125,7 +128,7 @@ generateSinglePotatoMesh ::
   -> PotatoMesh a -- ^ output mesh
 generateSinglePotatoMesh pos ct pt =
  if length' < 1e-6
-  then emptyPotatoMesh
+  then mempty
   else r
  where
   end' = view translation pos
@@ -136,15 +139,18 @@ generateSinglePotatoMesh pos ct pt =
   end = end' -- + ey *^ normalized
 
   -- TODO normalAxis should use the up direction of pos
+  -- TODO rename this to upAxis
   normalAxis = rotate (fromTo (V3 0 1 0) normalized)
 
-  startPoints = map mapfn [i * pi / 2.0 | i <- [0,1,2,3]] where
-   mapfn a = start ^+^ normalAxis npt where
-    npt = V3 (pt * cos a) 0 (pt * sin a)
+  divs = 4 :: Int
 
-  endPoints = map mapfn [i * pi / 2.0 | i <- [0,1,2,3]] where
-   mapfn a = end ^+^ normalAxis npt where
-    npt = V3 (ct * cos a) 0 (ct * sin a)
+  startPoints = map mapfn [(fromIntegral i) * pi / 2.0 | i <- [0..(divs-1)]] where
+    mapfn a = start ^+^ normalAxis npt where
+      npt = V3 (pt * cos a) 0 (pt * sin a)
+
+  endPoints = map mapfn [(fromIntegral i) * pi / 2.0 | i <- [0..(divs-1)]] where
+    mapfn a = end ^+^ normalAxis npt where
+      npt = V3 (ct * cos a) 0 (ct * sin a)
 
   allPoints = startPoints ++ endPoints
 
@@ -152,14 +158,22 @@ generateSinglePotatoMesh pos ct pt =
   caps = [(0, 1, 3), (2, 3, 1), (6, 7, 5), (4, 5, 7)]
   allIndices = sides ++ caps
 
-  sideNormals = [V3 0 0 1, V3 0 0 1, V3 (-1) 0 0, V3 (-1) 0 0, V3 1 0 0, V3 1 0 0, V3 1 0 0, V3 1 0 0]
-  capNormals = [V3 0 1 0, V3 0 1 0, V3 0 (-1) 0, V3 0 (-1) 0]
-  allNormals = sideNormals ++ capNormals
+  -- per face normals
+  sideNormals = map mapfn [(fromIntegral i) * pi / 2.0 | i <- [0..(divs-1)]] where
+    mapfn a = normalAxis npt where
+      -- rotate a little more to get normal for face
+      a' = a + pi / fromIntegral divs
+      npt = V3 (pt * cos a') 0 (pt * sin a')
+  capNormals = map normalAxis [V3 0 (-1) 0, V3 0 1 0]
+  allNormals = map signorm (sideNormals ++ capNormals)
 
   -- rendy requires same buffer indices for position, normal and tex coords
   -- therefore we reindex everything and duplicate positions/normals
   p = map (\(a,b,c) -> [(allPoints !! a), (allPoints !!b), (allPoints !!c)]) allIndices
-  n = map (\(a,b,c) -> [(allNormals !! a), (allNormals !!b), (allNormals !!c)]) allIndices
+  -- repeat each normal 6x for each point on the 2 tris of each face
+  n = map (\x -> [x,x,x,x,x,x]) allNormals
+  --n = [[V3 1 0 0] | x <- [0..35]]
+  --n = map (\(a,b,c) -> [(allNormals !! a), (allNormals !!b), (allNormals !!c)]) allIndices
   tc = take 6 . repeat $ [V2 0 0 , V2 1 0, V2 0 1, V2 1 1, V2 0 1, V2 1 0]
   i = [(x+0, x+1, x+2)| y <- [0..11], let x = y*3]
   r = PotatoMesh {
@@ -181,7 +195,7 @@ _generateLocalMesh p_snM44 p_thick skn = selfLocalMesh <> mconcat cmeshes where
  --selfLocalMesh = Debug.trace ("skn: " ++ (show (_snDebugName skn)) ++ " p: " ++ show (_trans p_snTrs) ++ " c: " ++ show (_trans reltrs)) $
  --selfLocalMesh = Debug.trace ("sknabs: " ++ show abstrs ++ " p: " ++ show (_rot p_snTrs) ++ " c: " ++ show (_rot reltrs)) $
  selfLocalMesh = if _snIsPhantom skn
-  then emptyLocalMesh
+  then mempty
   else transformLocalMeshM44 p_snM44 $ generateSingleLocalMesh relm44 thick p_thick
  absM44 = p_snM44 !*! relm44
  cmeshes = map (_generateLocalMesh absM44 thick) (_snChildren skn)
@@ -192,3 +206,25 @@ generateLocalMesh ::
   => SkellyNode a -- ^ input top level parent node
   -> LocalMesh a -- ^ output mesh
 generateLocalMesh skn = _generateLocalMesh identity 1.0 skn
+
+
+_generatePotatoMesh ::
+  (AnimalFloat a)
+  => M44 a -- ^ parent ABS transform
+  -> a -- ^ parent thickness
+  -> SkellyNode a -- ^ node to generate
+  -> PotatoMesh a -- ^ output mesh
+_generatePotatoMesh p_snM44 p_thick skn = selfLocalMesh <> mconcat cmeshes where
+ thick = _snThickness skn
+ relm44 = _snM44Rel skn
+ selfLocalMesh = if _snIsPhantom skn
+  then mempty
+  else transformPotatoMeshM44 p_snM44 $ generateSinglePotatoMesh relm44 thick p_thick
+ absM44 = p_snM44 !*! relm44
+ cmeshes = map (_generatePotatoMesh absM44 thick) (_snChildren skn)
+
+generatePotatoMesh ::
+  (AnimalFloat a)
+  => SkellyNode a -- ^ input top level parent node
+  -> PotatoMesh a -- ^ output mesh
+generatePotatoMesh skn = _generatePotatoMesh identity 1.0 skn
