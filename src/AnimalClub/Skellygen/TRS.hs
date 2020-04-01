@@ -54,7 +54,7 @@ module AnimalClub.Skellygen.TRS
   , lookAtDefaultUp -- BUGS
 ) where
 
-
+import           Relude
 
 import           AnimalClub.Skellygen.Linear
 import           Control.DeepSeq

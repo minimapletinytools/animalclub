@@ -4,6 +4,9 @@ module AnimalClub.GeneticsSpec (
   spec
 ) where
 
+import           Relude               hiding (head)
+import           Relude.Unsafe        (head, (!!))
+
 import           AnimalClub.Genetics
 
 import           Test.Hspec
@@ -11,12 +14,11 @@ import           Test.QuickCheck
 
 import           Control.Monad.Writer (tell)
 import           Data.Bits
-import           Data.List
 import           Data.Semigroup       (Semigroup, (<>))
-import qualified Data.Text            as T
 import qualified Data.Vector.Storable as V
 import           Data.Word
 import           System.Random
+import qualified Text.Show
 
 
 
@@ -27,14 +29,14 @@ instance Arbitrary (DNA) where
             (\n -> V.generateM n (\_ -> arbitraryBoundedIntegral :: Gen Word8))
 
 -- | Writer monoid for either value or names
-type NamedFloats = [(T.Text, [Float])]
+type NamedFloats = [(Text, [Float])]
 
 -- | Write a single gene values in the builder
-tellGene :: (Monad m) => T.Text -> Float -> GenotypeT g NamedFloats m ()
+tellGene :: (Monad m) => Text -> Float -> GenotypeT g NamedFloats m ()
 tellGene s v = tellGenes s [v]
 
 -- | Write several gene values in the builder
-tellGenes :: (Monad m) => T.Text -> [Float] -> GenotypeT g NamedFloats m ()
+tellGenes :: (Monad m) => Text -> [Float] -> GenotypeT g NamedFloats m ()
 tellGenes s v = tell $ [(s, v)]
 
 dummyGen :: StdGen

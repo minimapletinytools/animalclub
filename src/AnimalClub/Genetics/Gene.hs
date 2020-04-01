@@ -18,10 +18,12 @@ module AnimalClub.Genetics.Gene (
   geneBitCount
 ) where
 
+import           Relude
+
 import           AnimalClub.Genetics.DNA
 
-import qualified Data.Vector.Generic as G
-import qualified Data.Vector.Storable as V
+import qualified Data.Vector.Generic     as G
+import qualified Data.Vector.Storable    as V
 
 -- | represents a genotype as a start index and length
 -- indices are on 8-bit (Word8) intervals
@@ -37,7 +39,7 @@ combineGene :: Gene -- ^ child
   -> Gene -- ^ combined
 combineGene gt2 gt1 =
   if _start gt2 + _count gt2 > _count gt1
-    then error $ "parent child mismatch " ++ (show $ gt1) ++ " " ++ (show $ gt2)
+    then error $ "parent child mismatch " <> (show $ gt1) <> " " <> (show $ gt2)
     else Gene (_start gt1 + _start gt2) (_count gt2)
 
 -- | extractDNA extracts a Gene from DNA producing a new DNA that is the subsection of the original DNA as defined by the Gene

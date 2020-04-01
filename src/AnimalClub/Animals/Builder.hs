@@ -21,6 +21,8 @@ module AnimalClub.Animals.Builder (
   DepFunc,
 ) where
 
+import           Relude
+
 import           AnimalClub.Animals.Animal
 import           AnimalClub.Genetics
 import           AnimalClub.Skellygen

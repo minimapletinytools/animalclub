@@ -4,6 +4,8 @@ module AnimalClubSpec (
   spec
 ) where
 
+import           Relude
+
 import           Test.Hspec
 import           Test.HUnit
 

@@ -9,6 +9,8 @@ module AnimalClub.Animals.Examples.Goat (
   , cube
 ) where
 
+import           Relude
+
 import           AnimalClub.Animals
 import           AnimalClub.Skellygen
 import           AnimalClub.Skellygen.Linear

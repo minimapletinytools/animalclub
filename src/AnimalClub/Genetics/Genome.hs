@@ -15,8 +15,10 @@ module AnimalClub.Genetics.Genome (
   evalGenome
 ) where
 
-import AnimalClub.Genetics.DNA
-import AnimalClub.Genetics.Genotype
+import           Relude
+
+import           AnimalClub.Genetics.DNA
+import           AnimalClub.Genetics.Genotype
 
 
 -- | Genome packages Genotype with its expected DNA length and random generator

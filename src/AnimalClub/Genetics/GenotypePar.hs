@@ -15,6 +15,8 @@ Import this module and enable -XApplicativeDo for automatic parallelization of G
 module AnimalClub.Genetics.GenotypePar (
 ) where
 
+import           Relude
+
 import           AnimalClub.Genetics.Genotype
 
 import           Control.Monad.Identity

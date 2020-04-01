@@ -48,17 +48,19 @@ module AnimalClub.Genetics.Internal.Unused.DNAMWC (
   breedAndSelectPool
 ) where
 
+import           Prelude
+
 import qualified AnimalClub.Genetics.DNA as DNA
 import           Data.Bits
-import qualified Data.Vector.Storable         as S
-import qualified Data.Vector                 as V
-import qualified Data.Vector.Generic         as G
-import Data.List (sortBy)
-import           Data.Ord                        (comparing)
+import           Data.List               (sortBy)
+import           Data.Ord                (comparing)
+import qualified Data.Vector             as V
+import qualified Data.Vector.Generic     as G
+import qualified Data.Vector.Storable    as S
 import           Data.Word
-import System.Random.MWC
+import           System.Random.MWC
 
-import Control.Monad.Primitive
+import           Control.Monad.Primitive
 
 -- | create random DNA with given dnaLength
 -- length must be multiple of 4

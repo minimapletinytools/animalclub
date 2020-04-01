@@ -36,6 +36,9 @@ module AnimalClub.Genetics.Genotype (
   gbBytePattern
 ) where
 
+import           Relude
+import           Relude.Unsafe            ((!!))
+
 import           AnimalClub.Genetics.DNA
 import           AnimalClub.Genetics.Gene
 

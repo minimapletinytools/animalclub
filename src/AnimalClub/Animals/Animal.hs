@@ -19,6 +19,8 @@ module AnimalClub.Animals.Animal (
   generateAnimalProperties
 ) where
 
+import           Relude
+
 import           AnimalClub.Genetics
 import           AnimalClub.Skellygen
 import           AnimalClub.Skellygen.Linear

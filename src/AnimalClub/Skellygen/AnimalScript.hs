@@ -10,6 +10,8 @@ module AnimalClub.Skellygen.AnimalScript (
   animalNodeToSkellyNodeWithProps
 ) where
 
+import           Relude                              hiding (identity)
+
 import qualified Data.Map                            as Map
 import           Lens.Micro.Platform                 (makeLenses, set)
 --import qualified Data.Text as T
@@ -20,7 +22,6 @@ import qualified Debug.Trace                         as Debug
 
 import           AnimalClub.Skellygen.AnimalNode
 import           AnimalClub.Skellygen.AnimalProperty
-
 import           AnimalClub.Skellygen.Linear
 import qualified AnimalClub.Skellygen.Skellygen      as SN
 import           AnimalClub.Skellygen.TRS

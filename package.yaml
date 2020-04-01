@@ -64,6 +64,7 @@ default-extensions:
 - TypeFamilies
 - TypeFamilyDependencies
 - TypeOperators
+- NoImplicitPrelude
 
 dependencies:
 - base >= 4.7 && < 5
@@ -89,6 +90,7 @@ dependencies:
 - storable-tuple
 - convertible
 - storable-record
+- relude
 
 library:
   source-dirs: src
@@ -205,7 +207,7 @@ verbatim: |
       mod-def-file: AnimalClubLib.def
     other-modules:       AnimalClub.ForeignBindings
     -- copy this part from library default-extensions section of hpack generated cabal file
-    default-extensions: InstanceSigs LambdaCase OverloadedStrings GADTs DeriveFunctor DeriveFoldable DeriveTraversable FlexibleInstances FlexibleContexts ScopedTypeVariables MultiWayIf TupleSections MultiParamTypeClasses
+    default-extensions: InstanceSigs LambdaCase OverloadedStrings GADTs DeriveFunctor DeriveFoldable DeriveTraversable FlexibleInstances FlexibleContexts ScopedTypeVariables MultiWayIf TupleSections MultiParamTypeClasses NoImplicitPrelude
     -- copy this part from library build-depends section of hpack generated cabal file
     build-depends:
       MonadRandom
@@ -232,6 +234,7 @@ verbatim: |
       , vector
       , convertible
       , storable-record
+      , relude
     hs-source-dirs:      src
     c-sources:
       csrc/animalclub.cpp

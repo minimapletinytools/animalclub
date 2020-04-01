@@ -1,6 +1,8 @@
 {-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 {-# OPTIONS_GHC -fno-warn-unused-top-binds #-}
 
+import           Relude
+
 import           AnimalClub.Animals.Examples
 
 import           AnimalClub.Animals

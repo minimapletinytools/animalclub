@@ -11,6 +11,9 @@ module AnimalClub.Skellygen.Skellygen
   , generatePotatoMesh
   ) where
 
+import           Relude                       hiding (identity)
+import           Relude.Unsafe                ((!!))
+
 import           Control.DeepSeq
 import           GHC.Generics
 import           Lens.Micro.Platform
@@ -134,7 +137,7 @@ generateSinglePotatoMesh pos ct pt =
 
   -- rendy requires same buffer indices for position, normal and tex coords
   -- therefore we reindex everything and duplicate positions/normals
-  p = map (\(a,b,c) -> [(allPoints !! a), (allPoints !!b), (allPoints !!c)]) allIndices
+  p = map (\(a,b,c) -> [(allPoints !! a), (allPoints !! b), (allPoints !! c)]) allIndices
   -- repeat each normal 6x for each point on the 2 tris of each face
   n = map (\x -> [x,x,x,x,x,x]) allNormals
   --n = [[V3 1 0 0] | x <- [0..35]]

@@ -25,6 +25,8 @@ module AnimalClub.Skellygen.Mesh (
 
 ) where
 
+import           Relude                      hiding (transpose)
+
 import           Control.DeepSeq
 import           Control.Monad.Writer.Lazy   (Writer, execWriter, tell)
 import           GHC.Generics                (Generic)
@@ -32,7 +34,6 @@ import           GHC.Generics                (Generic)
 import           AnimalClub.Skellygen.Linear
 import           AnimalClub.Skellygen.TRS
 import           Data.Int                    (Int32)
-import qualified Data.List                   as L
 import           Data.Monoid                 (Monoid, mappend)
 import           Data.Semigroup              (Semigroup, (<>))
 import qualified Data.Text                   as T
@@ -108,10 +109,10 @@ data PotatoCMesh a = PotatoCMesh {
 
 toPotatoCMesh :: (V.Storable a) => PotatoMesh a -> PotatoCMesh a
 toPotatoCMesh (PotatoMesh p n tc i) = PotatoCMesh p' n' tc' i' where
- p' = V.unfoldr L.uncons p
- n' = V.unfoldr L.uncons n
- tc' = V.unfoldr L.uncons tc
- i' = V.unfoldr L.uncons i
+ p' = V.unfoldr uncons p
+ n' = V.unfoldr uncons n
+ tc' = V.unfoldr uncons tc
+ i' = V.unfoldr uncons i
 
 
 -- old LocalMesh stuff, you can delete this
@@ -153,8 +154,8 @@ data CMesh a = CMesh {
 
 toCMesh :: (V.Storable a) => LocalMesh a -> CMesh a
 toCMesh (LocalMesh (verts, faces)) = CMesh verts' faces' where
- verts' = V.unfoldr L.uncons verts
- faces' = V.unfoldr L.uncons faces
+ verts' = V.unfoldr uncons verts
+ faces' = V.unfoldr uncons faces
 
 
 -- prob can delete this

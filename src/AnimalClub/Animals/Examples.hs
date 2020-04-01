@@ -5,6 +5,8 @@ module AnimalClub.Animals.Examples (
   , module AnimalClub.Animals.Examples.Goat
 ) where
 
+import           Relude
+
 import           AnimalClub.Animals.Examples.Goat
 import           AnimalClub.Skellygen
 import           AnimalClub.Skellygen.Mesh

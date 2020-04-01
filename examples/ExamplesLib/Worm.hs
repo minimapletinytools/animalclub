@@ -20,6 +20,9 @@ module ExamplesLib.Worm (
  breedAndSelectWormPool
 ) where
 
+import           Relude                      hiding (head, last)
+import           Relude.Unsafe               (head, last, (!!))
+
 import           AnimalClub.Animals
 import           AnimalClub.Genetics
 import           AnimalClub.Skellygen        hiding (distance)
@@ -32,21 +35,17 @@ import           Control.Monad               (forM_)
 import           Data.List                   (mapAccumL, sortBy)
 import qualified Data.Map                    as Map
 import           Data.Ord                    (comparing)
-import qualified Data.Text                   as T
 import           System.Random
 
 import qualified Debug.Trace                 as Debug
 
-showT :: (Show a) => a -> T.Text
-showT = T.pack . show
-
 
 wormNode :: (AnimalFloat a) => Int -> AnimalNode a
-wormNode 0 = mans (showT 0) (Rel $ V3 0.5 0 0) (Rel 1) []
-wormNode n = mans (showT n) (Rel $ V3 0.5 0 0) (Rel 1) [wormNode (n-1)]
+wormNode 0 = mans (show 0) (Rel $ V3 0.5 0 0) (Rel 1) []
+wormNode n = mans (show n) (Rel $ V3 0.5 0 0) (Rel 1) [wormNode (n-1)]
 
 worm :: (AnimalFloat a) => Int -> AnimalNode a
-worm segs = asPhantom $ mans (showT (segs-1)) (Rel 0) (Abs 0.1) [wormNode (segs-1)]
+worm segs = asPhantom $ mans (show (segs-1)) (Rel 0) (Abs 0.1) [wormNode (segs-1)]
 
 wormGenome' :: (RandomGen g) => Int -> Int -> Genotype g [AnimalExp Float [Float]] ()
 wormGenome' segs dnaPerSeg = do forM_ [0..(segs-1)] wormSeg where
@@ -57,11 +56,11 @@ wormGenome' segs dnaPerSeg = do forM_ [0..(segs-1)] wormSeg where
     usingGene (Gene (dnaPerSeg*i) dnaPerSegOver2) $ do
       x <- gbSumRange (-1.0, 6.0) -- using gbTypical here doesn't work very well for some reason :(
       --x <- gbSumRange (0.1, 4.5)
-      tellSkellyFunc (WithBoneId (BoneId (showT i) []) (Thickness x)) --[x*0.5+0.75]
+      tellSkellyFunc (WithBoneId (BoneId (show i) []) (Thickness x)) --[x*0.5+0.75]
     --gbPush $ Gene (dnaPerSeg*i + dnaPerSegOver4*2) (dnaPerSegOver4*2)
     usingGene (Gene (dnaPerSeg*i + dnaPerSegOver2) (dnaPerSegOver2)) $ do
       orients <- gbRandomRanges (replicate 3 (-1.5,1.5))
-      tellSkellyFunc (WithBoneId (BoneId (showT i) []) (addValuesToBoneMethod defOrientation orients))
+      tellSkellyFunc (WithBoneId (BoneId (show i) []) (addValuesToBoneMethod defOrientation orients))
 
 -- | generate the genome of a worm
 wormGenome ::
@@ -83,9 +82,9 @@ testWorm segs props = score where
   desiredThick i =  (cos ((fromIntegral i / fromIntegral segs) * pi * 2 * 2)*3 + 1.2)
   --desiredOrient _ = fromEulerXYZ (V3 (pi/20) (pi/3) 0.0)
   desiredOrient _ = fromEulerXYZ (V3 0 (pi/6) 0)
-  name i = BoneId (showT i) []
+  name i = BoneId (show i) []
   -- find the segment in the worm's AnimalPropertyMap
-  prop i = Map.findWithDefault (error $ "could not find " ++ show (name i)) (name i) props
+  prop i = Map.findWithDefault (error $ "could not find " <> show (name i)) (name i) props
   thick i = _skinParams $ prop i
   orient i = _orientation $ prop i
   off i = (thick i - desiredThick i) + 5*(distance (orient i) (desiredOrient i))

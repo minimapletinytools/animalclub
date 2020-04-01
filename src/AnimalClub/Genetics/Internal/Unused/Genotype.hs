@@ -33,17 +33,19 @@ module AnimalClub.Genetics.Internal.Unused.Genotype (
   gbByteSample
 ) where
 
-import AnimalClub.Genetics.DNA
-import AnimalClub.Genetics.Gene
+import           Prelude
 
-import qualified Data.Vector.Generic as G
-import Control.Monad.Writer.Lazy (WriterT, execWriterT)
-import Control.Monad.State.Lazy (StateT, evalStateT, put, get, state)
-import Control.Monad.Identity (Identity, runIdentity)
-import Control.Monad.Random (RandT, evalRandT, getRandom)
-import Control.Monad (forM)
-import System.Random (RandomGen)
-import Control.Exception.Base (assert)
+import           AnimalClub.Genetics.DNA
+import           AnimalClub.Genetics.Gene
+
+import           Control.Exception.Base    (assert)
+import           Control.Monad             (forM)
+import           Control.Monad.Identity    (Identity, runIdentity)
+import           Control.Monad.Random      (RandT, evalRandT, getRandom)
+import           Control.Monad.State.Lazy  (StateT, evalStateT, get, put, state)
+import           Control.Monad.Writer.Lazy (WriterT, execWriterT)
+import qualified Data.Vector.Generic       as G
+import           System.Random             (RandomGen)
 
 --import Debug.Trace
 
@@ -104,7 +106,7 @@ gbPop = do
   (dna, gtl) <- get
   case gtl of
     (_:xs) -> put (dna, xs)
-    _ -> error "Popping an empty genotype stack."
+    _      -> error "Popping an empty genotype stack."
   return ()
 
 

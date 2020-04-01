@@ -1,3 +1,5 @@
+import           Relude
+
 import           AnimalClub.Genetics
 
 import           Control.DeepSeq

@@ -27,6 +27,9 @@ module AnimalClub.Genetics.DNA (
 
 ) where
 
+import           Relude
+import           Relude.Unsafe          ((!!))
+
 import           Data.Bits
 import           Data.List              (mapAccumL, sortBy)
 import           Data.Ord               (comparing)

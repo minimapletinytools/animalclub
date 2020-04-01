@@ -43,11 +43,11 @@ module AnimalClub.Skellygen.AnimalNode (
   flipAnimalNode,
 ) where
 
-import qualified Data.List                as L
-import qualified Data.Text                as T
-import           Lens.Micro.Platform      (makeLenses, set)
+import           Relude
 
---import qualified Debug.Trace as Debug
+import qualified Data.List                as L
+import           Lens.Micro.Platform      (makeLenses, set)
+import qualified Text.Show
 
 import           AnimalClub.Skellygen.TRS
 
@@ -66,14 +66,14 @@ unAbsOrRel (Rel a) = a
 -- some built-in flags are provided for common use cases
 data BoneFlag =
  BF_Front | BF_Back | BF_Left | BF_Right | BF_Top | BF_Bottom
- | BF_CustomS T.Text | BF_CustomI Int
+ | BF_CustomS Text | BF_CustomI Int
  deriving
   (Eq, Ord, Show)
 
 -- | BoneId is an identifier for a given bone
 -- the name is a basic non-unique identifier
 -- BoneFlags help distinguish non-unique named bones
-data BoneId = BoneId T.Text [BoneFlag] deriving (Eq, Ord, Show)
+data BoneId = BoneId Text [BoneFlag] deriving (Eq, Ord, Show)
 
 -- | a function for matching BoneNames
 type BoneMatcher = BoneId -> Bool
@@ -84,7 +84,7 @@ idMatcher :: BoneId -> BoneMatcher
 idMatcher bid bid' = bid == bid'
 
 -- | creates a matcher for all bones with given name
-nameMatcher :: T.Text -> BoneMatcher
+nameMatcher :: Text -> BoneMatcher
 nameMatcher name (BoneId name' _) = name == name'
 
 -- | creates a matcher for all bones that have the given flags (and possibly others)
@@ -92,7 +92,7 @@ flagMatcher :: [BoneFlag] -> BoneMatcher
 flagMatcher bfs (BoneId _ bfs') = length (L.intersect bfs bfs') == length bfs
 
 -- | creates a matcher for all bones that have given flags and name
-nameFlagMatcher :: T.Text -> [BoneFlag] -> BoneMatcher
+nameFlagMatcher :: Text -> [BoneFlag] -> BoneMatcher
 nameFlagMatcher name bfs bid = nameMatcher name bid && flagMatcher bfs bid
 
 type FlagTrans = [BoneFlag] -> [BoneFlag]
@@ -182,7 +182,7 @@ data AnimalNode a = AnimalNode {
 makeLenses ''AnimalNode
 
 foldAnimalNode :: (a -> AnimalNode b -> a) -> a -> AnimalNode b -> a
-foldAnimalNode f acc an = foldl (foldAnimalNode f) (f acc an) (_children an)
+foldAnimalNode f acc an = L.foldl (foldAnimalNode f) (f acc an) (_children an)
 
 -- | extracts all BoneIds from AnimalNode tree
 makeBoneIdList :: AnimalNode a -> [BoneId]

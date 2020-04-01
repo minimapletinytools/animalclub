@@ -1,6 +1,7 @@
 ::TODO::
 -add some punnet square sorta functions to genotype
--switch to relude FFS
+-do a package cleanup
+DONE-switch to relude FFS
 -fix circleci [![CircleCI](https://circleci.com/gh/pdlla/animalclub.svg?style=svg)](https://circleci.com/gh/pdlla/animalclub)
 -new test cases
   -verify results of SkellyNode on worm test

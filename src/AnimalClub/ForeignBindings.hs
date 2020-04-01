@@ -25,6 +25,8 @@ import           AnimalClub.Skellygen
 import           AnimalClub.Skellygen.Linear  hiding (trace)
 import           AnimalClub.Skellygen.Mesh
 
+import           Relude
+
 import           Data.Convertible
 import           Data.Int                     (Int32)
 import qualified Data.Text                    as T

@@ -7,6 +7,9 @@ this example uses AnimalClub.Animals.Worm to breed a worm targetting some idea f
 --{-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 --{-# OPTIONS_GHC -fno-warn-unused-top-binds #-}
 
+import           Relude                    hiding (head, last)
+import           Relude.Unsafe             (head, last, (!!))
+
 import           ExamplesLib.Worm
 
 import           AnimalClub.Animals

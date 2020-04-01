@@ -4,9 +4,13 @@ module AnimalClub.SkellygenSpec (
   spec
 ) where
 
+import           Relude
+
 import           Test.Hspec
 import           Test.HUnit
 import           Test.QuickCheck
+
+import qualified Text.Show
 
 import           AnimalClub.Skellygen
 import           AnimalClub.Skellygen.Linear hiding (trace)
@@ -15,9 +19,6 @@ import           AnimalClub.Skellygen.TRS
 import           Linear.Arbitrary
 
 --import           Debug.Trace
-
-prop_justfortesting :: Int -> Bool
-prop_justfortesting x = (read . show) x == x
 
 -- TODO finish
 {-
@@ -81,9 +82,6 @@ spec_fromEulerXYZ = do
 
 spec :: Spec
 spec = do
-  describe "quickcheck" $ do
-    it "does in fact work with spec" $ property $
-      prop_justfortesting
   describe "TRS" $ do
     it "mul_TRS_V3 works as expected" $ property $
       prop_mul_TRS_V3

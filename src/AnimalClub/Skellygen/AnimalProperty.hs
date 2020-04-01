@@ -22,14 +22,17 @@ module AnimalClub.Skellygen.AnimalProperty (
   generateAnimalProperties_
 ) where
 
+import           Relude                          hiding (identity)
+import           Relude.Unsafe                   ((!!))
+
 import           Control.DeepSeq
 import           Control.Exception
 import qualified Data.List                       as L
 import qualified Data.Map                        as M
 import           Data.Maybe
-import qualified Data.Text                       as T
 import           GHC.Generics
 import           Lens.Micro.Platform
+import qualified Text.Show
 
 import           AnimalClub.Skellygen.AnimalNode
 import           AnimalClub.Skellygen.Linear     hiding (distance)
@@ -138,7 +141,7 @@ generateAnimalPropertiesInternal_ ::
  => AnimalPropertyMap a -- ^ accumulating map of properties.
  -> [PrioritizedSkellyFunc a] -- ^ list of properties
  -> AnimalPropertyMap a -- ^ output map list of properties
-generateAnimalPropertiesInternal_ props psfs = foldl addProp props sorted_psfs where
+generateAnimalPropertiesInternal_ props psfs = L.foldl addProp props sorted_psfs where
  -- sort psfs by priority
  sorted_psfs = L.sortOn (fst . unPrioritizedSkellyFunc) psfs
 
