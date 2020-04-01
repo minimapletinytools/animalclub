@@ -97,7 +97,7 @@ generateSinglePotatoMesh ::
   -> PotatoMesh a -- ^ output mesh
 generateSinglePotatoMesh pos ct pt =
  if length' < 1e-6
-  then mempty
+  then emptyPotatoMesh
   else r
  where
   end' = view translation pos
@@ -112,11 +112,11 @@ generateSinglePotatoMesh pos ct pt =
 
   divs = 4 :: Int
 
-  startPoints = map mapfn [(fromIntegral i) * pi / 2.0 | i <- [0..(divs-1)]] where
+  startPoints = map mapfn [(fromIntegral x) * pi / 2.0 | x <- [0..(divs-1)]] where
     mapfn a = start ^+^ upAxis npt where
       npt = V3 (pt * cos a) 0 (pt * sin a)
 
-  endPoints = map mapfn [(fromIntegral i) * pi / 2.0 | i <- [0..(divs-1)]] where
+  endPoints = map mapfn [(fromIntegral x) * pi / 2.0 | x <- [0..(divs-1)]] where
     mapfn a = end ^+^ upAxis npt where
       npt = V3 (ct * cos a) 0 (ct * sin a)
 
@@ -127,7 +127,7 @@ generateSinglePotatoMesh pos ct pt =
   allIndices = sides ++ caps
 
   -- per face normals
-  sideNormals = map mapfn [(fromIntegral i) * pi / 2.0 | i <- [0..(divs-1)]] where
+  sideNormals = map mapfn [(fromIntegral x) * pi / 2.0 | x <- [0..(divs-1)]] where
     mapfn a = upAxis npt where
       -- rotate a little more to get normal for face
       a' = a + pi / fromIntegral divs
@@ -140,15 +140,15 @@ generateSinglePotatoMesh pos ct pt =
   p = map (\(a,b,c) -> [(allPoints !! a), (allPoints !! b), (allPoints !! c)]) allIndices
   -- repeat each normal 6x for each point on the 2 tris of each face
   n = map (\x -> [x,x,x,x,x,x]) allNormals
-  --n = [[V3 1 0 0] | x <- [0..35]]
-  --n = map (\(a,b,c) -> [(allNormals !! a), (allNormals !!b), (allNormals !!c)]) allIndices
   tc = take 6 . repeat $ [V2 0 0 , V2 1 0, V2 0 1, V2 1 1, V2 0 1, V2 1 0]
   i = [(x+0, x+1, x+2)| y <- [0..11], let x = y*3]
+
+  -- you can probably make this more efficient by directly building the vector rather than converting from a list
   r = PotatoMesh {
-      positions = mconcat p
-      , normals = mconcat n
-      , texCoords = mconcat tc
-      , indices = i
+      positions = G.fromList $ mconcat p
+      , normals = G.fromList $ mconcat n
+      , texCoords = G.fromList $ mconcat tc
+      , indices = G.fromList $ i
     }
 
 -- TODO parallelize
@@ -160,20 +160,20 @@ _generatePotatoMesh ::
   -> SkellyNode a -- ^ node to generate
   -> NonEmpty (PotatoMesh a) -- ^ output mesh
 _generatePotatoMesh p_snM44 p_thick skn = selfLocalMesh :| (mconcat cmeshes) where
- thick = _snThickness skn
- relm44 = _snM44Rel skn
- selfLocalMesh = if _snIsPhantom skn
-  then mempty
-  else transformPotatoMeshM44 p_snM44 $ generateSinglePotatoMesh relm44 thick p_thick
- absM44 = p_snM44 !*! relm44
- cmeshes = parMap rdeepseq (toList . _generatePotatoMesh absM44 thick) (_snChildren skn)
+  thick = _snThickness skn
+  relm44 = _snM44Rel skn
+  selfLocalMesh = if _snIsPhantom skn
+    then emptyPotatoMesh
+    else transformPotatoMeshM44 p_snM44 $ generateSinglePotatoMesh relm44 thick p_thick
+  absM44 = p_snM44 !*! relm44
+  cmeshes = parMap rdeepseq (toList . _generatePotatoMesh absM44 thick) (_snChildren skn)
 
 -- TODO switch to G.concat
 generatePotatoMesh ::
   (AnimalFloat a)
   => SkellyNode a -- ^ input top level parent node
   -> PotatoMesh a -- ^ output mesh
-generatePotatoMesh skn = mconcat . toList $ _generatePotatoMesh identity 1.0 skn
+generatePotatoMesh skn = concatPotatoMesh . toList $ _generatePotatoMesh identity 1.0 skn
 
 
 
