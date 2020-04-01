@@ -12,13 +12,9 @@ module AnimalClub.Skellygen.AnimalScript (
 
 import           Relude                              hiding (identity)
 
+import           Control.Exception.Base              (assert)
 import qualified Data.Map                            as Map
 import           Lens.Micro.Platform                 (makeLenses, set)
---import qualified Data.Text as T
-
-import           Control.Exception.Base              (assert)
-
-import qualified Debug.Trace                         as Debug
 
 import           AnimalClub.Skellygen.AnimalNode
 import           AnimalClub.Skellygen.AnimalProperty

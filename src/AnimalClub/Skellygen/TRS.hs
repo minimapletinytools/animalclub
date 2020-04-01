@@ -63,7 +63,7 @@ import           Lens.Micro.Platform
 import           Linear.Conjugate
 
 -- | constraint kind needed for math operations to work properly (just use Float or Double in practice)
-type AnimalFloat a = (Conjugate a, RealFloat a, Epsilon a, Show a)
+type AnimalFloat a = (NFData a, Conjugate a, RealFloat a, Epsilon a, Show a)
 
 -- TODO you can probably get rid of these
 type Translation a = V3 a

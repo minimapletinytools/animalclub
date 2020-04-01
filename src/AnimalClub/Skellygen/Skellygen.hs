@@ -14,17 +14,17 @@ module AnimalClub.Skellygen.Skellygen
 import           Relude                       hiding (identity)
 import           Relude.Unsafe                ((!!))
 
-import           Control.DeepSeq
+import           Control.Parallel.Strategies
 import           GHC.Generics
 import           Lens.Micro.Platform
 
+import qualified Data.Vector.Generic          as G
 import qualified Data.Vector.Storable.Mutable as MV
 
 import           AnimalClub.Skellygen.Linear
 import           AnimalClub.Skellygen.Mesh
 import           AnimalClub.Skellygen.TRS
 
-import qualified Debug.Trace                  as Debug
 
 
 
@@ -151,27 +151,29 @@ generateSinglePotatoMesh pos ct pt =
       , indices = i
     }
 
--- TODO optimize with ST monad and / or parallelize
+-- TODO parallelize
+-- go through all children and accumulate [PotatoMesh a] then use G.concat
 _generatePotatoMesh ::
   (AnimalFloat a)
   => M44 a -- ^ parent ABS transform
   -> a -- ^ parent thickness
   -> SkellyNode a -- ^ node to generate
-  -> PotatoMesh a -- ^ output mesh
-_generatePotatoMesh p_snM44 p_thick skn = selfLocalMesh <> mconcat cmeshes where
+  -> NonEmpty (PotatoMesh a) -- ^ output mesh
+_generatePotatoMesh p_snM44 p_thick skn = selfLocalMesh :| (mconcat cmeshes) where
  thick = _snThickness skn
  relm44 = _snM44Rel skn
  selfLocalMesh = if _snIsPhantom skn
   then mempty
   else transformPotatoMeshM44 p_snM44 $ generateSinglePotatoMesh relm44 thick p_thick
  absM44 = p_snM44 !*! relm44
- cmeshes = map (_generatePotatoMesh absM44 thick) (_snChildren skn)
+ cmeshes = parMap rdeepseq (toList . _generatePotatoMesh absM44 thick) (_snChildren skn)
 
+-- TODO switch to G.concat
 generatePotatoMesh ::
   (AnimalFloat a)
   => SkellyNode a -- ^ input top level parent node
   -> PotatoMesh a -- ^ output mesh
-generatePotatoMesh skn = _generatePotatoMesh identity 1.0 skn
+generatePotatoMesh skn = mconcat . toList $ _generatePotatoMesh identity 1.0 skn
 
 
 
