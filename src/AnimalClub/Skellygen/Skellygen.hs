@@ -85,39 +85,6 @@ defaultBoxParam = BoxSkinParameters (0.005, 0.005) (0.005, 0.005)
 _normalize :: (AnimalFloat a) => V3 a -> V3 a
 _normalize v = (1 / norm v) *^ v
 
--- TODO it's better to write this function where it takes a thickness square at the origin facing neutral and apply the transformation to it
-generateSingleLocalMesh ::
-  (AnimalFloat a)
-  => M44 a -- ^ input node transform
-  -> a -- ^ input thickness
-  -> a -- ^ node parent thickness
-  -> LocalMesh a -- ^ output mesh
-generateSingleLocalMesh pos ct pt =
- if length' < 1e-6
-  then mempty
-  else LocalMesh (startPoints ++ endPoints, sides ++ caps)
- where
-  end' = view translation pos
-  start' = V3 0 0 0
-  length' = norm (end' - start')
-  normalized = _normalize $ end' - start'
-  start = start' --  - ex *^ normalized
-  end = end' -- + ey *^ normalized
-
-  -- TODO upAxis should use the up direction of pos
-  upAxis = rotate (fromTo (V3 0 1 0) normalized)
-
-  startPoints = map mapfn [i * pi / 2.0 | i <- [0,1,2,3]] where
-   mapfn a = start ^+^ upAxis npt where
-    npt = V3 (pt * cos a) 0 (pt * sin a)
-
-  endPoints = map mapfn [i * pi / 2.0 | i <- [0,1,2,3]] where
-   mapfn a = end ^+^ upAxis npt where
-    npt = V3 (ct * cos a) 0 (ct * sin a)
-
-  sides = [(0, 1, 4), (5, 4, 1), (1, 2, 5), (6, 5, 2), (2, 3, 6), (7, 6, 3), (3, 0, 7), (4, 7, 0)]
-  caps = [(0, 1, 3), (2, 3, 1), (6, 7, 5), (4, 5, 7)]
-
 -- same as above but formats different and adds normals + uvs
 generateSinglePotatoMesh ::
   (AnimalFloat a)
@@ -181,6 +148,65 @@ generateSinglePotatoMesh pos ct pt =
       , indices = i
     }
 
+-- TODO optimize with ST monad and / or parallelize
+_generatePotatoMesh ::
+  (AnimalFloat a)
+  => M44 a -- ^ parent ABS transform
+  -> a -- ^ parent thickness
+  -> SkellyNode a -- ^ node to generate
+  -> PotatoMesh a -- ^ output mesh
+_generatePotatoMesh p_snM44 p_thick skn = selfLocalMesh <> mconcat cmeshes where
+ thick = _snThickness skn
+ relm44 = _snM44Rel skn
+ selfLocalMesh = if _snIsPhantom skn
+  then mempty
+  else transformPotatoMeshM44 p_snM44 $ generateSinglePotatoMesh relm44 thick p_thick
+ absM44 = p_snM44 !*! relm44
+ cmeshes = map (_generatePotatoMesh absM44 thick) (_snChildren skn)
+
+generatePotatoMesh ::
+  (AnimalFloat a)
+  => SkellyNode a -- ^ input top level parent node
+  -> PotatoMesh a -- ^ output mesh
+generatePotatoMesh skn = _generatePotatoMesh identity 1.0 skn
+
+
+
+
+-- old local mesh stuff
+generateSingleLocalMesh ::
+  (AnimalFloat a)
+  => M44 a -- ^ input node transform
+  -> a -- ^ input thickness
+  -> a -- ^ node parent thickness
+  -> LocalMesh a -- ^ output mesh
+generateSingleLocalMesh pos ct pt =
+ if length' < 1e-6
+  then mempty
+  else LocalMesh (startPoints ++ endPoints, sides ++ caps)
+ where
+  end' = view translation pos
+  start' = V3 0 0 0
+  length' = norm (end' - start')
+  normalized = _normalize $ end' - start'
+  start = start' --  - ex *^ normalized
+  end = end' -- + ey *^ normalized
+
+  -- TODO upAxis should use the up direction of pos
+  upAxis = rotate (fromTo (V3 0 1 0) normalized)
+
+  startPoints = map mapfn [i * pi / 2.0 | i <- [0,1,2,3]] where
+   mapfn a = start ^+^ upAxis npt where
+    npt = V3 (pt * cos a) 0 (pt * sin a)
+
+  endPoints = map mapfn [i * pi / 2.0 | i <- [0,1,2,3]] where
+   mapfn a = end ^+^ upAxis npt where
+    npt = V3 (ct * cos a) 0 (ct * sin a)
+
+  sides = [(0, 1, 4), (5, 4, 1), (1, 2, 5), (6, 5, 2), (2, 3, 6), (7, 6, 3), (3, 0, 7), (4, 7, 0)]
+  caps = [(0, 1, 3), (2, 3, 1), (6, 7, 5), (4, 5, 7)]
+
+
 _generateLocalMesh ::
   (AnimalFloat a)
   => M44 a -- ^ parent ABS transform
@@ -204,25 +230,3 @@ generateLocalMesh ::
   => SkellyNode a -- ^ input top level parent node
   -> LocalMesh a -- ^ output mesh
 generateLocalMesh skn = _generateLocalMesh identity 1.0 skn
-
-
-_generatePotatoMesh ::
-  (AnimalFloat a)
-  => M44 a -- ^ parent ABS transform
-  -> a -- ^ parent thickness
-  -> SkellyNode a -- ^ node to generate
-  -> PotatoMesh a -- ^ output mesh
-_generatePotatoMesh p_snM44 p_thick skn = selfLocalMesh <> mconcat cmeshes where
- thick = _snThickness skn
- relm44 = _snM44Rel skn
- selfLocalMesh = if _snIsPhantom skn
-  then mempty
-  else transformPotatoMeshM44 p_snM44 $ generateSinglePotatoMesh relm44 thick p_thick
- absM44 = p_snM44 !*! relm44
- cmeshes = map (_generatePotatoMesh absM44 thick) (_snChildren skn)
-
-generatePotatoMesh ::
-  (AnimalFloat a)
-  => SkellyNode a -- ^ input top level parent node
-  -> PotatoMesh a -- ^ output mesh
-generatePotatoMesh skn = _generatePotatoMesh identity 1.0 skn

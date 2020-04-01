@@ -3,14 +3,19 @@
 
 
 module AnimalClub.Skellygen.Mesh (
-  LocalMesh(..),
+
   PotatoMesh(..),
-  meshToObj,
   potatoMeshToObj,
-  transformLocalMesh,
-  transformLocalMeshM44,
   transformPotatoMeshM44,
 
+  PotatoCMesh(..),
+  toPotatoCMesh,
+
+  -- old stuff prob can delete
+  LocalMesh(..),
+  meshToObj,
+  transformLocalMesh,
+  transformLocalMeshM44,
   CMesh(..),
   toCMesh,
 
@@ -93,6 +98,21 @@ transformPotatoMeshM44 t (PotatoMesh p n tc i) = r where
     tc
     i
 
+-- TODO switch to using this type for mesh building
+data PotatoCMesh a = PotatoCMesh {
+ pcm_vertices    :: V.Vector (V3 a)
+ , pcm_normals   :: V.Vector (V3 a)
+ , pcm_texCoords :: V.Vector (V2 a)
+ , pcm_faces     :: V.Vector Face
+}
+
+toPotatoCMesh :: (V.Storable a) => PotatoMesh a -> PotatoCMesh a
+toPotatoCMesh (PotatoMesh p n tc i) = PotatoCMesh p' n' tc' i' where
+ p' = V.unfoldr L.uncons p
+ n' = V.unfoldr L.uncons n
+ tc' = V.unfoldr L.uncons tc
+ i' = V.unfoldr L.uncons i
+
 
 -- old LocalMesh stuff, you can delete this
 
@@ -135,10 +155,6 @@ toCMesh :: (V.Storable a) => LocalMesh a -> CMesh a
 toCMesh (LocalMesh (verts, faces)) = CMesh verts' faces' where
  verts' = V.unfoldr L.uncons verts
  faces' = V.unfoldr L.uncons faces
-
-
-
-
 
 
 -- prob can delete this
