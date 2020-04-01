@@ -88,6 +88,7 @@ dependencies:
 - bytestring
 - storable-tuple
 - convertible
+- storable-record
 
 library:
   source-dirs: src
@@ -230,6 +231,7 @@ verbatim: |
       , time
       , vector
       , convertible
+      , storable-record
     hs-source-dirs:      src
     c-sources:
       csrc/animalclub.cpp

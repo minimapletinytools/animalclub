@@ -20,6 +20,7 @@ void my_exit(void){
   hs_exit();
 }
 
+// just for testing, can delete
 std::string printMesh(Mesh m) {
   std::ostringstream r;
   for(int i = 0; i < m.vertex_count/3; i++) {

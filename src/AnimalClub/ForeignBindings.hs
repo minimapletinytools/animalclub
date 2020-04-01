@@ -13,6 +13,7 @@ This module exports a bunch of methods in AnimalClub via FFI
 {-# LANGUAGE CPP                      #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE UnboxedTuples            #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module AnimalClub.ForeignBindings (
 ) where
@@ -26,15 +27,40 @@ import           AnimalClub.Skellygen.Mesh
 
 import           Data.Convertible
 import           Data.Int                     (Int32)
+import qualified Data.Text                    as T
 import qualified Data.Vector.Storable         as V
 import qualified Data.Vector.Storable.Mutable as MV
 import           Foreign
 import           Foreign.C.Types
---import           Foreign.Storable.Tuple
-import qualified Data.Text                    as T
+import           Foreign.Storable             (Storable (..))
+import qualified Foreign.Storable.Record      as Store
 import           System.Random
 
 import           Debug.Trace
+
+
+instance (Storable a, Storable b, Storable c, Storable d, Storable e, Storable f, Storable g, Storable h) => Storable (a,b,c,d,e,f,g,h) where
+   sizeOf    = Store.sizeOf storeHextuple
+   alignment = Store.alignment storeHextuple
+   peek      = Store.peek storeHextuple
+   poke      = Store.poke storeHextuple
+
+{-# INLINE storeHextuple #-}
+storeHextuple ::
+  (Storable a, Storable b, Storable c, Storable d, Storable e, Storable f, Storable g, Storable h) =>
+  Store.Dictionary (a,b,c,d,e,f,g,h)
+storeHextuple =
+   Store.run $
+   pure (,,,,,,,)
+      <*> (Store.element $ \(x,_,_,_,_,_,_,_) -> x)
+      <*> (Store.element $ \(_,x,_,_,_,_,_,_) -> x)
+      <*> (Store.element $ \(_,_,x,_,_,_,_,_) -> x)
+      <*> (Store.element $ \(_,_,_,x,_,_,_,_) -> x)
+      <*> (Store.element $ \(_,_,_,_,x,_,_,_) -> x)
+      <*> (Store.element $ \(_,_,_,_,_,x,_,_) -> x)
+      <*> (Store.element $ \(_,_,_,_,_,_,x,_) -> x)
+      <*> (Store.element $ \(_,_,_,_,_,_,_,x) -> x)
+
 
 breed_hs ::
   CInt -- ^ random seed
@@ -86,7 +112,7 @@ breed_goat_hs ptr1 ptr2 = do
   gen <- getStdGen
   newStablePtr $ breed gen dna1 dna2
 
-type CCMesh = (Ptr CFloat, CInt, Ptr CInt, CInt)
+type CCMesh = (Ptr CFloat, CInt, Ptr CFloat, CInt, Ptr CFloat, CInt, Ptr CInt, CInt)
 
 -- | caller is responsible for freeing memory by calling free_goat_mesh_hs
 goat_mesh_hs :: StablePtr DNA -> IO (Ptr CCMesh)
@@ -95,23 +121,38 @@ goat_mesh_hs goatPtr = do
   let
     goatProps = generateAnimalProperties (makeBoneIdList goatAnimalNode) $ evalGenome goatGenome dna
     skelly = animalNodeToSkellyNodeWithProps goatProps goatAnimalNode
-    CMesh verts faces = toCMesh . generateLocalMesh $ skelly
-    vl = V.length verts
-    fl = V.length faces
+    PotatoCMesh v n tc f = toPotatoCMesh . generatePotatoMesh $ skelly
+    vl = V.length v
+    nl = V.length n
+    tcl = V.length tc
+    fl = V.length f
   vptr <- mallocArray vl :: IO (Ptr (V3 Float))
+  nptr <- mallocArray nl :: IO (Ptr (V3 Float))
+  tcptr <- mallocArray tcl :: IO (Ptr (V2 Float))
   fptr <- mallocArray fl :: IO (Ptr (Int32,Int32,Int32))
   vfptr <- newForeignPtr_ vptr
+  nfptr <- newForeignPtr_ nptr
+  tcfptr <- newForeignPtr_ tcptr
   ffptr <- newForeignPtr_ fptr
-  V.copy (MV.unsafeFromForeignPtr0 vfptr vl) verts
-  V.copy (MV.unsafeFromForeignPtr0 ffptr fl) faces
-  r <- new (castPtr vptr, convert vl * 3, castPtr fptr, convert fl * 3)
+  V.copy (MV.unsafeFromForeignPtr0 vfptr vl) v
+  V.copy (MV.unsafeFromForeignPtr0 nfptr vl) n
+  V.copy (MV.unsafeFromForeignPtr0 tcfptr vl) tc
+  V.copy (MV.unsafeFromForeignPtr0 ffptr fl) f
+  r <- new (
+      castPtr vptr, convert vl * 3,
+      castPtr nptr, convert nl * 3,
+      castPtr tcptr, convert tcl * 2,
+      castPtr fptr, convert fl * 3
+    )
   return r
 
 free_goat_mesh_hs :: Ptr CCMesh -> IO ()
 free_goat_mesh_hs ptr = do
-  (pt1,_,pt2,_) <- peek ptr
+  (pt1,_,pt2,_,pt3,_,pt4,_) <- peek ptr
   free pt1
   free pt2
+  free pt3
+  free pt4
   free ptr
 
 dump_goat_hs :: StablePtr DNA -> IO ()

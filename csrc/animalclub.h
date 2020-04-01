@@ -5,6 +5,10 @@ typedef void* GoatSpecimenPtr;
 struct Mesh {
   float* vertices;
   uint32_t vertex_count;
+  float* normals;
+  uint32_t normal_count;
+  float* texCoords;
+  uint32_t texCoord_count;
   uint32_t* faces;
   uint32_t face_count;
 };
