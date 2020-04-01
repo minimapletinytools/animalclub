@@ -39,9 +39,6 @@ import           Control.Monad.Primitive
 
 type Face = (Int32,Int32,Int32)
 
--- TODO maybe get rid of this and use CMesh only
-data LocalMesh a = LocalMesh ([V3 a], [Face]) deriving (Show, Generic, NFData)
-
 -- indices index all the other data in this representation
 data PotatoMesh a = PotatoMesh {
   positions   :: [V3 a]
@@ -50,18 +47,8 @@ data PotatoMesh a = PotatoMesh {
   , indices   :: [Face]
 }
 
-
-
 map3Tuple :: (a->b) -> (a,a,a) -> (b,b,b)
 map3Tuple f (a1,a2,a3) = (f a1, f a2, f a3)
-
--- | semigroup instance offsets triangle indices appropriately
-instance Semigroup (LocalMesh a) where
-  (<>) (LocalMesh (m1,i1)) (LocalMesh (m2, i2)) = LocalMesh (m1++m2, i1 ++ map (map3Tuple (+fromIntegral (length m1))) i2)
-
-instance Monoid (LocalMesh a) where
-  mempty = LocalMesh ([],[])
-  mappend = (<>)
 
 -- | semigroup instance offsets triangle indices appropriately
 instance Semigroup (PotatoMesh a) where
@@ -85,13 +72,6 @@ tellV key v = do
   mapM_ (\tv -> tell $ showText tv <> " ") $ v
   tell "\n"
 
-
-meshToObj :: (Show a) => LocalMesh a -> T.Text
-meshToObj (LocalMesh m) = execWriter $ do
-  tell "#beginning of mesh obj file \ng\n"
-  mapM_ (tellV "v") $ fst m
-  mapM_ (\(a1,a2,a3) -> tell $ "f " <> showText (a1+1) <> " " <> showText (a2+1) <> " " <> showText (a3+1) <> "\n") . snd $ m
-
 potatoMeshToObj :: (Show a) => PotatoMesh a -> T.Text
 potatoMeshToObj (PotatoMesh p n tc i) = execWriter $ do
   tell "#beginning of mesh obj file \ng\n"
@@ -103,14 +83,6 @@ potatoMeshToObj (PotatoMesh p n tc i) = execWriter $ do
     sc a = st a <> "/" <> st a <> "/" <> st a
   mapM_ (\(a1,a2,a3) -> tell $ "f " <> sc a1 <> " " <> sc a2 <> " " <> sc a3 <> "\n") $ i
 
-transformLocalMesh :: (AnimalFloat a) => TRS a -> LocalMesh a -> LocalMesh a
-transformLocalMesh trs (LocalMesh (verts, inds)) =  LocalMesh (map mapfn verts, inds) where
-  mapfn = mul_TRS_V3 trs
-
-transformLocalMeshM44 :: (AnimalFloat a) => M44 a -> LocalMesh a -> LocalMesh a
-transformLocalMeshM44 trs (LocalMesh (verts, inds)) =  LocalMesh (map mapfn verts, inds) where
-  mapfn = mul_M44_V3 trs
-
 transformPotatoMeshM44 :: (AnimalFloat a) => M44 a -> PotatoMesh a -> PotatoMesh a
 transformPotatoMeshM44 t (PotatoMesh p n tc i) = r where
   -- transform the normal (drop translation and invert scale)
@@ -120,6 +92,38 @@ transformPotatoMeshM44 t (PotatoMesh p n tc i) = r where
     (map nt n)
     tc
     i
+
+
+-- old LocalMesh stuff, you can delete this
+
+-- TODO maybe get rid of this and use CMesh only
+data LocalMesh a = LocalMesh ([V3 a], [Face]) deriving (Show, Generic, NFData)
+
+
+-- | semigroup instance offsets triangle indices appropriately
+instance Semigroup (LocalMesh a) where
+  (<>) (LocalMesh (m1,i1)) (LocalMesh (m2, i2)) = LocalMesh (m1++m2, i1 ++ map (map3Tuple (+fromIntegral (length m1))) i2)
+
+instance Monoid (LocalMesh a) where
+  mempty = LocalMesh ([],[])
+  mappend = (<>)
+
+
+meshToObj :: (Show a) => LocalMesh a -> T.Text
+meshToObj (LocalMesh m) = execWriter $ do
+  tell "#beginning of mesh obj file \ng\n"
+  mapM_ (tellV "v") $ fst m
+  mapM_ (\(a1,a2,a3) -> tell $ "f " <> showText (a1+1) <> " " <> showText (a2+1) <> " " <> showText (a3+1) <> "\n") . snd $ m
+
+transformLocalMesh :: (AnimalFloat a) => TRS a -> LocalMesh a -> LocalMesh a
+transformLocalMesh trs (LocalMesh (verts, inds)) =  LocalMesh (map mapfn verts, inds) where
+  mapfn = mul_TRS_V3 trs
+
+transformLocalMeshM44 :: (AnimalFloat a) => M44 a -> LocalMesh a -> LocalMesh a
+transformLocalMeshM44 trs (LocalMesh (verts, inds)) =  LocalMesh (map mapfn verts, inds) where
+  mapfn = mul_M44_V3 trs
+
+
 
 -- TODO rename this because it can't be used in C directly :(
 data CMesh a = CMesh {
@@ -131,6 +135,7 @@ toCMesh :: (V.Storable a) => LocalMesh a -> CMesh a
 toCMesh (LocalMesh (verts, faces)) = CMesh verts' faces' where
  verts' = V.unfoldr L.uncons verts
  faces' = V.unfoldr L.uncons faces
+
 
 
 

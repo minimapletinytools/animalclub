@@ -104,16 +104,15 @@ generateSingleLocalMesh pos ct pt =
   start = start' --  - ex *^ normalized
   end = end' -- + ey *^ normalized
 
-  -- TODO normalAxis should use the up direction of pos
-  --normalAxis = Debug.trace (show $ fromTo (V3 0 1 0) normalized) $ rotate (fromTo (V3 0 1 0) normalized)
-  normalAxis = rotate (fromTo (V3 0 1 0) normalized)
+  -- TODO upAxis should use the up direction of pos
+  upAxis = rotate (fromTo (V3 0 1 0) normalized)
 
   startPoints = map mapfn [i * pi / 2.0 | i <- [0,1,2,3]] where
-   mapfn a = start ^+^ normalAxis npt where
+   mapfn a = start ^+^ upAxis npt where
     npt = V3 (pt * cos a) 0 (pt * sin a)
 
   endPoints = map mapfn [i * pi / 2.0 | i <- [0,1,2,3]] where
-   mapfn a = end ^+^ normalAxis npt where
+   mapfn a = end ^+^ upAxis npt where
     npt = V3 (ct * cos a) 0 (ct * sin a)
 
   sides = [(0, 1, 4), (5, 4, 1), (1, 2, 5), (6, 5, 2), (2, 3, 6), (7, 6, 3), (3, 0, 7), (4, 7, 0)]
@@ -138,18 +137,17 @@ generateSinglePotatoMesh pos ct pt =
   start = start' --  - ex *^ normalized
   end = end' -- + ey *^ normalized
 
-  -- TODO normalAxis should use the up direction of pos
-  -- TODO rename this to upAxis
-  normalAxis = rotate (fromTo (V3 0 1 0) normalized)
+  -- TODO upAxis should use the up direction of pos
+  upAxis = rotate (fromTo (V3 0 1 0) normalized)
 
   divs = 4 :: Int
 
   startPoints = map mapfn [(fromIntegral i) * pi / 2.0 | i <- [0..(divs-1)]] where
-    mapfn a = start ^+^ normalAxis npt where
+    mapfn a = start ^+^ upAxis npt where
       npt = V3 (pt * cos a) 0 (pt * sin a)
 
   endPoints = map mapfn [(fromIntegral i) * pi / 2.0 | i <- [0..(divs-1)]] where
-    mapfn a = end ^+^ normalAxis npt where
+    mapfn a = end ^+^ upAxis npt where
       npt = V3 (ct * cos a) 0 (ct * sin a)
 
   allPoints = startPoints ++ endPoints
@@ -160,11 +158,11 @@ generateSinglePotatoMesh pos ct pt =
 
   -- per face normals
   sideNormals = map mapfn [(fromIntegral i) * pi / 2.0 | i <- [0..(divs-1)]] where
-    mapfn a = normalAxis npt where
+    mapfn a = upAxis npt where
       -- rotate a little more to get normal for face
       a' = a + pi / fromIntegral divs
       npt = V3 (pt * cos a') 0 (pt * sin a')
-  capNormals = map normalAxis [V3 0 (-1) 0, V3 0 1 0]
+  capNormals = map upAxis [V3 0 (-1) 0, V3 0 1 0]
   allNormals = map signorm (sideNormals ++ capNormals)
 
   -- rendy requires same buffer indices for position, normal and tex coords
