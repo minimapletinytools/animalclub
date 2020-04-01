@@ -123,7 +123,7 @@ goat_mesh_hs goatPtr = do
   let
     goatProps = generateAnimalProperties (makeBoneIdList goatAnimalNode) $ evalGenome goatGenome dna
     skelly = animalNodeToSkellyNodeWithProps goatProps goatAnimalNode
-    PotatoCMesh v n tc f = toPotatoCMesh . generatePotatoMesh $ skelly
+    PotatoMesh v n tc f = generatePotatoMesh $ skelly
     vl = V.length v
     nl = V.length n
     tcl = V.length tc
