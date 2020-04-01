@@ -15,7 +15,7 @@ import qualified Data.Text.IO                     as T
 writeExampleObjs :: IO ()
 writeExampleObjs = do
     T.writeFile "goat.obj" . potatoMeshToObj . generatePotatoMesh . animalNodeToSkellyNode $ goatAnimalNode
-    T.writeFile "worm.obj" . meshToObj . generateLocalMesh . animalNodeToSkellyNode $ worm
-    T.writeFile "worm2.obj" . meshToObj . generateLocalMesh . animalNodeToSkellyNode $ worm2
-    T.writeFile "octopus.obj" . meshToObj . generateLocalMesh . animalNodeToSkellyNode $ octopusWorm
+    T.writeFile "worm.obj" . potatoMeshToObj . generatePotatoMesh . animalNodeToSkellyNode $ worm
+    T.writeFile "worm2.obj" . potatoMeshToObj . generatePotatoMesh . animalNodeToSkellyNode $ worm2
+    T.writeFile "octopus.obj" . potatoMeshToObj . generatePotatoMesh . animalNodeToSkellyNode $ octopusWorm
     T.writeFile "cube.obj" . potatoMeshToObj . generatePotatoMesh . animalNodeToSkellyNode $ cube

@@ -46,4 +46,4 @@ main = do
     bestWorm = last bestWorms
     bestWormProps = generateAnimalProperties wormBones $ evalGenome genome bestWorm
     skelly = animalNodeToSkellyNodeWithProps bestWormProps (baseWorm)
-  T.writeFile "wigglyworm.obj" . meshToObj . generateLocalMesh $ skelly
+  T.writeFile "wigglyworm.obj" . potatoMeshToObj . generatePotatoMesh $ skelly

@@ -161,8 +161,8 @@ dump_goat_hs goatPtr = do
   let
     goatProps = generateAnimalProperties (makeBoneIdList goatAnimalNode) $ evalGenome goatGenome dna
     skelly = animalNodeToSkellyNodeWithProps goatProps goatAnimalNode
-    mesh = generateLocalMesh $ skelly
-  putStrLn $ T.unpack (meshToObj mesh)
+    mesh = generatePotatoMesh $ skelly
+  putStrLn $ T.unpack (potatoMeshToObj mesh)
 
 foreign export ccall random_goat_hs :: IO (StablePtr DNA)
 foreign export ccall free_goat_hs :: StablePtr DNA -> IO ()
@@ -170,14 +170,6 @@ foreign export ccall breed_goat_hs :: StablePtr DNA -> StablePtr DNA -> IO (Stab
 foreign export ccall goat_mesh_hs :: StablePtr DNA -> IO (Ptr CCMesh)
 foreign export ccall free_goat_mesh_hs :: Ptr CCMesh -> IO ()
 foreign export ccall dump_goat_hs :: StablePtr DNA -> IO ()
-
-
---goatObj :: StablePtr Goat -> IO
---goatObj goatPtr = do
- -- goat <- deRefStablePtr goatPtr
- --goatProps = generateAnimalProperties (makeBoneIdList goat) $ evalGenome goatGenome original
- --skelly = animalNodeToSkellyNodeWithProps goatProps goat
- --writeFile "wigglygoat.obj" . meshToObj . generateMesh $ skelly
 
 
 -- TODO figure out how to create genome
