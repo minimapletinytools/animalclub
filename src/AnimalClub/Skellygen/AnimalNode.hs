@@ -162,6 +162,7 @@ applyBoneTrans (ArbTrans f) = f
 -- each Node is a "limb" between the node's position and its parent
 -- if it is the top level node, it's parent assumes origin position
 -- if it is a phantom node, it won't have an associated mesh but otherwise is the same
+-- note that any top level node is effectively a phantom node
 --
 -- orientations are automatically determined based on parent position (see comments in AnimalScript)
 -- positions and thickness can be specified as absolute or relative for convenience I guess
@@ -178,7 +179,7 @@ data AnimalNode a = AnimalNode {
   _isPhantom :: Bool, -- ^ if this is true, this node will be invisible (won't create a mesh)
   _children  :: [AnimalNode a]
   -- _nodeOrientation :: NodeOrientation
-} deriving (Generic, NFData)
+} deriving (Generic, NFData, Show)
 
 makeLenses ''AnimalNode
 
