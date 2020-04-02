@@ -11,6 +11,7 @@ Stability   : experimental
 {-# OPTIONS_GHC -fno-warn-unused-top-binds #-}
 --{-# OPTIONS_GHC -fno-warn-unused-imports #-}
 
+{-# LANGUAGE DeriveAnyClass  #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 -- TOOD split into files
@@ -56,7 +57,7 @@ import           Linear.V3
 
 
 -- | indicates whether to treat the contained object as relative or absolute to its parent
-data AbsOrRel a = Abs a | Rel a deriving (Functor, Show)
+data AbsOrRel a = Abs a | Rel a deriving (Generic, NFData, Functor, Show)
 
 unAbsOrRel :: AbsOrRel a -> a
 unAbsOrRel (Abs a) = a
@@ -68,12 +69,12 @@ data BoneFlag =
  BF_Front | BF_Back | BF_Left | BF_Right | BF_Top | BF_Bottom
  | BF_CustomS Text | BF_CustomI Int
  deriving
-  (Eq, Ord, Show)
+  (Generic, NFData, Eq, Ord, Show)
 
 -- | BoneId is an identifier for a given bone
 -- the name is a basic non-unique identifier
 -- BoneFlags help distinguish non-unique named bones
-data BoneId = BoneId Text [BoneFlag] deriving (Eq, Ord, Show)
+data BoneId = BoneId Text [BoneFlag] deriving (Generic, NFData, Eq, Ord, Show)
 
 -- | a function for matching BoneNames
 type BoneMatcher = BoneId -> Bool
@@ -120,7 +121,7 @@ defTransFlag (ArbTrans _) _       = error "don't do this"
 -- e.g. if you have two legs, you only need to add ReflX at the hips
 -- BoneTrans is applied to _trs'/_pos of AnimalNode'/AnimalNode respectively
 -- and by extension it also affects _orientation of AnimalProperty
-data BoneTrans a = Same | ReflX | ReflY | ReflZ | ArbTrans (M44 a -> M44 a)
+data BoneTrans a = Same | ReflX | ReflY | ReflZ | ArbTrans (M44 a -> M44 a) deriving (Generic, NFData)
 
 instance Show (BoneTrans a) where
   show Same         = "Same"
@@ -177,7 +178,7 @@ data AnimalNode a = AnimalNode {
   _isPhantom :: Bool, -- ^ if this is true, this node will be invisible (won't create a mesh)
   _children  :: [AnimalNode a]
   -- _nodeOrientation :: NodeOrientation
-}
+} deriving (Generic, NFData)
 
 makeLenses ''AnimalNode
 
