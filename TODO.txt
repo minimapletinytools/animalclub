@@ -1,7 +1,8 @@
 ::TODO::
 -switch benchmarks to relude
+  -do benchmarks for skellygen
 -add some punnet square sorta functions to genotype
--do a package cleanup
+DONE-do a package cleanup
 DONE-switch to relude FFS
 -fix circleci [![CircleCI](https://circleci.com/gh/pdlla/animalclub.svg?style=svg)](https://circleci.com/gh/pdlla/animalclub)
 -new test cases
