@@ -17,11 +17,6 @@ import           AnimalClub.Skellygen.Linear
 import           AnimalClub.Skellygen.TRS
 
 
--- | whatever helper
-
-relV3 :: (AnimalFloat a) => a -> a -> a -> AbsOrRel (V3 a)
-relV3 x y z = Rel $ V3 x y z
-
 {- goat
         ↑
         Y
@@ -130,6 +125,6 @@ octopusWorm = asPhantom $ mans "root" (relV3 0 0 0) (Abs 0.2) $
   map (\r -> flipAnimalNode (rotateArbTrans (r*2*pi/8)) (defTransFlag Same) flipWorm) [0..7]
 
 
--- | Animalnode representation of canonical cube
+-- | AnimalNode representation of canonical cube, sorta
 cube :: AnimalNode Float
 cube = asPhantom $ mans "root" (relV3 0 0 0) (Abs 1.0) [mans "end" (relV3 1 0 0) (Rel 1.0) []]

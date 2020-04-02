@@ -49,11 +49,10 @@ data PotatoMesh a = PotatoMesh {
   , normals   :: V.Vector (V3 a)
   , texCoords :: V.Vector (V2 a)
   , indices   :: V.Vector Face
-} deriving (Generic, NFData)
+} deriving (Generic, NFData, Show)
 
 emptyPotatoMesh :: (AnimalFloat a) => PotatoMesh a
 emptyPotatoMesh = PotatoMesh V.empty V.empty V.empty V.empty
-
 
 -- this can probably be improved even more to take advantage of stream fusion
 concatPotatoMesh :: (AnimalFloat a) => [PotatoMesh a] -> PotatoMesh a

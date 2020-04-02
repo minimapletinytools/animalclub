@@ -88,6 +88,7 @@ dependencies:
 - convertible
 - storable-record
 - relude
+- monad-extras
 
 library:
   source-dirs: src
@@ -245,6 +246,7 @@ verbatim: |
       , convertible
       , storable-record
       , relude
+      , monad-extras
     hs-source-dirs:      src
     c-sources:
       csrc/animalclub.cpp

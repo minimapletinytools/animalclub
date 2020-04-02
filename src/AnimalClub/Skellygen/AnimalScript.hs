@@ -19,6 +19,7 @@ import           Lens.Micro.Platform                 (makeLenses, set)
 import           AnimalClub.Skellygen.AnimalNode
 import           AnimalClub.Skellygen.AnimalProperty
 import           AnimalClub.Skellygen.Linear
+import           AnimalClub.Skellygen.Mesh
 import qualified AnimalClub.Skellygen.Skellygen      as SN
 import           AnimalClub.Skellygen.TRS
 
@@ -215,11 +216,12 @@ toSkellyNode props cn =  outsn where
   prop = getAnimalProperty (_name' cn) props
   skellyChildren = map (toSkellyNode props) (_children' cn)
   outsn = SN.SkellyNode {
-    SN._snDebugName = show (_name' cn),
-    SN._snIsPhantom = _isPhantom' cn,
-    SN._snChildren = skellyChildren,
-    SN._snM44Rel = _m44RelFinal' cn,
-    SN._snThickness = _skinParams prop * _thickness' cn -- combine with base thickness multiplicatively
+    SN._snDebugName = show (_name' cn)
+    , SN._snIsPhantom = _isPhantom' cn
+    , SN._snChildren = skellyChildren
+    , SN._snM44Rel = _m44RelFinal' cn
+    , SN._snThickness = _skinParams prop * _thickness' cn -- combine with base thickness multiplicatively
+    , SN._snDebugMesh = emptyPotatoMesh
   }
 
 -- | convert Animal Node to Skellygen
