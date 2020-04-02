@@ -168,7 +168,6 @@ benchmarks:
     - -with-rtsopts=-N4
     - -with-rtsopts=-C0.01
 
-
   dna-benchmarks:
     source-dirs: benchmark
     main: dna.hs
@@ -183,6 +182,18 @@ benchmarks:
     - -with-rtsopts=-N
 
 
+  skellygen-benchmarks:
+    source-dirs: benchmark
+    main: skellygen.hs
+    dependencies:
+    - animalclub
+    - criterion
+    - clock
+    - time
+    ghc-options:
+    - -rtsopts
+    - -threaded
+    - -with-rtsopts=-N
 
 tests:
   animalclub-tests:
@@ -209,7 +220,7 @@ verbatim: |
       mod-def-file: AnimalClubLib.def
     other-modules:       AnimalClub.ForeignBindings
     -- copy this part from library default-extensions section of hpack generated cabal file
-    default-extensions: InstanceSigs LambdaCase OverloadedStrings GADTs DeriveFunctor DeriveFoldable DeriveTraversable FlexibleInstances FlexibleContexts ScopedTypeVariables MultiWayIf TupleSections MultiParamTypeClasses NoImplicitPrelude
+    default-extensions: InstanceSigs LambdaCase OverloadedStrings GADTs DeriveFunctor DeriveFoldable DeriveTraversable DeriveGeneric FlexibleInstances FlexibleContexts ScopedTypeVariables MultiWayIf TupleSections MultiParamTypeClasses NoImplicitPrelude
     -- copy this part from library build-depends section of hpack generated cabal file
     build-depends:
       MonadRandom

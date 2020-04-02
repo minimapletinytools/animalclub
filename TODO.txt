@@ -1,10 +1,5 @@
 ::TODO::
--switch benchmarks to relude
-  -do benchmarks for skellygen
 -add some punnet square sorta functions to genotype
-DONE-do a package cleanup
-DONE-switch to relude FFS
--fix circleci [![CircleCI](https://circleci.com/gh/pdlla/animalclub.svg?style=svg)](https://circleci.com/gh/pdlla/animalclub)
 -new test cases
   -verify results of SkellyNode on worm test
     -verify reflected sides are indeed reflections of each other locally
@@ -18,6 +13,11 @@ DONE-switch to relude FFS
   -try breeding to maximize volume and see what happens
   -try breeding to maximize bending joints and see what happens
 -consider moving parts of Builder.hs into Genetics
+DONE-switch benchmarks to relude
+  DONE-do benchmarks for skellygen
+DONE-do a package cleanup
+DONE-switch to relude FFS
+IGNORE-fix circleci [![CircleCI](https://circleci.com/gh/pdlla/animalclub.svg?style=svg)](https://circleci.com/gh/pdlla/animalclub)
 DONE-change scale to V3 instead of M33
   -see comments in reduceBoneTrans in AnimalScript.hs
 IGNORE-switch LocalMesh to use storable vector
