@@ -9,6 +9,7 @@ Stability   : experimental
 
 
 module AnimalClub.Animals.Animal (
+  relV3,
   asPhantom,
   mans, manf, manbt,
   AnimalExp(..),
@@ -34,6 +35,10 @@ import           Control.Monad.Writer        (tell)
 
 --import Control.Exception (assert)
 --import Debug.Trace (trace)
+
+
+relV3 :: (AnimalFloat a) => a -> a -> a -> AbsOrRel (V3 a)
+relV3 x y z = Rel $ V3 x y z
 
 -- | set the AnimalNode as the root node
 asPhantom :: AnimalNode a -> AnimalNode a

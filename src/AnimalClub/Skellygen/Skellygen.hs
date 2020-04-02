@@ -5,11 +5,13 @@
 {-# LANGUAGE DeriveGeneric   #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module AnimalClub.Skellygen.Skellygen
-  ( SkellyNode(..)
-  , generateLocalMesh
+module AnimalClub.Skellygen.Skellygen(
+  SkellyNode(..)
   , generatePotatoMesh
-  ) where
+  , generatePotatoMeshWithDebugging
+
+  , generateLocalMesh
+) where
 
 import           Relude                       hiding (identity)
 import           Relude.Unsafe                ((!!))
@@ -71,6 +73,7 @@ data SkellyNode a = SkellyNode
   , _snChildren  :: [SkellyNode a]
   , _snM44Rel    :: M44 a -- ^ relative to parent
   , _snThickness :: a -- ^ base physical size of joint.
+  , _snDebugMesh :: PotatoMesh a -- ^ for debugging and testing purposes only
   } deriving (Show, Generic, NFData)
 
 --dummyParent :: SkellyNode
@@ -151,8 +154,6 @@ generateSinglePotatoMesh pos ct pt =
       , indices = G.fromList $ i
     }
 
--- TODO parallelize
--- go through all children and accumulate [PotatoMesh a] then use G.concat
 _generatePotatoMesh ::
   (AnimalFloat a)
   => M44 a -- ^ parent ABS transform
@@ -168,17 +169,44 @@ _generatePotatoMesh p_snM44 p_thick skn = selfLocalMesh :| (mconcat cmeshes) whe
   absM44 = p_snM44 !*! relm44
   cmeshes = parMap rdeepseq (toList . _generatePotatoMesh absM44 thick) (_snChildren skn)
 
--- TODO switch to G.concat
+-- | same as _generatePotatoMesh except populates snDebugMesh
+_generatePotatoMeshWithDebugging ::
+  (AnimalFloat a)
+  => M44 a -- ^ parent ABS transform
+  -> a -- ^ parent thickness
+  -> SkellyNode a -- ^ node to generate
+  -> (SkellyNode a, NonEmpty (PotatoMesh a)) -- ^ output mesh and SkellyNode with debug mesh populated
+_generatePotatoMeshWithDebugging p_snM44 p_thick skn = (rSN, rMesh) where
+  thick = _snThickness skn
+  relm44 = _snM44Rel skn
+  selfLocalMesh = if _snIsPhantom skn
+    then emptyPotatoMesh
+    else transformPotatoMeshM44 p_snM44 $ generateSinglePotatoMesh relm44 thick p_thick
+  absM44 = p_snM44 !*! relm44
+  (children, cmeshes) = unzip $ parMap rdeepseq (over _2 toList . _generatePotatoMeshWithDebugging absM44 thick) (_snChildren skn)
+  rMesh = selfLocalMesh :| (mconcat cmeshes)
+  rSN = skn { _snChildren = children, _snDebugMesh = selfLocalMesh }
+
 generatePotatoMesh ::
   (AnimalFloat a)
   => SkellyNode a -- ^ input top level parent node
   -> PotatoMesh a -- ^ output mesh
 generatePotatoMesh skn = concatPotatoMesh . toList $ _generatePotatoMesh identity 1.0 skn
 
+-- | same as generatePotatoMesh except returns SkellyNode with populated _snDebugMesh
+generatePotatoMeshWithDebugging ::
+  (AnimalFloat a)
+  => SkellyNode a -- ^ input top level parent node
+  -> (SkellyNode a, PotatoMesh a) -- ^ output top level parent and mesh
+generatePotatoMeshWithDebugging skn = (sn, concatPotatoMesh . toList $ pm)  where
+  (sn, pm) = _generatePotatoMeshWithDebugging identity 1.0 skn
 
 
 
--- old local mesh stuff
+
+
+
+-- old local mesh stuff CAN DELETE
 generateSingleLocalMesh ::
   (AnimalFloat a)
   => M44 a -- ^ input node transform
