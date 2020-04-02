@@ -73,7 +73,6 @@ dependencies:
 - random
 - mwc-random
 - mtl
-- array
 - text
 - linear
 - microlens-platform
@@ -83,8 +82,6 @@ dependencies:
 - primitive
 - monad-parallel
 - parallel
-- clock
-- time
 - formatting
 - bytestring
 - storable-tuple
@@ -127,6 +124,7 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - animalclub
+    - clock
 
   goat:
     main:                goat.hs
@@ -160,6 +158,8 @@ benchmarks:
     dependencies:
     - animalclub
     - criterion
+    - clock
+    - time
     ghc-options:
     - -O2
     - -rtsopts
@@ -175,6 +175,8 @@ benchmarks:
     dependencies:
     - animalclub
     - criterion
+    - clock
+    - time
     ghc-options:
     - -rtsopts
     - -threaded
@@ -213,10 +215,8 @@ verbatim: |
       MonadRandom
       , QuickCheck
       , adjunctions
-      , array
       , base >=4.7 && <5
       , bytestring
-      , clock
       , containers
       , deepseq
       , formatting
@@ -230,7 +230,6 @@ verbatim: |
       , random
       , storable-tuple
       , text
-      , time
       , vector
       , convertible
       , storable-record
