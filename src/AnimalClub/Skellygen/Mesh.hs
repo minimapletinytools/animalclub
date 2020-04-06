@@ -57,11 +57,11 @@ emptyPotatoMesh = PotatoMesh V.empty V.empty V.empty V.empty
 -- this can probably be improved even more to take advantage of stream fusion
 concatPotatoMesh :: (AnimalFloat a) => [PotatoMesh a] -> PotatoMesh a
 concatPotatoMesh pms = r where
-  foldfn (PotatoMesh p n tc i) (pl, nl, tcl, il, offset) =
+  foldfn (pl, nl, tcl, il, offset) (PotatoMesh p n tc i) =
     (pl++[p], nl++[n], tcl++[tc], il++[offseti], newOffset) where
       offseti = V.map (map3Tuple (+ fromIntegral offset)) i
       newOffset = offset + V.length p
-  (plf,nlf,tclf,ilf,_) = foldr foldfn ([],[],[],[],0) pms
+  (plf,nlf,tclf,ilf,_) = foldl' foldfn ([],[],[],[],0) pms
   r = PotatoMesh {
       positions = V.concat plf
       , normals = V.concat nlf

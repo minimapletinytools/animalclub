@@ -124,6 +124,7 @@ goat_mesh_hs goatPtr = do
     goatProps = generateAnimalProperties (makeBoneIdList goatAnimalNode) $ evalGenome goatGenome dna
     skelly = animalNodeToSkellyNodeWithProps goatProps goatAnimalNode
     PotatoMesh v n tc f = generatePotatoMesh $ skelly
+    -- note vl nl and tcl should all be the same
     vl = V.length v
     nl = V.length n
     tcl = V.length tc
@@ -137,8 +138,8 @@ goat_mesh_hs goatPtr = do
   tcfptr <- newForeignPtr_ tcptr
   ffptr <- newForeignPtr_ fptr
   V.copy (MV.unsafeFromForeignPtr0 vfptr vl) v
-  V.copy (MV.unsafeFromForeignPtr0 nfptr vl) n
-  V.copy (MV.unsafeFromForeignPtr0 tcfptr vl) tc
+  V.copy (MV.unsafeFromForeignPtr0 nfptr nl) n
+  V.copy (MV.unsafeFromForeignPtr0 tcfptr tcl) tc
   V.copy (MV.unsafeFromForeignPtr0 ffptr fl) f
   r <- new (
       castPtr vptr, convert vl * 3,

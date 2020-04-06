@@ -63,6 +63,8 @@ import           AnimalClub.Skellygen.TRS
 -}
 
 
+mconcat' :: (Monoid a) => [a] -> a
+mconcat' = foldl' mappend mempty
 
 -- |
 -- prefixed names due to unfortunate naming conflict with AnimalNode
@@ -148,9 +150,9 @@ generateSinglePotatoMesh pos ct pt =
 
   -- you can probably make this more efficient by directly building the vector rather than converting from a list
   r = PotatoMesh {
-      positions = G.fromList $ mconcat p
-      , normals = G.fromList $ mconcat n
-      , texCoords = G.fromList $ mconcat tc
+      positions = G.fromList $ mconcat' p
+      , normals = G.fromList $ mconcat' n
+      , texCoords = G.fromList $ mconcat' tc
       , indices = G.fromList $ i
     }
 
@@ -160,7 +162,7 @@ _generatePotatoMesh ::
   -> a -- ^ parent thickness
   -> SkellyNode a -- ^ node to generate
   -> NonEmpty (PotatoMesh a) -- ^ output mesh
-_generatePotatoMesh p_snM44 p_thick skn = selfLocalMesh :| (mconcat cmeshes) where
+_generatePotatoMesh p_snM44 p_thick skn = selfLocalMesh :| (mconcat' cmeshes) where
   thick = _snThickness skn
   relm44 = _snM44Rel skn
   selfLocalMesh = if _snIsPhantom skn
