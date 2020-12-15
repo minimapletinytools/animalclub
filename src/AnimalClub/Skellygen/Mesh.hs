@@ -92,15 +92,22 @@ potatoMeshToObj (PotatoMesh p n tc i) = execWriter $ do
     sc a = st a <> "/" <> st a <> "/" <> st a
   V.mapM_ (\(a1,a2,a3) -> tell $ "f " <> sc a1 <> " " <> sc a2 <> " " <> sc a3 <> "\n") $ i
 
+
+shuffleIndex :: Face -> Face
+shuffleIndex (x,y,z) = (x,z,y)
+
 transformPotatoMeshM44 :: (AnimalFloat a) => M44 a -> PotatoMesh a -> PotatoMesh a
 transformPotatoMeshM44 t (PotatoMesh p n tc i) = r where
-  -- transform the normal (drop translation and invert scale)
-  nt n' = signorm $ (transpose (inv33 $ conv_M44_M33_droptrans t)) !* n'
+  -- transform the normals (drop translation and invert scale)
+  t' = conv_M44_M33_droptrans t
+  nt n' = signorm $ (inv33 $ t') !* n'
+  -- shuffle tri indices to maintain correct orientation
+  it = if det33 t' > 0 then id else shuffleIndex
   r = PotatoMesh
     (V.map (mul_M44_V3 t) p)
     (V.map nt n)
     tc
-    i
+    (V.map it i)
 
 -- old LocalMesh stuff, you can delete this
 

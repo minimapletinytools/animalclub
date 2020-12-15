@@ -1,3 +1,6 @@
+stack run -- goat
+stack run -- wormbreeder
+
 ::TODO::
 -add some punnet square sorta functions to genotype
 -new test cases
