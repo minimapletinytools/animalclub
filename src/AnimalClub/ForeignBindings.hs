@@ -101,7 +101,7 @@ goatGenome = makeGenomeFromPropertiesSimple goatSize [] goatPropertyList
 
 random_goat_hs :: IO (StablePtr DNA)
 random_goat_hs = do
-  gen <- getStdGen
+  gen <- newStdGen
   newStablePtr (makeRandDNA gen goatSize)
 
 free_goat_hs :: StablePtr DNA -> IO ()
