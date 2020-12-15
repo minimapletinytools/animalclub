@@ -108,11 +108,14 @@ generateSinglePotatoMesh pos ct pt =
   end' = view translation pos
   start' = V3 0 0 0
   length' = norm (end' - start')
-  normalized = _normalize $ end' - start'
+  normalized = signorm $ end' - start'
   start = start' --  - ex *^ normalized
   end = end' -- + ey *^ normalized
 
+  -- TODO rename this variable?? Why did I call it "upAxis"???
   -- TODO upAxis should use the up direction of pos
+  -- right now all meshes are oriented the same way (edge of mesh pointing directly up)
+  -- i.e. there is no rotation component along normalized for the mesh being generated
   upAxis = rotate (fromTo (V3 0 1 0) normalized)
 
   divs = 4 :: Int
@@ -127,8 +130,8 @@ generateSinglePotatoMesh pos ct pt =
 
   allPoints = startPoints ++ endPoints
 
-  sides = [(0, 1, 4), (5, 4, 1), (1, 2, 5), (6, 5, 2), (2, 3, 6), (7, 6, 3), (3, 0, 7), (4, 7, 0)]
-  caps = [(0, 1, 3), (2, 3, 1), (6, 7, 5), (4, 5, 7)]
+  sides = [(0, 4, 1), (5, 1, 4), (1, 5, 2), (6, 2, 5), (2, 6, 3), (7, 3, 6), (3, 7, 0), (4, 0, 7)]
+  caps = [(0, 1, 3), (2, 3, 1), (6, 5, 7), (4, 7, 5)]
   allIndices = sides ++ caps
 
   -- per face normals
@@ -136,9 +139,9 @@ generateSinglePotatoMesh pos ct pt =
     mapfn a = upAxis npt where
       -- rotate a little more to get normal for face
       a' = a + pi / fromIntegral divs
-      npt = V3 (pt * cos a') 0 (pt * sin a')
-  capNormals = map upAxis [V3 0 (-1) 0, V3 0 1 0]
-  allNormals = map signorm (sideNormals ++ capNormals)
+      npt = V3 (cos a') 0 (sin a')
+  capNormals = map upAxis [V3 0 1 0, V3 0 (-1) 0]
+  allNormals = (sideNormals ++ capNormals)
 
   -- rendy requires same buffer indices for position, normal and tex coords
   -- therefore we reindex everything and duplicate positions/normals
