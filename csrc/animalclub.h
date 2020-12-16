@@ -28,4 +28,4 @@ extern "C" void free_goat(GoatSpecimenPtr goat);
 extern "C" GoatSpecimenPtr breed_goat(GoatSpecimenPtr, GoatSpecimenPtr);
 extern "C" Mesh* goat_mesh(GoatSpecimenPtr);
 extern "C" void free_goat_mesh(Mesh*);
-extern "C" void dump_goat(GoatSpecimenPtr);
+extern "C" void dump_goat(GoatSpecimenPtr, const char*);

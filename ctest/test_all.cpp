@@ -28,7 +28,7 @@ bool test_breed_hs() {
 
 bool test_goat() {
   GoatSpecimenPtr gptr = random_goat();
-  dump_goat(gptr);
+  dump_goat(gptr, "testfile");
   Mesh* gmesh = goat_mesh(gptr);
   //cout << printMesh(*gmesh);
   free_goat_mesh(gmesh);

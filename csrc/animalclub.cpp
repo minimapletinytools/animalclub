@@ -2,6 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include <cstdint>
+#include <fstream>
 
 #include "HsFFI.h"
 #include "animalclub.h"
@@ -20,18 +21,20 @@ void my_exit(void){
   hs_exit();
 }
 
-// just for testing, can delete
-std::string printMesh(Mesh m) {
-  std::ostringstream r;
+void printMesh(Mesh& m, std::ostream& r) {
   for(int i = 0; i < m.vertex_count/3; i++) {
     r << "v " << m.vertices[i*3 + 0] << " " << m.vertices[i*3 + 1] << " " << m.vertices[i*3 + 2] << std::endl;
   }
   for(int i = 0; i < m.face_count/3; i++) {
     r << "f " << m.faces[i*3 + 0]+1 << " " << m.faces[i*3 + 1]+1 << " " << m.faces[i*3 + 2]+1 << std::endl;
   }
-  return r.str();
 }
 
+std::string printMesh(Mesh& m) {
+  std::ostringstream r;
+  printMesh(m, r);
+  return r.str();
+}
 
 void breed(uint32_t seed, char* dna1, char* dna2, char* outdna, uint32_t size) {
   breed_hs(seed, dna1, dna2, outdna, size);
@@ -56,6 +59,12 @@ void free_goat_mesh(Mesh* ptr) {
   free_goat_mesh_hs((HsPtr)ptr);
 }
 
-void dump_goat(GoatSpecimenPtr ptr) {
-  dump_goat_hs(ptr);
+void dump_goat(GoatSpecimenPtr ptr, const char* filename) {
+  //dump_goat_hs(ptr);
+  Mesh* mesh = goat_mesh(ptr);
+  std::fstream fs;
+  fs.open (filename, std::fstream::out);
+  printMesh(*mesh, fs);
+  fs.close();
+  free_goat_mesh(mesh);
 }
