@@ -45,8 +45,8 @@ bool test_many_goats() {
     bredGoats[i] = breed_goat(goats[i*2], goats[i*2+1]);
   }
 
-  Mesh* gmesh = goat_mesh(bredGoats[0]);
-  cout << printMesh(*gmesh);
+  // Mesh* gmesh = goat_mesh(bredGoats[0]);
+  // cout << printMesh(*gmesh);
 
   for_each(bredGoats, bredGoats+count/2, [](GoatSpecimenPtr& g){ free_goat(g); });
   for_each(goats, goats+count, [](GoatSpecimenPtr& g){ free_goat(g); });

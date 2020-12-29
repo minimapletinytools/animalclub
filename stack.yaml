@@ -15,7 +15,7 @@
 # resolver:
 #  name: custom-snapshot
 #  location: "./custom-snapshot.yaml"
-resolver: lts-14.17
+resolver: lts-16.27
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -41,7 +41,7 @@ packages:
 # (e.g., acme-missiles-0.3)
 extra-deps:
 - github: pdlla/linear-tests
-  commit: 2b9d1e946d0329be6f2f6da2559ee7790b84f200 
+  commit: 2b9d1e946d0329be6f2f6da2559ee7790b84f200
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

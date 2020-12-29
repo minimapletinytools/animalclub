@@ -7,9 +7,6 @@ packages:
 - completed:
     size: 7175
     url: https://github.com/pdlla/linear-tests/archive/2b9d1e946d0329be6f2f6da2559ee7790b84f200.tar.gz
-    cabal-file:
-      size: 1678
-      sha256: 3178ff714bac0a405691ae5c211295046e88a7c5cfe96949846b4c78b0640251
     name: linear-tests
     version: 0.1.1.0
     sha256: ecd15ae9f61eba12e1ef2f03b251cda1157b1fd5742ef491369906defa4a9911
@@ -20,7 +17,7 @@ packages:
     url: https://github.com/pdlla/linear-tests/archive/2b9d1e946d0329be6f2f6da2559ee7790b84f200.tar.gz
 snapshots:
 - completed:
-    size: 524799
-    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/14/17.yaml
-    sha256: 1d72b33c0fc048e23f4f18fd76a6ad79dd1d8a3c054644098a71a09855e40c7c
-  original: lts-14.17
+    size: 533252
+    url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/16/27.yaml
+    sha256: c2aaae52beeacf6a5727c1010f50e89d03869abfab6d2c2658ade9da8ed50c73
+  original: lts-16.27
